@@ -1,8 +1,46 @@
 // src/TitleDialog.js
-import React from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button } from '@mui/material';
+import React, { useState } from "react";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Button,
+} from "@mui/material";
+import axios from "axios";
 
 const TitleDialog = ({ open, onClose, onSave }) => {
+  const [titleName, setTitleName] = useState("");
+  const [deptSection, setDeptSection] = useState("");
+  const [til, setTil] = useState("");
+
+  const handleTitleNameChange = (e) => setTitleName(e.target.value);
+  const handleDeptSectionChange = (e) => setDeptSection(e.target.value);
+  const handleTilChange = (e) => setTil(e.target.value);
+
+  const handleSave = async () => {
+    const newTitle = {
+      titleName,
+      deptSection,
+      til,
+    };
+
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/titles",
+        newTitle
+      );
+      onSave(response.data);
+      setTitleName("");
+      setDeptSection("");
+      setTil("");
+      onClose();
+    } catch (error) {
+      console.error("Error saving title:", error);
+    }
+  };
+
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>Title Name</DialogTitle>
@@ -12,6 +50,8 @@ const TitleDialog = ({ open, onClose, onSave }) => {
           label="Title Name"
           fullWidth
           variant="outlined"
+          value={titleName}
+          onChange={handleTitleNameChange}
           // Add value and onChange if you need to control the input
         />
         <TextField
@@ -19,6 +59,8 @@ const TitleDialog = ({ open, onClose, onSave }) => {
           label="Dept Section"
           fullWidth
           variant="outlined"
+          value={deptSection}
+          onChange={handleDeptSectionChange}
           // Add value and onChange if you need to control the input
         />
         <TextField
@@ -26,6 +68,8 @@ const TitleDialog = ({ open, onClose, onSave }) => {
           label="Til"
           fullWidth
           variant="outlined"
+          value={til}
+          onChange={handleTilChange}
           // Add value and onChange if you need to control the input
         />
       </DialogContent>
@@ -33,7 +77,7 @@ const TitleDialog = ({ open, onClose, onSave }) => {
         <Button onClick={onClose} color="primary">
           Cancel
         </Button>
-        <Button onClick={onSave} color="primary">
+        <Button onClick={handleSave} color="primary">
           Save
         </Button>
       </DialogActions>

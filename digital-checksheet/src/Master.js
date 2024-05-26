@@ -1,20 +1,44 @@
-import React, { useState, useContext } from 'react';
-import { Button, Table, TableBody, TableCell, TableHead, TableRow, Box, Typography, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Select, MenuItem } from '@mui/material';
-import { AppContext } from './Context'; // Import the context
+import React, { useState, useContext } from "react";
+import {
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Box,
+  Typography,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Select,
+  MenuItem,
+} from "@mui/material";
+
+import { AppContext } from "./Context"; // Import the context
 
 const Master = () => {
-  const [activeSection, setActiveSection] = useState('department'); // Set default section to 'department'
-  const { departments, sections, addDepartment, addSection, removeDepartment, removeSection } = useContext(AppContext); // Destructure the needed context values
+  const [activeSection, setActiveSection] = useState("department"); // Set default section to 'department'
+  const {
+    departments,
+    sections,
+    addDepartment,
+    addSection,
+    removeDepartment,
+    removeSection,
+  } = useContext(AppContext); // Destructure the needed context values
   const [openDialog, setOpenDialog] = useState(false);
-  const [selectedDepartment, setSelectedDepartment] = useState('');
-  const [newSection, setNewSection] = useState('');
-  const [newSectionDescription, setNewSectionDescription] = useState('');
+  const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [newSection, setNewSection] = useState("");
+  const [newSectionDescription, setNewSectionDescription] = useState("");
 
   const handleClickOpen = (section) => {
     setActiveSection(section);
-    setSelectedDepartment('');
-    setNewSection('');
-    setNewSectionDescription('');
+    setSelectedDepartment("");
+    setNewSection("");
+    setNewSectionDescription("");
     setOpenDialog(true);
   };
 
@@ -23,21 +47,25 @@ const Master = () => {
   };
 
   const handleAdd = () => {
-    if (activeSection === 'department') {
+    if (activeSection === "department") {
       addDepartment({ name: newSection, description: newSectionDescription }); // Use addDepartment function with description
-    } else if (activeSection === 'section') {
-      addSection({ department: selectedDepartment, section: newSection, description: newSectionDescription }); // Use addSection function with description
+    } else if (activeSection === "section") {
+      addSection({
+        department: selectedDepartment,
+        section: newSection,
+        description: newSectionDescription,
+      }); // Use addSection function with description
     }
-    setSelectedDepartment('');
-    setNewSection('');
-    setNewSectionDescription('');
+    setSelectedDepartment("");
+    setNewSection("");
+    setNewSectionDescription("");
     handleClose();
   };
 
   const handleDelete = (index) => {
-    if (activeSection === 'department') {
+    if (activeSection === "department") {
       removeDepartment(departments[index]);
-    } else if (activeSection === 'section') {
+    } else if (activeSection === "section") {
       removeSection(sections[index]);
     }
   };
@@ -48,11 +76,18 @@ const Master = () => {
 
   const renderDepartmentSection = () => (
     <>
-      <Box display="flex" alignItems="center" justifyContent="space-between" my={2}>
-        <Typography variant="h6">
-          Department List
-        </Typography>
-        <Button variant="contained" color="primary" onClick={() => handleClickOpen('department')}>
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="space-between"
+        my={2}
+      >
+        <Typography variant="h6">Department List</Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => handleClickOpen("department")}
+        >
           Add
         </Button>
       </Box>
@@ -71,7 +106,9 @@ const Master = () => {
               <TableCell>{item.name}</TableCell>
               <TableCell>{item.description}</TableCell>
               <TableCell>
-                <Button color="secondary" onClick={() => handleDelete(index)}>Delete</Button>
+                <Button color="secondary" onClick={() => handleDelete(index)}>
+                  Delete
+                </Button>
               </TableCell>
             </TableRow>
           ))}
@@ -82,11 +119,18 @@ const Master = () => {
 
   const renderSectionSection = () => (
     <>
-      <Box display="flex" alignItems="center" justifyContent="space-between" my={2}>
-        <Typography variant="h6">
-          Section List
-        </Typography>
-        <Button variant="contained" color="primary" onClick={() => handleClickOpen('section')}>
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="space-between"
+        my={2}
+      >
+        <Typography variant="h6">Section List</Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => handleClickOpen("section")}
+        >
           Add
         </Button>
       </Box>
@@ -107,7 +151,9 @@ const Master = () => {
               <TableCell>{item.section}</TableCell>
               <TableCell>{item.description}</TableCell>
               <TableCell>
-                <Button color="secondary" onClick={() => handleDelete(index)}>Delete</Button>
+                <Button color="secondary" onClick={() => handleDelete(index)}>
+                  Delete
+                </Button>
               </TableCell>
             </TableRow>
           ))}
@@ -117,9 +163,9 @@ const Master = () => {
   );
 
   const renderSectionContent = () => {
-    if (activeSection === 'department') {
+    if (activeSection === "department") {
       return renderDepartmentSection();
-    } else if (activeSection === 'section') {
+    } else if (activeSection === "section") {
       return renderSectionSection();
     }
     return null;
@@ -131,23 +177,28 @@ const Master = () => {
         Master Content
       </Typography>
 
-      <Box display="flex" alignItems="center" my={2} style={{ background: '#f5f5f5', padding: '10px 0' }}>
-        <Button onClick={() => handleItemClick('department')}>
+      <Box
+        display="flex"
+        alignItems="center"
+        my={2}
+        style={{ background: "#f5f5f5", padding: "10px 0" }}
+      >
+        <Button onClick={() => handleItemClick("department")}>
           Department
         </Button>
-        <Button onClick={() => handleItemClick('section')}>
-          Section
-        </Button>
+        <Button onClick={() => handleItemClick("section")}>Section</Button>
       </Box>
 
       {renderSectionContent()}
 
       <Dialog open={openDialog} onClose={handleClose}>
         <DialogTitle>
-          {activeSection === 'department' ? 'Add New Department' : 'Add New Section'}
+          {activeSection === "department"
+            ? "Add New Department"
+            : "Add New Section"}
         </DialogTitle>
         <DialogContent>
-          {activeSection === 'department' ? (
+          {activeSection === "department" ? (
             <Box>
               <TextField
                 margin="dense"
@@ -168,9 +219,13 @@ const Master = () => {
                 variant="outlined"
                 margin="dense"
               >
-                <MenuItem value="" disabled>Select Department</MenuItem>
+                <MenuItem value="" disabled>
+                  Select Department
+                </MenuItem>
                 {departments.map((item, index) => (
-                  <MenuItem key={index} value={item.name}>{item.name}</MenuItem>
+                  <MenuItem key={index} value={item.name}>
+                    {item.name}
+                  </MenuItem>
                 ))}
               </Select>
               <TextField

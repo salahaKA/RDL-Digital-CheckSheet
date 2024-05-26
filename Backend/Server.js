@@ -38,6 +38,10 @@ app.get("/departments", (req, res) => {
 // Add a new department
 app.post("/departments", (req, res) => {
   const { name, description } = req.body;
+  if (!name || !description) {
+    res.status(400).json({ error: "Name and description are required" });
+    return;
+  }
   db.query(
     "INSERT INTO departments (name, description) VALUES (?, ?)",
     [name, description],
@@ -77,6 +81,12 @@ app.get("/sections", (req, res) => {
 // Add a new section
 app.post("/sections", (req, res) => {
   const { department_id, name, description } = req.body;
+  if (!department_id || !name || !description) {
+    res
+      .status(400)
+      .json({ error: "Department ID, name, and description are required" });
+    return;
+  }
   db.query(
     "INSERT INTO sections (department_id, name, description) VALUES (?, ?, ?)",
     [department_id, name, description],
@@ -98,6 +108,53 @@ app.delete("/sections/:id", (req, res) => {
       res.status(500).send(err);
     } else {
       res.status(200).send("Section deleted");
+    }
+  });
+});
+
+// Get all titles
+app.get("/titles", (req, res) => {
+  db.query("SELECT * FROM titles", (err, results) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+    res.status(200).json(results);
+  });
+});
+
+// Add a new title
+app.post("/titles", (req, res) => {
+  const { titleName, deptSection, til } = req.body;
+  if (!titleName || !deptSection || !til) {
+    res
+      .status(400)
+      .json({ error: "Title name, department section, and til are required" });
+    return;
+  }
+  db.query(
+    "INSERT INTO titles (titleName, deptSection, til) VALUES (?, ?, ?)",
+    [titleName, deptSection, til],
+    (err, results) => {
+      if (err) {
+        console.error("Error saving title:", err);
+        res.status(500).json({ error: err.message });
+        return;
+      }
+      console.log("Title saved successfully");
+      res.status(201).json({ id: results.insertId });
+    }
+  );
+});
+
+// Delete a title
+app.delete("/titles/:id", (req, res) => {
+  const { id } = req.params;
+  db.query("DELETE FROM titles WHERE id = ?", [id], (err, results) => {
+    if (err) {
+      res.status(500).send(err);
+    } else {
+      res.status(200).send("Title deleted");
     }
   });
 });
