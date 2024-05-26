@@ -51,6 +51,18 @@ app.post("/departments", (req, res) => {
   );
 });
 
+// Delete a department
+app.delete("/departments/:id", (req, res) => {
+  const { id } = req.params;
+  db.query("DELETE FROM departments WHERE id = ?", [id], (err, results) => {
+    if (err) {
+      res.status(500).send(err);
+    } else {
+      res.status(200).send("Department deleted");
+    }
+  });
+});
+
 // Get all sections
 app.get("/sections", (req, res) => {
   db.query("SELECT * FROM sections", (err, results) => {
@@ -76,6 +88,18 @@ app.post("/sections", (req, res) => {
       res.status(201).json({ id: results.insertId });
     }
   );
+});
+
+// Delete a section
+app.delete("/sections/:id", (req, res) => {
+  const { id } = req.params;
+  db.query("DELETE FROM sections WHERE id = ?", [id], (err, results) => {
+    if (err) {
+      res.status(500).send(err);
+    } else {
+      res.status(200).send("Section deleted");
+    }
+  });
 });
 
 app.get("/", (req, res) => {
