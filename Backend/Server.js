@@ -135,6 +135,7 @@ app.put("/departments/:id", (req, res) => {
   );
 });
 
+// Update a section
 app.put("/sections/:id", (req, res) => {
   const { id } = req.params;
   const { name, description, section, department } = req.body;
@@ -156,29 +157,6 @@ app.put("/sections/:id", (req, res) => {
     }
   );
 });
-
-// // Update a section
-// app.put("/sections/:id", (req, res) => {
-//   const { id } = req.params;
-//   const { name, description, section, department } = req.body;
-//   if (!name || !description || !section || !department) {
-//     res.status(400).json({
-//       error: "Name, description, section, and department are required",
-//     });
-//     return;
-//   }
-//   db.query(
-//     "UPDATE sections SET name = ?, description = ?, section = ?, department = ? WHERE id = ?",
-//     [name, description, section, department, id],
-//     (err, results) => {
-//       if (err) {
-//         res.status(500).json({ error: err.message });
-//         return;
-//       }
-//       res.status(200).send("Section updated");
-//     }
-//   );
-// });
 
 // Get all titles
 app.get("/titles", (req, res) => {

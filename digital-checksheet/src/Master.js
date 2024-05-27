@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   Button,
   Table,
@@ -20,7 +20,8 @@ import {
 import { AppContext } from "./Context"; // Import the context
 
 const Master = () => {
-  const [activeSection, setActiveSection] = useState("department"); // Set default section to 'department'
+  // const [activeSection, setActiveSection] = useState("department"); // Set default section to 'department'
+
   const {
     departments,
     sections,
@@ -31,11 +32,22 @@ const Master = () => {
     editDepartment,
     editSection,
   } = useContext(AppContext); // Destructure the needed context values
+
+  // Retrieve the activeSection from local storage or set default to 'department'
+  const [activeSection, setActiveSection] = useState(() => {
+    return localStorage.getItem("activeSection") || "department";
+  });
+
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const [newSection, setNewSection] = useState("");
   const [newSectionDescription, setNewSectionDescription] = useState("");
   const [dialogMode, setDialogMode] = useState("add");
+
+  useEffect(() => {
+    // Save the activeSection to local storage whenever it changes
+    localStorage.setItem("activeSection", activeSection);
+  }, [activeSection]);
 
   const handleClickOpen = (section) => {
     setActiveSection(section);
@@ -66,7 +78,7 @@ const Master = () => {
     const department = departments.find(
       (dep) => dep.id === section.department_id
     );
-    setSelectedDepartment(department); // This should be setting the department, not the section
+    setSelectedDepartment(department);
     setNewSection(section.name);
     setNewSectionDescription(section.description);
     setDialogMode("edit");
@@ -95,10 +107,17 @@ const Master = () => {
           description: newSectionDescription,
         });
       } else if (activeSection === "section") {
-        editSection(sections.find((sec) => sec.name === newSection).id, {
-          name: newSection,
-          description: newSectionDescription,
-        });
+        const section = sections.find((sec) => sec.name === newSection);
+        if (section) {
+          const updatedSection = {
+            name: newSection,
+            description: newSectionDescription,
+            section: newSection,
+            department: selectedDepartment.name,
+          };
+          console.log("Updated section data:", updatedSection);
+          editSection(section.id, updatedSection);
+        }
       }
     }
     setSelectedDepartment("");
@@ -106,43 +125,6 @@ const Master = () => {
     setNewSectionDescription("");
     handleClose();
   };
-
-  // const handleAdd = () => {
-  //   if (dialogMode === "add") {
-  //     // Add mode
-  //     if (activeSection === "department") {
-  //       addDepartment({ name: newSection, description: newSectionDescription });
-  //     } else if (activeSection === "section") {
-  //       const sectionData = {
-  //         department_id: selectedDepartment.id,
-  //         name: newSection,
-  //         description: newSectionDescription,
-  //         section: newSection,
-  //         department: selectedDepartment.name,
-  //       };
-  //       addSection(sectionData);
-  //     }
-  //   } else if (dialogMode === "edit") {
-  //     // Edit mode
-  //     if (activeSection === "department") {
-  //       // Assuming selectedDepartment has an id
-  //       editDepartment(selectedDepartment.id, {
-  //         name: newSection,
-  //         description: newSectionDescription,
-  //       });
-  //     } else if (activeSection === "section") {
-  //       // Assuming selectedDepartment has an id
-  //       editSection(selectedDepartment.id, {
-  //         name: newSection,
-  //         description: newSectionDescription,
-  //       });
-  //     }
-  //   }
-  //   setSelectedDepartment("");
-  //   setNewSection("");
-  //   setNewSectionDescription("");
-  //   handleClose();
-  // };
 
   const handleDelete = (index) => {
     if (activeSection === "department") {
@@ -236,8 +218,10 @@ const Master = () => {
         <TableBody>
           {sections.map((item, index) => (
             <TableRow key={index}>
-              <TableCell>{item.department_id}</TableCell>
-              <TableCell>{item.name}</TableCell> {/* Updated to use 'name' */}
+              <TableCell>
+                {departments.find((dep) => dep.id === item.department_id)?.name}
+              </TableCell>
+              <TableCell>{item.name}</TableCell>
               <TableCell>{item.description}</TableCell>
               <TableCell>
                 <Button
@@ -246,7 +230,6 @@ const Master = () => {
                 >
                   Edit
                 </Button>
-
                 <Button color="secondary" onClick={() => handleDelete(index)}>
                   Delete
                 </Button>
