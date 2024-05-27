@@ -48,15 +48,17 @@ const Master = () => {
 
   const handleAdd = () => {
     if (activeSection === "department") {
-      addDepartment({ name: newSection, description: newSectionDescription }); // Use addDepartment function with description
+      addDepartment({ name: newSection, description: newSectionDescription });
     } else if (activeSection === "section") {
       const sectionData = {
-        department_id: selectedDepartment,
-        name: newSection, // Use 'name' field for section name
+        department_id: selectedDepartment.id, // Assuming selectedDepartment is an object with id and name
+        name: newSection,
         description: newSectionDescription,
+        section: newSection, // Setting section to newSection
+        department: selectedDepartment.name, // Setting department to selectedDepartment's name
       };
       console.log("Section data to be added:", sectionData); // Log the data
-      addSection(sectionData); // Use addSection function with description
+      addSection(sectionData);
     }
     setSelectedDepartment("");
     setNewSection("");
@@ -215,7 +217,7 @@ const Master = () => {
             <Box>
               <Select
                 value={selectedDepartment}
-                onChange={(e) => setSelectedDepartment(e.target.value)}
+                onChange={(e) => setSelectedDepartment(e.target.value)} // Ensure e.target.value is an object
                 fullWidth
                 displayEmpty
                 variant="outlined"
@@ -224,12 +226,13 @@ const Master = () => {
                 <MenuItem value="" disabled>
                   Select Department
                 </MenuItem>
-                {departments.map((item, index) => (
-                  <MenuItem key={index} value={item.name}>
-                    {item.name}
+                {departments.map((dep) => (
+                  <MenuItem key={dep.id} value={dep}>
+                    {dep.name}
                   </MenuItem>
                 ))}
               </Select>
+
               <TextField
                 margin="dense"
                 label="Section"

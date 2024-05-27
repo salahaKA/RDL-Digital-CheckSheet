@@ -67,7 +67,6 @@ app.delete("/departments/:id", (req, res) => {
   });
 });
 
-// Get all sections
 app.get("/sections", (req, res) => {
   db.query("SELECT * FROM sections", (err, results) => {
     if (err) {
@@ -79,17 +78,18 @@ app.get("/sections", (req, res) => {
 });
 
 app.post("/sections", (req, res) => {
-  const { department_id, name, description } = req.body;
+  const { department_id, name, description, section, department } = req.body;
   console.log("Received section data:", req.body); // Log the received data
-  if (!department_id || !name || !description) {
-    res
-      .status(400)
-      .json({ error: "Department ID, name, and description are required" });
+  if (!department_id || !name || !description || !section || !department) {
+    res.status(400).json({
+      error:
+        "Department ID, name, description, section, and department are required",
+    });
     return;
   }
   db.query(
-    "INSERT INTO sections (department_id, name, description) VALUES (?, ?, ?)",
-    [department_id, name, description],
+    "INSERT INTO sections (department_id, name, description, section, department) VALUES (?, ?, ?, ?, ?)",
+    [department_id, name, description, section, department],
     (err, results) => {
       if (err) {
         console.error("Error inserting section:", err); // Log the error
