@@ -50,11 +50,13 @@ const Master = () => {
     if (activeSection === "department") {
       addDepartment({ name: newSection, description: newSectionDescription }); // Use addDepartment function with description
     } else if (activeSection === "section") {
-      addSection({
-        department: selectedDepartment,
-        section: newSection,
+      const sectionData = {
+        department_id: selectedDepartment,
+        name: newSection, // Use 'name' field for section name
         description: newSectionDescription,
-      }); // Use addSection function with description
+      };
+      console.log("Section data to be added:", sectionData); // Log the data
+      addSection(sectionData); // Use addSection function with description
     }
     setSelectedDepartment("");
     setNewSection("");
@@ -147,8 +149,8 @@ const Master = () => {
         <TableBody>
           {sections.map((item, index) => (
             <TableRow key={index}>
-              <TableCell>{item.department}</TableCell>
-              <TableCell>{item.section}</TableCell>
+              <TableCell>{item.department_id}</TableCell>
+              <TableCell>{item.name}</TableCell> {/* Updated to use 'name' */}
               <TableCell>{item.description}</TableCell>
               <TableCell>
                 <Button color="secondary" onClick={() => handleDelete(index)}>

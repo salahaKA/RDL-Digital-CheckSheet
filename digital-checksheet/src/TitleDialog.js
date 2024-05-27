@@ -1,5 +1,6 @@
 // src/TitleDialog.js
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
+
 import {
   Dialog,
   DialogTitle,
@@ -9,6 +10,7 @@ import {
   Button,
 } from "@mui/material";
 import axios from "axios";
+import { AppContext } from "./Context";
 
 const TitleDialog = ({ open, onClose, onSave }) => {
   const [titleName, setTitleName] = useState("");
@@ -18,6 +20,7 @@ const TitleDialog = ({ open, onClose, onSave }) => {
   const handleTitleNameChange = (e) => setTitleName(e.target.value);
   const handleDeptSectionChange = (e) => setDeptSection(e.target.value);
   const handleTilChange = (e) => setTil(e.target.value);
+  const { addTitle } = useContext(AppContext);
 
   const handleSave = async () => {
     const newTitle = {

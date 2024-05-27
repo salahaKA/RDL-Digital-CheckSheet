@@ -43,10 +43,12 @@ export const AppProvider = ({ children }) => {
 
   const addSection = async (section) => {
     try {
+      console.log("Sending section data:", section); // Log the data
       const response = await axios.post(
         "http://localhost:5000/sections",
         section
       );
+      console.log("Response from server:", response.data); // Log the response
       setSections((prev) => [...prev, response.data]);
     } catch (error) {
       console.error("Error adding section:", error);

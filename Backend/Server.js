@@ -78,9 +78,9 @@ app.get("/sections", (req, res) => {
   });
 });
 
-// Add a new section
 app.post("/sections", (req, res) => {
   const { department_id, name, description } = req.body;
+  console.log("Received section data:", req.body); // Log the received data
   if (!department_id || !name || !description) {
     res
       .status(400)
@@ -92,9 +92,11 @@ app.post("/sections", (req, res) => {
     [department_id, name, description],
     (err, results) => {
       if (err) {
+        console.error("Error inserting section:", err); // Log the error
         res.status(500).json({ error: err.message });
         return;
       }
+      console.log("Inserted section with ID:", results.insertId); // Log the insert ID
       res.status(201).json({ id: results.insertId });
     }
   );
@@ -111,6 +113,40 @@ app.delete("/sections/:id", (req, res) => {
     }
   });
 });
+
+// // Add a new section
+// app.post("/sections", (req, res) => {
+//   const { department_id,section, department, description } = req.body;
+//   if (!department_id || !name || !description) {
+//     res
+//       .status(400)
+//       .json({ error: "Department ID, name, and description are required" });
+//     return;
+//   }
+//   db.query(
+//     "INSERT INTO sections (department_id, name, description) VALUES (?, ?, ?)",
+//     [department_id, name, description],
+//     (err, results) => {
+//       if (err) {
+//         res.status(500).json({ error: err.message });
+//         return;
+//       }
+//       res.status(201).json({ id: results.insertId });
+//     }
+//   );
+// });
+
+// // Delete a section
+// app.delete("/sections/:id", (req, res) => {
+//   const { id } = req.params;
+//   db.query("DELETE FROM sections WHERE id = ?", [id], (err, results) => {
+//     if (err) {
+//       res.status(500).send(err);
+//     } else {
+//       res.status(200).send("Section deleted");
+//     }
+//   });
+// });
 
 // Get all titles
 app.get("/titles", (req, res) => {
