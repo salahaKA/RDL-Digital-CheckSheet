@@ -28,11 +28,14 @@ const Master = () => {
     addSection,
     removeDepartment,
     removeSection,
+    editDepartment,
+    editSection,
   } = useContext(AppContext); // Destructure the needed context values
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const [newSection, setNewSection] = useState("");
   const [newSectionDescription, setNewSectionDescription] = useState("");
+  const [dialogMode, setDialogMode] = useState("add");
 
   const handleClickOpen = (section) => {
     setActiveSection(section);
@@ -40,31 +43,106 @@ const Master = () => {
     setNewSection("");
     setNewSectionDescription("");
     setOpenDialog(true);
+    setDialogMode("add");
   };
 
   const handleClose = () => {
     setOpenDialog(false);
   };
 
+  // Function to handle editing a department
+  const handleEditDepartment = (index) => {
+    const department = departments[index];
+    setSelectedDepartment(department);
+    setNewSection(department.name);
+    setNewSectionDescription(department.description);
+    setDialogMode("edit"); // Set dialog mode to edit
+    setActiveSection("department");
+    setOpenDialog(true);
+  };
+
+  const handleEditSection = (index) => {
+    const section = sections[index];
+    const department = departments.find(
+      (dep) => dep.id === section.department_id
+    );
+    setSelectedDepartment(department); // This should be setting the department, not the section
+    setNewSection(section.name);
+    setNewSectionDescription(section.description);
+    setDialogMode("edit");
+    setOpenDialog(true);
+    setActiveSection("section");
+  };
+
   const handleAdd = () => {
-    if (activeSection === "department") {
-      addDepartment({ name: newSection, description: newSectionDescription });
-    } else if (activeSection === "section") {
-      const sectionData = {
-        department_id: selectedDepartment.id, // Assuming selectedDepartment is an object with id and name
-        name: newSection,
-        description: newSectionDescription,
-        section: newSection, // Setting section to newSection
-        department: selectedDepartment.name, // Setting department to selectedDepartment's name
-      };
-      console.log("Section data to be added:", sectionData); // Log the data
-      addSection(sectionData);
+    if (dialogMode === "add") {
+      if (activeSection === "department") {
+        addDepartment({ name: newSection, description: newSectionDescription });
+      } else if (activeSection === "section") {
+        const sectionData = {
+          department_id: selectedDepartment.id,
+          name: newSection,
+          description: newSectionDescription,
+          section: newSection,
+          department: selectedDepartment.name,
+        };
+        addSection(sectionData);
+      }
+    } else if (dialogMode === "edit") {
+      if (activeSection === "department") {
+        editDepartment(selectedDepartment.id, {
+          name: newSection,
+          description: newSectionDescription,
+        });
+      } else if (activeSection === "section") {
+        editSection(sections.find((sec) => sec.name === newSection).id, {
+          name: newSection,
+          description: newSectionDescription,
+        });
+      }
     }
     setSelectedDepartment("");
     setNewSection("");
     setNewSectionDescription("");
     handleClose();
   };
+
+  // const handleAdd = () => {
+  //   if (dialogMode === "add") {
+  //     // Add mode
+  //     if (activeSection === "department") {
+  //       addDepartment({ name: newSection, description: newSectionDescription });
+  //     } else if (activeSection === "section") {
+  //       const sectionData = {
+  //         department_id: selectedDepartment.id,
+  //         name: newSection,
+  //         description: newSectionDescription,
+  //         section: newSection,
+  //         department: selectedDepartment.name,
+  //       };
+  //       addSection(sectionData);
+  //     }
+  //   } else if (dialogMode === "edit") {
+  //     // Edit mode
+  //     if (activeSection === "department") {
+  //       // Assuming selectedDepartment has an id
+  //       editDepartment(selectedDepartment.id, {
+  //         name: newSection,
+  //         description: newSectionDescription,
+  //       });
+  //     } else if (activeSection === "section") {
+  //       // Assuming selectedDepartment has an id
+  //       editSection(selectedDepartment.id, {
+  //         name: newSection,
+  //         description: newSectionDescription,
+  //       });
+  //     }
+  //   }
+  //   setSelectedDepartment("");
+  //   setNewSection("");
+  //   setNewSectionDescription("");
+  //   handleClose();
+  // };
 
   const handleDelete = (index) => {
     if (activeSection === "department") {
@@ -110,6 +188,13 @@ const Master = () => {
               <TableCell>{item.name}</TableCell>
               <TableCell>{item.description}</TableCell>
               <TableCell>
+                <Button
+                  color="primary"
+                  onClick={() => handleEditDepartment(index)}
+                >
+                  Edit
+                </Button>
+
                 <Button color="secondary" onClick={() => handleDelete(index)}>
                   Delete
                 </Button>
@@ -155,6 +240,13 @@ const Master = () => {
               <TableCell>{item.name}</TableCell> {/* Updated to use 'name' */}
               <TableCell>{item.description}</TableCell>
               <TableCell>
+                <Button
+                  color="primary"
+                  onClick={() => handleEditSection(index)}
+                >
+                  Edit
+                </Button>
+
                 <Button color="secondary" onClick={() => handleDelete(index)}>
                   Delete
                 </Button>
@@ -196,10 +288,19 @@ const Master = () => {
       {renderSectionContent()}
 
       <Dialog open={openDialog} onClose={handleClose}>
-        <DialogTitle>
+        {/* <DialogTitle>
           {activeSection === "department"
             ? "Add New Department"
             : "Add New Section"}
+        </DialogTitle> */}
+        <DialogTitle>
+          {dialogMode === "add"
+            ? activeSection === "department"
+              ? "Add New Department"
+              : "Add New Section"
+            : activeSection === "department"
+            ? "Edit Department"
+            : "Edit Section"}
         </DialogTitle>
         <DialogContent>
           {activeSection === "department" ? (

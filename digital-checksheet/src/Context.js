@@ -1,5 +1,6 @@
 import React, { createContext, useEffect, useState } from "react";
 import axios from "axios";
+
 export const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
@@ -55,22 +56,6 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-  // const addDepartment = (department) => {
-  //   setDepartments((prev) => [...prev, department]);
-  // };
-
-  // const addSection = (section) => {
-  //   setSections((prev) => [...prev, section]);
-  // };
-
-  // const removeDepartment = (department) => {
-  //   setDepartments((prev) => prev.filter((dep) => dep !== department));
-  // };
-
-  // const removeSection = (section) => {
-  //   setSections((prev) => prev.filter((sec) => sec !== section));
-  // };
-
   const removeDepartment = async (department) => {
     try {
       await axios.delete(`http://localhost:5000/departments/${department.id}`);
@@ -89,11 +74,33 @@ export const AppProvider = ({ children }) => {
     }
   };
 
-  // return (
-  //   <AppContext.Provider value={{ departments, sections, addDepartment, addSection, removeDepartment, removeSection }}>
-  //     {children}
-  //   </AppContext.Provider>
-  // );
+  const editDepartment = async (id, updatedDepartment) => {
+    try {
+      await axios.put(
+        `http://localhost:5000/departments/${id}`,
+        updatedDepartment
+      );
+      // Optionally update the local state with the updated department
+      // Implement this based on your application's requirements
+    } catch (error) {
+      console.error("Error editing department:", error);
+    }
+  };
+
+  const editSection = async (id, updatedSection) => {
+    try {
+      await axios.put(`http://localhost:5000/sections/${id}`, updatedSection);
+      // Optionally update the local state with the updated section
+      // This will trigger a re-render of the components consuming the context
+      setSections((prevSections) =>
+        prevSections.map((section) =>
+          section.id === id ? { ...section, ...updatedSection } : section
+        )
+      );
+    } catch (error) {
+      console.error("Error editing section:", error);
+    }
+  };
 
   return (
     <AppContext.Provider
@@ -104,6 +111,8 @@ export const AppProvider = ({ children }) => {
         addSection,
         removeDepartment,
         removeSection,
+        editDepartment,
+        editSection,
       }}
     >
       {children}

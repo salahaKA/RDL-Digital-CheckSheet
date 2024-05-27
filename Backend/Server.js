@@ -114,38 +114,70 @@ app.delete("/sections/:id", (req, res) => {
   });
 });
 
-// // Add a new section
-// app.post("/sections", (req, res) => {
-//   const { department_id,section, department, description } = req.body;
-//   if (!department_id || !name || !description) {
-//     res
-//       .status(400)
-//       .json({ error: "Department ID, name, and description are required" });
+// Update a department
+app.put("/departments/:id", (req, res) => {
+  const { id } = req.params;
+  const { name, description } = req.body;
+  if (!name || !description) {
+    res.status(400).json({ error: "Name and description are required" });
+    return;
+  }
+  db.query(
+    "UPDATE departments SET name = ?, description = ? WHERE id = ?",
+    [name, description, id],
+    (err, results) => {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
+      res.status(200).send("Department updated");
+    }
+  );
+});
+
+app.put("/sections/:id", (req, res) => {
+  const { id } = req.params;
+  const { name, description, section, department } = req.body;
+  if (!name || !description || !section || !department) {
+    res.status(400).json({
+      error: "Name, description, section, and department are required",
+    });
+    return;
+  }
+  db.query(
+    "UPDATE sections SET name = ?, description = ?, section = ?, department = ? WHERE id = ?",
+    [name, description, section, department, id],
+    (err, results) => {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
+      res.status(200).send("Section updated");
+    }
+  );
+});
+
+// // Update a section
+// app.put("/sections/:id", (req, res) => {
+//   const { id } = req.params;
+//   const { name, description, section, department } = req.body;
+//   if (!name || !description || !section || !department) {
+//     res.status(400).json({
+//       error: "Name, description, section, and department are required",
+//     });
 //     return;
 //   }
 //   db.query(
-//     "INSERT INTO sections (department_id, name, description) VALUES (?, ?, ?)",
-//     [department_id, name, description],
+//     "UPDATE sections SET name = ?, description = ?, section = ?, department = ? WHERE id = ?",
+//     [name, description, section, department, id],
 //     (err, results) => {
 //       if (err) {
 //         res.status(500).json({ error: err.message });
 //         return;
 //       }
-//       res.status(201).json({ id: results.insertId });
+//       res.status(200).send("Section updated");
 //     }
 //   );
-// });
-
-// // Delete a section
-// app.delete("/sections/:id", (req, res) => {
-//   const { id } = req.params;
-//   db.query("DELETE FROM sections WHERE id = ?", [id], (err, results) => {
-//     if (err) {
-//       res.status(500).send(err);
-//     } else {
-//       res.status(200).send("Section deleted");
-//     }
-//   });
 // });
 
 // Get all titles
