@@ -107,7 +107,10 @@ const Master = () => {
           description: newSectionDescription,
         });
       } else if (activeSection === "section") {
-        const section = sections.find((sec) => sec.name === newSection);
+        // const section = sections.find((sec) => sec.name === newSection);
+        const section = sections.find(
+          (sec) => sec.id === selectedDepartment.id
+        );
         if (section) {
           const updatedSection = {
             name: newSection,
@@ -218,9 +221,10 @@ const Master = () => {
         <TableBody>
           {sections.map((item, index) => (
             <TableRow key={index}>
-              <TableCell>
+              {/* <TableCell>
                 {departments.find((dep) => dep.id === item.department_id)?.name}
-              </TableCell>
+              </TableCell> */}
+              <TableCell>{item.department}</TableCell>
               <TableCell>{item.name}</TableCell>
               <TableCell>{item.description}</TableCell>
               <TableCell>
