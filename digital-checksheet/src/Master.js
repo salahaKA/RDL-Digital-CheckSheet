@@ -127,6 +127,7 @@ const Master = () => {
     setNewSection("");
     setNewSectionDescription("");
     handleClose();
+    window.location.reload();
   };
 
   const handleDelete = (index) => {
