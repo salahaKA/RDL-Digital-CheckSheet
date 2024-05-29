@@ -132,11 +132,29 @@ const Master = () => {
 
   const handleDelete = (index) => {
     if (activeSection === "department") {
-      removeDepartment(departments[index]);
+      const departmentToDelete = departments[index];
+      // Check if the department is associated with any sections
+      const isUsedInSection = sections.some(
+        (section) => section.department_id === departmentToDelete.id
+      );
+      if (isUsedInSection) {
+        // Display an alert message and prevent deletion
+        alert("Cannot delete department because it is used in sections.");
+        return;
+      }
+      removeDepartment(departmentToDelete);
     } else if (activeSection === "section") {
       removeSection(sections[index]);
     }
   };
+
+  // const handleDelete = (index) => {
+  //   if (activeSection === "department") {
+  //     removeDepartment(departments[index]);
+  //   } else if (activeSection === "section") {
+  //     removeSection(sections[index]);
+  //   }
+  // };
 
   const handleItemClick = (item) => {
     setActiveSection(item);
