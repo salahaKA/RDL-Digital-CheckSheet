@@ -363,9 +363,9 @@ const Checklist = () => {
                     Select Section
                   </MenuItem>
                   {sections
-                    .filter(
-                      (section) => section.department === selectedDepartment
-                    )
+                    // .filter(
+                    //   (section) => section.department === selectedDepartment
+                    // )
                     .map((item, index) => (
                       <MenuItem key={index} value={item.section}>
                         {item.section}

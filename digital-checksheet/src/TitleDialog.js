@@ -1,5 +1,5 @@
 // src/TitleDialog.js
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 import {
   Dialog,
@@ -16,6 +16,21 @@ const TitleDialog = ({ open, onClose, onSave }) => {
   const [titleName, setTitleName] = useState("");
   const [deptSection, setDeptSection] = useState("");
   const [til, setTil] = useState("");
+
+  useEffect(() => {
+    // Fetch titles when component mounts
+    fetchTitles();
+  }, []);
+
+  const fetchTitles = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/titles");
+      console.log("Fetched titles:", response.data);
+      // Handle the fetched titles (optional)
+    } catch (error) {
+      console.error("Error fetching titles:", error);
+    }
+  };
 
   const handleTitleNameChange = (e) => setTitleName(e.target.value);
   const handleDeptSectionChange = (e) => setDeptSection(e.target.value);

@@ -148,14 +148,6 @@ const Master = () => {
     }
   };
 
-  // const handleDelete = (index) => {
-  //   if (activeSection === "department") {
-  //     removeDepartment(departments[index]);
-  //   } else if (activeSection === "section") {
-  //     removeSection(sections[index]);
-  //   }
-  // };
-
   const handleItemClick = (item) => {
     setActiveSection(item);
   };

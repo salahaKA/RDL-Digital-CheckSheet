@@ -80,6 +80,7 @@ export const AppProvider = ({ children }) => {
         `http://localhost:5000/departments/${id}`,
         updatedDepartment
       );
+
       setDepartments((prevDepartments) =>
         prevDepartments.map((department) =>
           department.id === id
@@ -87,6 +88,21 @@ export const AppProvider = ({ children }) => {
             : department
         )
       );
+
+      // // Check if any section is associated with the edited department
+      // const updatedSections = sections.map((section) => {
+      //   if (section.department_id === id) {
+      //     // Update the section's department name
+      //     return {
+      //       ...section,
+      //       department: updatedDepartment.name,
+      //     };
+      //   }
+      //   return section;
+      // });
+
+      // // Update the sections state with the modified sections
+      // setSections(updatedSections);
     } catch (error) {
       console.error("Error editing department:", error);
     }
