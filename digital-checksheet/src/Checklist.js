@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   Button,
   Table,
@@ -17,6 +17,8 @@ import {
   Select,
 } from "@mui/material";
 import { AppContext } from "./Context"; // Import the context
+import axios from "axios";
+// import TitleDialog from "./TitleDialog";
 
 const Checklist = () => {
   const [checklist, setChecklist] = useState([]);
@@ -32,6 +34,21 @@ const Checklist = () => {
   const [editIndex, setEditIndex] = useState(null); // Track index for editing
   const [questions, setQuestions] = useState([]); // State for managing questions
   const [newQuestion, setNewQuestion] = useState(""); // State for the new question input
+
+  // Fetch titles from backend
+  const fetchTitles = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/titles");
+      console.log("Fetched titles in Checklist:", response.data);
+      setTitles(response.data);
+    } catch (error) {
+      console.error("Error fetching titles:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchTitles();
+  }, []);
 
   const handleClickOpen = () => {
     setOpenDialog(true);
@@ -219,30 +236,34 @@ const Checklist = () => {
               <TableCell>Action</TableCell>
             </TableRow>
           </TableHead>
+
           <TableBody>
-            {checklist
-              .filter((item) => !item.heading && !item.template)
-              .map((item, index) => (
-                <TableRow key={index}>
-                  <TableCell>{item.department}</TableCell>
-                  <TableCell>{item.section}</TableCell>
-                  <TableCell>{item.title}</TableCell>
-                  <TableCell>
-                    <Button color="primary" onClick={() => handleEdit(index)}>
-                      Edit
-                    </Button>
-                    <Button
-                      color="secondary"
-                      onClick={() => handleDelete(index)}
-                    >
-                      Delete
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+            {titles.map((title, index) => (
+              <TableRow key={index}>
+                <TableCell>{title.deptSection}</TableCell>
+                <TableCell>{title.til}</TableCell>
+                <TableCell>{title.titleName}</TableCell>
+                <TableCell>
+                  <Button color="primary" onClick={() => handleEdit(index)}>
+                    Edit
+                  </Button>
+                  <Button color="secondary" onClick={() => handleDelete(index)}>
+                    Delete
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       )}
+
+      {/* Display the fetched titles
+      <Typography variant="h6">Fetched Titles:</Typography>
+      <ul>
+        {titles.map((title) => (
+          <li key={title.id}>{title.titleName}</li>
+        ))}
+      </ul> */}
 
       {activeSection === "header" && (
         <Table>

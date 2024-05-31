@@ -1,6 +1,5 @@
-// src/TitleDialog.js
-import React, { useContext, useEffect, useState } from "react";
-
+// TitleDialog.js
+import React, { useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -8,46 +7,20 @@ import {
   DialogActions,
   TextField,
   Button,
-  List,
-  ListItem,
-  ListItemText,
 } from "@mui/material";
 import axios from "axios";
-import { AppContext } from "./Context";
 
 const TitleDialog = ({ open, onClose, onSave }) => {
   const [titleName, setTitleName] = useState("");
   const [deptSection, setDeptSection] = useState("");
   const [til, setTil] = useState("");
-  const [titles, setTitles] = useState([]);
-
-  useEffect(() => {
-    if (open) {
-      fetchTitles();
-    }
-  }, [open]);
-
-  const fetchTitles = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/titles");
-      console.log("Fetched titles:", response.data);
-      setTitles(response.data);
-    } catch (error) {
-      console.error("Error fetching titles:", error);
-    }
-  };
 
   const handleTitleNameChange = (e) => setTitleName(e.target.value);
   const handleDeptSectionChange = (e) => setDeptSection(e.target.value);
   const handleTilChange = (e) => setTil(e.target.value);
-  const { addTitle } = useContext(AppContext);
 
   const handleSave = async () => {
-    const newTitle = {
-      titleName,
-      deptSection,
-      til,
-    };
+    const newTitle = { titleName, deptSection, til };
 
     try {
       const response = await axios.post(
@@ -58,7 +31,6 @@ const TitleDialog = ({ open, onClose, onSave }) => {
       setTitleName("");
       setDeptSection("");
       setTil("");
-      fetchTitles(); // Refresh titles after adding a new one
       onClose();
     } catch (error) {
       console.error("Error saving title:", error);
@@ -76,7 +48,6 @@ const TitleDialog = ({ open, onClose, onSave }) => {
           variant="outlined"
           value={titleName}
           onChange={handleTitleNameChange}
-          // Add value and onChange if you need to control the input
         />
         <TextField
           margin="dense"
@@ -85,7 +56,6 @@ const TitleDialog = ({ open, onClose, onSave }) => {
           variant="outlined"
           value={deptSection}
           onChange={handleDeptSectionChange}
-          // Add value and onChange if you need to control the input
         />
         <TextField
           margin="dense"
@@ -94,18 +64,7 @@ const TitleDialog = ({ open, onClose, onSave }) => {
           variant="outlined"
           value={til}
           onChange={handleTilChange}
-          // Add value and onChange if you need to control the input
         />
-        <List>
-          {titles.map((title) => (
-            <ListItem key={title.id}>
-              <ListItemText
-                primary={title.titleName}
-                secondary={`${title.deptSection} - ${title.til}`}
-              />
-            </ListItem>
-          ))}
-        </List>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="primary">

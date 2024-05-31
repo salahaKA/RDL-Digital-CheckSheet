@@ -6,10 +6,12 @@ export const AppContext = createContext();
 export const AppProvider = ({ children }) => {
   const [departments, setDepartments] = useState([]);
   const [sections, setSections] = useState([]);
+  const [titles, setTitles] = useState([]);
 
   useEffect(() => {
     fetchDepartments();
     fetchSections();
+    fetchTitles();
   }, []);
 
   const fetchDepartments = async () => {
@@ -27,6 +29,15 @@ export const AppProvider = ({ children }) => {
       setSections(response.data);
     } catch (error) {
       console.error("Error fetching sections:", error);
+    }
+  };
+
+  const fetchTitles = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/titles");
+      setTitles(response.data);
+    } catch (error) {
+      console.error("Error fetching titles:", error);
     }
   };
 
@@ -130,6 +141,7 @@ export const AppProvider = ({ children }) => {
       value={{
         departments,
         sections,
+        titles,
         addDepartment,
         addSection,
         removeDepartment,
