@@ -1,4 +1,5 @@
 import React, { useState, useContext, useEffect } from "react";
+
 import {
   Button,
   Table,
@@ -18,7 +19,6 @@ import {
 } from "@mui/material";
 import { AppContext } from "./Context"; // Import the context
 import axios from "axios";
-// import TitleDialog from "./TitleDialog";
 
 const Checklist = () => {
   const [checklist, setChecklist] = useState([]);
@@ -34,20 +34,42 @@ const Checklist = () => {
   const [editIndex, setEditIndex] = useState(null); // Track index for editing
   const [questions, setQuestions] = useState([]); // State for managing questions
   const [newQuestion, setNewQuestion] = useState(""); // State for the new question input
-
-  // Fetch titles from backend
-  const fetchTitles = async () => {
-    try {
-      const response = await axios.get("http://localhost:5000/titles");
-      console.log("Fetched titles in Checklist:", response.data);
-      setTitles(response.data);
-    } catch (error) {
-      console.error("Error fetching titles:", error);
-    }
-  };
+  const [allSections, setAllSections] = useState([]); // State for all sections
+  const [filteredSections, setFilteredSections] = useState([]);
+  const [headingId, setHeadingId] = useState("");
+  const [headings, setHeadings] = useState([]);
 
   useEffect(() => {
-    fetchTitles();
+    // Fetch titles data
+    axios
+      .get("http://localhost:3001/titles")
+      .then((response) => {
+        setTitles(response.data);
+        setChecklist(response.data);
+        console.log("Fetched titles:", response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching titles:", error);
+      });
+
+    // Fetch sections data
+    axios
+      .get("http://localhost:3001/sections")
+      .then((response) => {
+        setAllSections(response.data); // Assuming response.data contains an array of sections
+      })
+      .catch((error) => {
+        console.error("Error fetching sections:", error);
+      });
+
+    axios
+      .get("http://localhost:3001/headings")
+      .then((response) => {
+        setHeadings(response.data); // Use setHeadings to update the state
+      })
+      .catch((error) => {
+        console.error("There was an error fetching the headings!", error);
+      });
   }, []);
 
   const handleClickOpen = () => {
@@ -64,9 +86,10 @@ const Checklist = () => {
     setSelectedTemplate(""); // Reset template field
     setQuestions([]); // Reset questions
     setNewQuestion(""); // Reset new question input
+    setHeadingId("");
   };
 
-  const handleAdd = async () => {
+  const handleAdd = () => {
     const newItem = {
       department: selectedDepartment,
       section: selectedSection,
@@ -75,48 +98,62 @@ const Checklist = () => {
       template: selectedTemplate,
       questions: questions, // Add questions to the new item
     };
-    console.log("New item to add or update:", newItem);
 
-    try {
-      if (editIndex !== null) {
-        // Update existing item
-        const response = await axios.put(
-          `http://localhost:5000/titles/${titles[editIndex].id}`,
-          newItem
-        );
-        const updatedChecklist = [...checklist];
-        const oldItem = updatedChecklist[editIndex];
-        updatedChecklist[editIndex] = response.data;
-        setChecklist(updatedChecklist);
-
-        // Update titles state if the title has changed
-        if (oldItem.title !== newTitle) {
-          setTitles(
-            titles.map((title, index) =>
-              index === editIndex ? response.data : title
-            )
-          );
-        }
-      } else {
-        // Add new item
-        const response = await axios.post(
-          "http://localhost:5000/titles",
-          newItem
-        );
-        setChecklist([...checklist, response.data]);
-
-        // Add title to titles state if it's a new title
-        if (activeSection === "title" && newTitle) {
-          setTitles([...titles, response.data]);
-        }
-      }
-      handleClose(); // Close the dialog after adding or updating
-    } catch (error) {
-      console.error(
-        "Error saving title:",
-        error.response?.data || error.message
-      );
+    if (editIndex !== null) {
+      axios
+        .put(`http://localhost:3001/titles/${checklist[editIndex].id}`, newItem)
+        .then((response) => {
+          const updatedChecklist = [...checklist];
+          updatedChecklist[editIndex] = {
+            ...newItem,
+            id: checklist[editIndex].id,
+          };
+          setChecklist(updatedChecklist);
+          handleClose();
+        })
+        .catch((error) => {
+          console.error("Error updating checklist item:", error);
+        });
+    } else {
+      axios
+        .post("http://localhost:3001/titles", newItem)
+        .then((response) => {
+          setChecklist([
+            ...checklist,
+            { ...newItem, id: response.data.titleId },
+          ]);
+          // Update sections state if the new section is unique
+          if (!allSections.includes(selectedSection)) {
+            setAllSections([...allSections, selectedSection]);
+          }
+          handleClose();
+        })
+        .catch((error) => {
+          console.error("Error adding checklist item:", error);
+        });
     }
+  };
+
+  const handleAddHeading = () => {
+    const newHeadingData = {
+      department: selectedDepartment,
+      section: selectedSection,
+      title: newTitle,
+      heading: newHeading,
+    };
+
+    axios
+      .post("http://localhost:3001/headings", newHeadingData)
+      .then((response) => {
+        setChecklist([
+          ...checklist,
+          { ...newHeadingData, id: response.data.headingId },
+        ]);
+        handleClose();
+      })
+      .catch((error) => {
+        console.error("Error adding heading:", error);
+      });
   };
 
   const handleEdit = (index) => {
@@ -132,20 +169,18 @@ const Checklist = () => {
     setOpenDialog(true); // Open dialog for editing
   };
 
-  const handleDelete = async (index) => {
-    try {
-      const itemToDelete = checklist[index];
-      await axios.delete(`http://localhost:5000/titles/${itemToDelete.id}`);
-      const updatedChecklist = checklist.filter((_, i) => i !== index);
-      setChecklist(updatedChecklist); // Update the checklist
+  const handleDelete = (index) => {
+    const updatedChecklist = [...checklist];
+    const itemToDelete = updatedChecklist.splice(index, 1)[0]; // Remove item from checklist
 
-      // Remove title from titles state if it's the only instance
-      if (!updatedChecklist.some((item) => item.title === itemToDelete.title)) {
-        setTitles(titles.filter((title) => title !== itemToDelete.title));
-      }
-    } catch (error) {
-      console.error("Error deleting title:", error);
-    }
+    axios
+      .delete(`http://localhost:3001/titles/${itemToDelete.id}`)
+      .then((response) => {
+        setChecklist(updatedChecklist); // Update the checklist
+      })
+      .catch((error) => {
+        console.error("Error deleting checklist item:", error);
+      });
   };
 
   const handleItemClick = (item) => {
@@ -172,6 +207,47 @@ const Checklist = () => {
   const handleRemoveQuestion = (index) => {
     const updatedQuestions = questions.filter((_, i) => i !== index);
     setQuestions(updatedQuestions); // Update the questions array
+  };
+
+  const handleDepartmentChange = (event) => {
+    const department = event.target.value;
+    setSelectedDepartment(department);
+
+    // Filter sections based on the selected department
+    const filtered = allSections.filter(
+      (section) => section.department === department
+    );
+    setFilteredSections(filtered);
+  };
+
+  const handleEditHeading = (index) => {
+    const editedHeading = headings[index];
+
+    axios
+      .put(`http://localhost:3001/headings/${editedHeading.id}`, editedHeading)
+      .then(() => {
+        const updatedHeadings = [...headings];
+        updatedHeadings[index] = editedHeading;
+        setHeadings(updatedHeadings);
+        handleClose();
+      })
+      .catch((error) => {
+        console.error("Error editing heading:", error);
+      });
+  };
+
+  const handleDeleteHeading = (index) => {
+    const headingToDelete = headings[index];
+
+    axios
+      .delete(`http://localhost:3001/headings/${headingToDelete.id}`)
+      .then(() => {
+        const updatedHeadings = headings.filter((_, i) => i !== index);
+        setHeadings(updatedHeadings);
+      })
+      .catch((error) => {
+        console.error("Error deleting heading:", error);
+      });
   };
 
   return (
@@ -258,23 +334,27 @@ const Checklist = () => {
               <TableCell>Action</TableCell>
             </TableRow>
           </TableHead>
-
           <TableBody>
-            {titles.map((title, index) => (
-              <TableRow key={index}>
-                <TableCell>{title.deptSection}</TableCell>
-                <TableCell>{title.til}</TableCell>
-                <TableCell>{title.titleName}</TableCell>
-                <TableCell>
-                  <Button color="primary" onClick={() => handleEdit(index)}>
-                    Edit
-                  </Button>
-                  <Button color="secondary" onClick={() => handleDelete(index)}>
-                    Delete
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
+            {checklist
+              .filter((item) => !item.heading && !item.template)
+              .map((item, index) => (
+                <TableRow key={index}>
+                  <TableCell>{item.department}</TableCell>
+                  <TableCell>{item.section}</TableCell>
+                  <TableCell>{item.title}</TableCell>
+                  <TableCell>
+                    <Button color="primary" onClick={() => handleEdit(index)}>
+                      Edit
+                    </Button>
+                    <Button
+                      color="secondary"
+                      onClick={() => handleDelete(index)}
+                    >
+                      Delete
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
       )}
@@ -291,27 +371,22 @@ const Checklist = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {checklist
-              .filter((item) => item.heading && !item.template)
-              .map((item, index) => (
-                <TableRow key={index}>
-                  <TableCell>{item.department}</TableCell>
-                  <TableCell>{item.section}</TableCell>
-                  <TableCell>{item.title}</TableCell>
-                  <TableCell>{item.heading}</TableCell>
-                  <TableCell>
-                    <Button color="primary" onClick={() => handleEdit(index)}>
-                      Edit
-                    </Button>
-                    <Button
-                      color="secondary"
-                      onClick={() => handleDelete(index)}
-                    >
-                      Delete
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+            {headings.map((item, index) => (
+              <TableRow key={index}>
+                <TableCell>{item.department}</TableCell>
+                <TableCell>{item.section}</TableCell>
+                <TableCell>{item.title}</TableCell>
+                <TableCell>{item.heading}</TableCell>
+                <TableCell>
+                  <Button color="primary" onClick={() => handleEdit(index)}>
+                    Edit
+                  </Button>
+                  <Button color="secondary" onClick={() => handleDelete(index)}>
+                    Delete
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       )}
@@ -371,7 +446,7 @@ const Checklist = () => {
               <>
                 <Select
                   value={selectedDepartment}
-                  onChange={(e) => setSelectedDepartment(e.target.value)}
+                  onChange={handleDepartmentChange}
                   fullWidth
                   displayEmpty
                   variant="outlined"
@@ -386,6 +461,7 @@ const Checklist = () => {
                     </MenuItem>
                   ))}
                 </Select>
+
                 <Select
                   value={selectedSection}
                   onChange={(e) => setSelectedSection(e.target.value)}
@@ -397,9 +473,9 @@ const Checklist = () => {
                   <MenuItem value="" disabled>
                     Select Section
                   </MenuItem>
-                  {sections.map((item, index) => (
-                    <MenuItem key={index} value={item.section}>
-                      {item.section}
+                  {filteredSections.map((section, index) => (
+                    <MenuItem key={index} value={section.section}>
+                      {section.section}
                     </MenuItem>
                   ))}
                 </Select>
@@ -427,8 +503,8 @@ const Checklist = () => {
                   Select Title
                 </MenuItem>
                 {titles.map((title, index) => (
-                  <MenuItem key={index} value={title.titleName}>
-                    {title.titleName}
+                  <MenuItem key={index} value={title.title}>
+                    {title.title}
                   </MenuItem>
                 ))}
               </Select>
@@ -511,6 +587,7 @@ const Checklist = () => {
           <Button onClick={handleClose} color="primary">
             Cancel
           </Button>
+
           <Button onClick={handleAdd} color="primary">
             {editIndex !== null ? "Save" : "Add"}
           </Button>
