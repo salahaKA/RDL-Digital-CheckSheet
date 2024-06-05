@@ -6,12 +6,13 @@ import {
   Link,
   useLocation,
 } from "react-router-dom";
-import Checklist from "./Admin/Checklist";
-import Header from "./Admin/Header";
+import Checklist from "./Admin/Checklist/Checklist";
+import Header from "./Admin/Checklist/Header";
 
-import Master from "./Admin/Master";
-import Login from "./Admin/Login";
-// import Register from "./Admin/Login";
+import Master from "./Admin/Master/Master";
+import Login from "./user/Login/Login";
+import Register from "./user/Register/Register";
+
 function App() {
   return (
     <Router>
@@ -51,7 +52,7 @@ function AppContent() {
         )}
         <main className="content">
           <Routes>
-            {/* <Route path="/register" element={<Register />}></Route> */}
+            <Route path="/register" element={<Register />}></Route>
             <Route path="/" element={<Login />} />
             <Route path="/dashboard" element={<h1>Dashboard Content</h1>} />
             <Route path="/master" element={<Master />} />

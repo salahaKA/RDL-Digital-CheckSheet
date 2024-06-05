@@ -18,6 +18,7 @@ import {
   MenuItem,
 } from "@mui/material";
 import { AppContext } from "./Context"; // Import the context
+import "./Master.css";
 
 const Master = () => {
   const [activeSection, setActiveSection] = useState("department"); // Set default section to 'department'

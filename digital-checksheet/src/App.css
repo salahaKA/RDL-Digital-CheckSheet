@@ -1,4 +1,5 @@
-src/App.css
+/* App.css */
+
 .container {
   display: flex;
   flex-direction: column;
@@ -45,4 +46,28 @@ nav a {
 
 nav a:hover {
   text-decoration: underline;
+}
+
+/* Mobile view adjustments */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .content {
+    padding: 10px;
+  }
+}
+
+/* Desktop view adjustments */
+@media (min-width: 769px) {
+  .sidebar {
+    width: 200px;
+  }
+
+  .content {
+    padding: 20px;
+  }
 }

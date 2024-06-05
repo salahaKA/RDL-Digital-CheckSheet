@@ -1,9 +1,6 @@
-body {
-    height: 100vh;
-    background: linear-gradient(#2A00B7, #42006C);
-  }
+
   
-  .container {
+  .containerr {
     display: flex;
     flex-direction: column;
     margin: auto;
@@ -22,7 +19,7 @@ body {
     /* Center align */
   }
   
-  .header {
+  .headerr {
     display: flex;
     flex-direction: column;
     align-items: center;

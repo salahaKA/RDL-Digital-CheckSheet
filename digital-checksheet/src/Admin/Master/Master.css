@@ -1,0 +1,35 @@
+/* Master.css */
+
+.Master-container {
+  padding: 20px;
+  background-color: #f9f9f9;
+}
+
+.header {
+  margin-bottom: 20px;
+}
+
+.navButtons {
+  display: flex;
+  align-items: center;
+  background: #f5f5f5;
+  padding: 10px 0;
+  margin-bottom: 20px;
+}
+
+.navButton {
+  margin-right: 10px;
+}
+
+.tableContainer {
+  margin-bottom: 20px;
+}
+
+.dialogContent {
+  margin-top: 20px;
+}
+
+.dialogActions {
+  display: flex;
+  justify-content: space-between;
+}
