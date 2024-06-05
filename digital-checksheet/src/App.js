@@ -10,7 +10,8 @@ import Checklist from "./Admin/Checklist";
 import Header from "./Admin/Header";
 
 import Master from "./Admin/Master";
-
+import Login from "./Admin/Login";
+// import Register from "./Admin/Login";
 function App() {
   return (
     <Router>
@@ -50,6 +51,8 @@ function AppContent() {
         )}
         <main className="content">
           <Routes>
+            {/* <Route path="/register" element={<Register />}></Route> */}
+            <Route path="/" element={<Login />} />
             <Route path="/dashboard" element={<h1>Dashboard Content</h1>} />
             <Route path="/master" element={<Master />} />
             <Route path="/checklist" element={<Checklist />} />

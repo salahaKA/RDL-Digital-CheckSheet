@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom"; // Import Link from react-router-dom
 import "./Login.css"; // Import the CSS file
 
-import email_icon from "../../Assests/email.png";
-import password_icon from "../../Assests/password.png";
-import eye_icon from "../../Assests/eye.png"; // Import eye icon for showing password
-import eye_off_icon from "../../Assests/eye_off.png"; // Import eye-off icon for hiding password
+import email_icon from "../Assests/email.png";
+import password_icon from "../Assests/password.png";
+import eye_icon from "../Assests/eye.png"; // Import eye icon for showing password
+import eye_off_icon from "../Assests/eye_off.png"; // Import eye-off icon for hiding password
 import axios from "axios";
 
 const Login = () => {
