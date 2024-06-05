@@ -66,7 +66,7 @@ const Checklist = () => {
     setNewQuestion(""); // Reset new question input
   };
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     const newItem = {
       department: selectedDepartment,
       section: selectedSection,
@@ -75,31 +75,48 @@ const Checklist = () => {
       template: selectedTemplate,
       questions: questions, // Add questions to the new item
     };
+    console.log("New item to add or update:", newItem);
 
-    if (editIndex !== null) {
-      // Update existing item
-      const updatedChecklist = [...checklist];
-      const oldItem = updatedChecklist[editIndex];
-      updatedChecklist[editIndex] = newItem;
-      setChecklist(updatedChecklist);
-
-      // Update titles state if the title has changed
-      if (oldItem.title !== newTitle) {
-        setTitles(
-          titles.map((title) => (title === oldItem.title ? newTitle : title))
+    try {
+      if (editIndex !== null) {
+        // Update existing item
+        const response = await axios.put(
+          `http://localhost:5000/titles/${titles[editIndex].id}`,
+          newItem
         );
-      }
-    } else {
-      // Add new item
-      setChecklist([...checklist, newItem]);
+        const updatedChecklist = [...checklist];
+        const oldItem = updatedChecklist[editIndex];
+        updatedChecklist[editIndex] = response.data;
+        setChecklist(updatedChecklist);
 
-      // Add title to titles state if it's a new title
-      if (activeSection === "title" && newTitle) {
-        setTitles([...titles, newTitle]);
+        // Update titles state if the title has changed
+        if (oldItem.title !== newTitle) {
+          setTitles(
+            titles.map((title, index) =>
+              index === editIndex ? response.data : title
+            )
+          );
+        }
+      } else {
+        // Add new item
+        const response = await axios.post(
+          "http://localhost:5000/titles",
+          newItem
+        );
+        setChecklist([...checklist, response.data]);
+
+        // Add title to titles state if it's a new title
+        if (activeSection === "title" && newTitle) {
+          setTitles([...titles, response.data]);
+        }
       }
+      handleClose(); // Close the dialog after adding or updating
+    } catch (error) {
+      console.error(
+        "Error saving title:",
+        error.response?.data || error.message
+      );
     }
-
-    handleClose(); // Close the dialog after adding or updating
   };
 
   const handleEdit = (index) => {
@@ -115,14 +132,19 @@ const Checklist = () => {
     setOpenDialog(true); // Open dialog for editing
   };
 
-  const handleDelete = (index) => {
-    const updatedChecklist = [...checklist];
-    const itemToDelete = updatedChecklist.splice(index, 1)[0]; // Remove item from checklist
-    setChecklist(updatedChecklist); // Update the checklist
+  const handleDelete = async (index) => {
+    try {
+      const itemToDelete = checklist[index];
+      await axios.delete(`http://localhost:5000/titles/${itemToDelete.id}`);
+      const updatedChecklist = checklist.filter((_, i) => i !== index);
+      setChecklist(updatedChecklist); // Update the checklist
 
-    // Remove title from titles state if it's the only instance
-    if (!updatedChecklist.some((item) => item.title === itemToDelete.title)) {
-      setTitles(titles.filter((title) => title !== itemToDelete.title));
+      // Remove title from titles state if it's the only instance
+      if (!updatedChecklist.some((item) => item.title === itemToDelete.title)) {
+        setTitles(titles.filter((title) => title !== itemToDelete.title));
+      }
+    } catch (error) {
+      console.error("Error deleting title:", error);
     }
   };
 
@@ -257,14 +279,6 @@ const Checklist = () => {
         </Table>
       )}
 
-      {/* Display the fetched titles
-      <Typography variant="h6">Fetched Titles:</Typography>
-      <ul>
-        {titles.map((title) => (
-          <li key={title.id}>{title.titleName}</li>
-        ))}
-      </ul> */}
-
       {activeSection === "header" && (
         <Table>
           <TableHead>
@@ -383,15 +397,11 @@ const Checklist = () => {
                   <MenuItem value="" disabled>
                     Select Section
                   </MenuItem>
-                  {sections
-                    // .filter(
-                    //   (section) => section.department === selectedDepartment
-                    // )
-                    .map((item, index) => (
-                      <MenuItem key={index} value={item.section}>
-                        {item.section}
-                      </MenuItem>
-                    ))}
+                  {sections.map((item, index) => (
+                    <MenuItem key={index} value={item.section}>
+                      {item.section}
+                    </MenuItem>
+                  ))}
                 </Select>
               </>
             )}
@@ -417,8 +427,8 @@ const Checklist = () => {
                   Select Title
                 </MenuItem>
                 {titles.map((title, index) => (
-                  <MenuItem key={index} value={title}>
-                    {title}
+                  <MenuItem key={index} value={title.titleName}>
+                    {title.titleName}
                   </MenuItem>
                 ))}
               </Select>
