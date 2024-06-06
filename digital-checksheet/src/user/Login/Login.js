@@ -43,8 +43,8 @@ const Login = () => {
   return (
     <form className="containerr" onSubmit={handleSubmit}>
       <div className="headerr">
-        <div className="text">Sign In</div>
-        <div className="underline"></div>
+        <div className="textt">Sign In</div>
+        <div className="underlinee"></div>
       </div>
       <div className="inputs">
         <div className="input">

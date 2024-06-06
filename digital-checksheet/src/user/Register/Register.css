@@ -8,15 +8,11 @@
     background: #fff;
     padding-bottom: 30px;
     width: 400px;
-    /* Adjusted width */
     border-radius: 40px;
     position: fixed;
     top: 36%;
-    /* Position in the middle */
     left: 50%;
-    /* Position in the middle */
     transform: translate(-50%, -50%);
-    /* Center align */
   }
   
   .headerr {
@@ -28,18 +24,15 @@
     margin-top: 30px;
   }
   
-  .text {
+  .textt {
     color: #3c009d;
     font-size: 36px;
-    /* Adjusted font size */
     font-weight: 700;
   }
   
-  .underline {
+  .underlinee {
     width: 50px;
-    /* Adjusted width */
     height: 5px;
-    /* Adjusted height */
     background: #3c009d;
     border-radius: 9px;
   }
@@ -56,9 +49,7 @@
     align-items: center;
     margin: auto;
     width: 320px;
-    /* Adjusted width */
     height: 60px;
-    /* Adjusted height */
     background: #eaeaea;
     border-radius: 50px;
     position: relative;
@@ -66,20 +57,16 @@
   
   .input img {
     margin: 0px 20px;
-    /* Adjusted margin */
   }
   
   .input input {
     height: 40px;
-    /* Adjusted height */
     width: 240px;
-    /* Adjusted width */
     background: transparent;
     border: none;
     outline: none;
     color: #797979;
     font-size: 16px;
-    /* Adjusted font size */
   }
   
   
@@ -88,7 +75,6 @@
     align-items: center;
     justify-content: space-between;
     width: 320px;
-    /* Adjusted width */
     margin: auto;
     margin-top: 20px;
   }
@@ -97,7 +83,6 @@
     display: flex;
     align-items: center;
     font-size: 16px;
-    /* Adjusted font size */
     color: #3c009d;
     gap: 5px;
   }
@@ -113,15 +98,12 @@
     align-items: center;
     flex-direction: column;
     width: 120px;
-    /* Adjusted width */
     height: 40px;
-    /* Adjusted height */
     color: #fff;
     background: #4c00b4;
     border: none;
     border-radius: 50px;
     font-size: 14px;
-    /* Adjusted font size */
     font-weight: 700;
     cursor: pointer;
     margin: 20px auto 0;
@@ -135,7 +117,6 @@
     margin-top: 20px;
     text-align: center;
     font-size: 16px;
-    /* Adjusted font size */
   }
   
   .login-link a {

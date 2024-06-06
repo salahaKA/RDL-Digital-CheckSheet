@@ -49,7 +49,7 @@ nav a:hover {
 }
 
 /* Mobile view adjustments */
-@media (max-width: 768px) {
+/* @media (max-width: 768px) {
   .sidebar {
     width: 100%;
     flex-direction: row;
@@ -59,7 +59,7 @@ nav a:hover {
   .content {
     padding: 10px;
   }
-}
+} */
 
 /* Desktop view adjustments */
 @media (min-width: 769px) {

@@ -24,8 +24,8 @@ const Register = () => {
     <div className="main-container">
       <form className="containerr">
         <div className="headerr">
-          <div className="text">Sign Up</div>
-          <div className="underline"></div>
+          <div className="textt">Sign Up</div>
+          <div className="underlinee"></div>
         </div>
         <div className="inputs">
           <div className="input">
