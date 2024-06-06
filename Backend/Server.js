@@ -31,24 +31,6 @@ app.get("/", (req, res) => {
   res.send("Backend server is running");
 });
 
-// // Login API
-// app.post("/login", (req, res) => {
-//   const { email, password } = req.body;
-//   const query = "SELECT * FROM adminlogin WHERE email = ? AND password = ?";
-//   db.execute(query, [email, password], (err, results) => {
-//     if (err) {
-//       console.error("Database query error:", err);
-//       res.status(500).json({ error: "Database error" });
-//       return;
-//     }
-//     if (results.length > 0) {
-//       res.status(200).json({ message: "Login successful" });
-//     } else {
-//       res.status(401).json({ error: "Invalid credentials" });
-//     }
-//   });
-// });
-
 // Admin credentials
 const adminEmail = "adminorg@example.com";
 const adminPassword = "adminorg123"; // You should hash this password
@@ -404,5 +386,5 @@ app.delete("/headings/:id", (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+  console.log(`Server is running on http://localhost:${port}`);
 });
