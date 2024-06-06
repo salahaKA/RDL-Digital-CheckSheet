@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import Header from "../Checklist/Header";
 import "./AppLayout.css";
+import Header from "./Header";
 
 const AppLayout = ({ children }) => {
   const location = useLocation();

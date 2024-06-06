@@ -25,6 +25,11 @@
   margin-bottom: 20px;
 }
 
+.tableHeader {
+  background-color: #1976d2;
+  color: white;
+}
+
 .dialogContent {
   margin-top: 20px;
 }
@@ -32,4 +37,58 @@
 .dialogActions {
   display: flex;
   justify-content: space-between;
+}
+
+.addButton {
+  background-color: #1976d2;
+  color: white;
+}
+
+.addButton:hover {
+  background-color: #1565c0;
+}
+
+.editButton {
+  color: #1976d2;
+}
+
+.deleteButton {
+  color: #d32f2f;
+}
+
+.dialogTitle {
+  background-color: #1976d2;
+  color: white;
+  padding: 16px 24px;
+  margin: 0;
+}
+
+.selectDepartment {
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.sectionInput {
+  margin-top: 16px;
+}
+
+.descriptionInput {
+  margin-top: 16px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .Master-container {
+    padding: 10px;
+  }
+
+  .navButtons {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .navButton {
+    margin-right: 0;
+    margin-bottom: 10px;
+  }
 }
