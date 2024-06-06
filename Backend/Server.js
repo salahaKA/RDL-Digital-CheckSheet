@@ -2,6 +2,7 @@ const express = require("express");
 const mysql = require("mysql2");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const bcrypt = require("bcrypt");
 
 const app = express();
 const port = 3001;
@@ -30,22 +31,67 @@ app.get("/", (req, res) => {
   res.send("Backend server is running");
 });
 
-// Login API
-app.post("/login", (req, res) => {
+// // Login API
+// app.post("/login", (req, res) => {
+//   const { email, password } = req.body;
+//   const query = "SELECT * FROM adminlogin WHERE email = ? AND password = ?";
+//   db.execute(query, [email, password], (err, results) => {
+//     if (err) {
+//       console.error("Database query error:", err);
+//       res.status(500).json({ error: "Database error" });
+//       return;
+//     }
+//     if (results.length > 0) {
+//       res.status(200).json({ message: "Login successful" });
+//     } else {
+//       res.status(401).json({ error: "Invalid credentials" });
+//     }
+//   });
+// });
+
+// Admin credentials
+const adminEmail = "adminorg@example.com";
+const adminPassword = "adminorg123"; // You should hash this password
+
+app.post("/api/login", async (req, res) => {
   const { email, password } = req.body;
-  const query = "SELECT * FROM adminlogin WHERE email = ? AND password = ?";
-  db.execute(query, [email, password], (err, results) => {
-    if (err) {
-      console.error("Database query error:", err);
-      res.status(500).json({ error: "Database error" });
-      return;
-    }
-    if (results.length > 0) {
-      res.status(200).json({ message: "Login successful" });
-    } else {
-      res.status(401).json({ error: "Invalid credentials" });
-    }
-  });
+
+  if (email === adminEmail && password === adminPassword) {
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const query = "SELECT * FROM adminlogin WHERE email = ?";
+    db.execute(query, [email], (err, results) => {
+      if (err) {
+        console.error("Database query error:", err);
+        res.status(500).json({ error: "Database error" });
+        return;
+      }
+
+      if (results.length === 0) {
+        const insertQuery =
+          "INSERT INTO adminlogin (email, password) VALUES (?, ?)";
+        db.execute(
+          insertQuery,
+          [email, hashedPassword],
+          (err, insertResult) => {
+            if (err) {
+              console.error("Database insert error:", err);
+              res.status(500).json({ error: "Database error" });
+              return;
+            }
+
+            res
+              .status(200)
+              .json({ message: "Login successful and credentials stored" });
+          }
+        );
+      } else {
+        res.status(200).json({ message: "Login successful" });
+      }
+    });
+  } else {
+    res.status(401).json({ error: "Invalid credentials" });
+  }
 });
 
 // Department APIs

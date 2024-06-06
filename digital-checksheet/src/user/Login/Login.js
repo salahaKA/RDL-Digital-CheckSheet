@@ -1,11 +1,10 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom"; // Import Link from react-router-dom
-import "./Login.css"; // Import the CSS file
-
+import { Link, useNavigate } from "react-router-dom";
+import "./Login.css";
 import email_icon from "../../Assests/email.png";
 import password_icon from "../../Assests/password.png";
-import eye_icon from "../../Assests/eye.png"; // Import eye icon for showing password
-import eye_off_icon from "../../Assests/eye_off.png"; // Import eye-off icon for hiding password
+import eye_icon from "../../Assests/eye.png";
+import eye_off_icon from "../../Assests/eye_off.png";
 import axios from "axios";
 
 const Login = () => {
@@ -23,7 +22,7 @@ const Login = () => {
     event.preventDefault();
 
     try {
-      const response = await axios.post("http://localhost:3001/login", {
+      const response = await axios.post("http://localhost:3001/api/login", {
         email,
         password,
       });
@@ -31,7 +30,6 @@ const Login = () => {
       if (response.status === 200) {
         console.log("Login successful", response.data);
         navigate("/dashboard");
-        // Handle successful login (e.g., redirect to dashboard)
       } else {
         setError(response.data.error);
       }
@@ -40,6 +38,7 @@ const Login = () => {
       setError("An error occurred. Please try again later.");
     }
   };
+
   return (
     <form className="containerr" onSubmit={handleSubmit}>
       <div className="headerr">
