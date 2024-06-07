@@ -1,0 +1,26 @@
+/* Dashboard.css */
+
+.dashboard-container {
+    padding: 20px;
+    background-color: #8c8686;
+    min-height: 100vh;
+  }
+  
+  .dashboard-container h4 {
+    color: #230404;
+    font-weight: bold;
+    margin-bottom: 20px;
+    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+  }
+  
+  .dashboard-paper {
+    padding: 20px;
+    background-color: #ffffff;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+  }
+  
+  .table-container {
+    margin-top: 20px;
+  }
+  

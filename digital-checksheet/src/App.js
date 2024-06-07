@@ -7,6 +7,7 @@ import Login from "./user/Login/Login";
 import { AppProvider } from "./Admin/Master/Context";
 import Master from "./Admin/Master/Master";
 import AppLayout from "./Admin/Layout/AppLayout";
+import Dashboard from "./Admin/Dashboard/Dashboard";
 
 function App() {
   return (
@@ -17,7 +18,8 @@ function App() {
             {/* <Route path="/register" element={<Register />}></Route> */}
             <Route path="/" element={<Login />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/dashboard" element={<h1>Dashboard Content</h1>} />
+            {/* <Route path="/dashboard" element={<h1>Dashboard Content</h1>} /> */}
+            <Route path="/dashboard" element={<Dashboard></Dashboard>} />
             <Route path="/master" element={<Master />} />
             <Route path="/checklist" element={<Checklist />} />
             <Route path="/video" element={<h1>View</h1>} />
