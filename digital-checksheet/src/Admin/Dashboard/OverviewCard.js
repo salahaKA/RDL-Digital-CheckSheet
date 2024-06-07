@@ -7,7 +7,7 @@ const OverviewCard = ({ title, count }) => {
   return (
     <Paper className="overview-card">
       <Typography variant="h6">{title}</Typography>
-      <Typography variant="h4">{count}</Typography>
+      <Typography variant="h5">{count}</Typography>
     </Paper>
   );
 };

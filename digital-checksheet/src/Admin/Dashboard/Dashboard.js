@@ -12,6 +12,7 @@ const Dashboard = () => {
   const [sections, setSections] = useState([]);
   const [titles, setTitles] = useState([]);
   const [headings, setHeadings] = useState([]);
+  //   const [templates, setTemplates] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -21,22 +22,26 @@ const Dashboard = () => {
           sectionsResponse,
           titlesResponse,
           headingsResponse,
+          //   templatesResponse,
         ] = await Promise.all([
           axios.get("http://localhost:3001/departments"),
           axios.get("http://localhost:3001/sections"),
           axios.get("http://localhost:3001/titles"),
           axios.get("http://localhost:3001/headings"),
+          //   axios.get("http://localhost:3001/templates"),
         ]);
 
         console.log("Departments:", departmentsResponse.data);
         console.log("Sections:", sectionsResponse.data);
         console.log("Titles:", titlesResponse.data);
         console.log("Headings:", headingsResponse.data);
+        // console.log("Templates:", templatesResponse.data);
 
         setDepartments(departmentsResponse.data);
         setSections(sectionsResponse.data);
         setTitles(titlesResponse.data);
         setHeadings(headingsResponse.data);
+        // setTemplates(templatesResponse.data);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -55,17 +60,21 @@ const Dashboard = () => {
         Admin Dashboard
       </Typography>
       <Grid container spacing={3}>
-        <Grid item xs={12} md={6} lg={3}>
+        <Grid item xs={12} md={6} lg={2}>
           <OverviewCard title="Departments" count={departments.length} />
         </Grid>
-        <Grid item xs={12} md={6} lg={3}>
+        <Grid item xs={12} md={6} lg={2}>
           <OverviewCard title="Sections" count={sections.length} />
         </Grid>
-        <Grid item xs={12} md={6} lg={3}>
+        <Grid item xs={12} md={6} lg={2}>
           <OverviewCard title="Titles" count={titles.length} />
         </Grid>
-        <Grid item xs={12} md={6} lg={3}>
+        <Grid item xs={12} md={6} lg={2}>
           <OverviewCard title="Headings" count={headings.length} />
+        </Grid>
+        <Grid item xs={12} md={6} lg={2}>
+          <OverviewCard title="Templates" count="3" />{" "}
+          {/* New OverviewCard for templates */}
         </Grid>
         <Grid item xs={12} md={6}>
           <Paper className="dashboard-paper">
