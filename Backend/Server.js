@@ -385,6 +385,71 @@ app.delete("/headings/:id", (req, res) => {
   });
 });
 
+// Templates APIs
+app.get("/templates", (req, res) => {
+  const query = "SELECT * FROM templates";
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error("Database query error:", err);
+      res.status(500).json({ error: "Database error" });
+      return;
+    }
+    res.status(200).json(results);
+  });
+});
+
+app.post("/templates", (req, res) => {
+  const { title, heading, template, questions } = req.body;
+  const query =
+    "INSERT INTO templates (title, heading, template, questions) VALUES (?, ?, ?, ?)";
+  db.execute(
+    query,
+    [title, heading, template, JSON.stringify(questions)],
+    (err, results) => {
+      if (err) {
+        console.error("Database query error:", err);
+        res.status(500).json({ error: "Database error" });
+        return;
+      }
+      res
+        .status(201)
+        .json({ message: "Template added", templateId: results.insertId });
+    }
+  );
+});
+
+app.put("/templates/:id", (req, res) => {
+  const { id } = req.params;
+  const { title, heading, template, questions } = req.body;
+  const query =
+    "UPDATE templates SET title = ?, heading = ?, template = ?, questions = ? WHERE id = ?";
+  db.execute(
+    query,
+    [title, heading, template, JSON.stringify(questions), id],
+    (err) => {
+      if (err) {
+        console.error("Database query error:", err);
+        res.status(500).json({ error: "Database error" });
+        return;
+      }
+      res.status(200).json({ message: "Template updated" });
+    }
+  );
+});
+
+app.delete("/templates/:id", (req, res) => {
+  const { id } = req.params;
+  const query = "DELETE FROM templates WHERE id = ?";
+  db.execute(query, [id], (err) => {
+    if (err) {
+      console.error("Database query error:", err);
+      res.status(500).json({ error: "Database error" });
+      return;
+    }
+    res.status(200).json({ message: "Template deleted" });
+  });
+});
+
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });

@@ -12,7 +12,7 @@ const Dashboard = () => {
   const [sections, setSections] = useState([]);
   const [titles, setTitles] = useState([]);
   const [headings, setHeadings] = useState([]);
-  //   const [templates, setTemplates] = useState([]);
+  const [templates, setTemplates] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -22,26 +22,26 @@ const Dashboard = () => {
           sectionsResponse,
           titlesResponse,
           headingsResponse,
-          //   templatesResponse,
+          templatesResponse,
         ] = await Promise.all([
           axios.get("http://localhost:3001/departments"),
           axios.get("http://localhost:3001/sections"),
           axios.get("http://localhost:3001/titles"),
           axios.get("http://localhost:3001/headings"),
-          //   axios.get("http://localhost:3001/templates"),
+          axios.get("http://localhost:3001/templates"),
         ]);
 
         console.log("Departments:", departmentsResponse.data);
         console.log("Sections:", sectionsResponse.data);
         console.log("Titles:", titlesResponse.data);
         console.log("Headings:", headingsResponse.data);
-        // console.log("Templates:", templatesResponse.data);
+        console.log("Templates:", templatesResponse.data);
 
         setDepartments(departmentsResponse.data);
         setSections(sectionsResponse.data);
         setTitles(titlesResponse.data);
         setHeadings(headingsResponse.data);
-        // setTemplates(templatesResponse.data);
+        setTemplates(templatesResponse.data);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -73,7 +73,7 @@ const Dashboard = () => {
           <OverviewCard title="Headings" count={headings.length} />
         </Grid>
         <Grid item xs={12} md={6} lg={2}>
-          <OverviewCard title="Templates" count="3" />{" "}
+          <OverviewCard title="Templates" count={templates.length} />{" "}
           {/* New OverviewCard for templates */}
         </Grid>
         <Grid item xs={12} md={6}>

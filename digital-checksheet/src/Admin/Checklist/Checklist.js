@@ -16,7 +16,7 @@ import {
   MenuItem,
   Select,
 } from "@mui/material";
-import { AppContext } from "../Master/Context";
+import { AppContext } from "../Master/Context"; // Import the context
 import axios from "axios";
 
 const Checklist = () => {
@@ -36,24 +36,38 @@ const Checklist = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
 
+  const [templates, setTemplates] = useState([]); // New state for templates
+  const [questions, setQuestions] = useState([""]);
+
   useEffect(() => {
-    const fetchTitlesAndSections = async () => {
+    const fetchData = async () => {
       try {
-        const [titlesResponse, sectionsResponse, headingsResponse] =
-          await Promise.all([
-            axios.get("http://localhost:3001/titles"),
-            axios.get("http://localhost:3001/sections"),
-            axios.get("http://localhost:3001/headings"), // Fetch headings
-          ]);
+        const [
+          titlesResponse,
+          sectionsResponse,
+          headingsResponse,
+          templatesResponse,
+        ] = await Promise.all([
+          axios.get("http://localhost:3001/titles"),
+          axios.get("http://localhost:3001/sections"),
+          axios.get("http://localhost:3001/headings"),
+          axios.get("http://localhost:3001/templates"), // Fetch templates
+        ]);
         setTitles(titlesResponse.data);
         setAllSections(sectionsResponse.data);
-        setHeadings(headingsResponse.data); // Set headings data
+        setHeadings(headingsResponse.data);
+        setTemplates(templatesResponse.data); // Set templates data
+        setChecklist([
+          ...titlesResponse.data,
+          ...headingsResponse.data,
+          ...templatesResponse.data,
+        ]);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
 
-    fetchTitlesAndSections();
+    fetchData();
   }, []);
 
   const handleClickOpen = () => {
@@ -69,13 +83,13 @@ const Checklist = () => {
     setNewTitle("");
     setNewHeading("");
     setSelectedTemplate("");
+    setQuestions([""]);
   };
 
   const handleAdd = async () => {
     try {
       let newEntry;
       if (isEditing && editIndex !== null) {
-        // Editing mode
         if (activeSection === "title") {
           const id = titles[editIndex].id;
           newEntry = {
@@ -94,16 +108,16 @@ const Checklist = () => {
           };
           await axios.put(`http://localhost:3001/headings/${id}`, newEntry);
         } else if (activeSection === "template") {
-          const id = titles[editIndex].id;
+          const id = templates[editIndex].id;
           newEntry = {
             title: newTitle,
             heading: newHeading,
             template: selectedTemplate,
+            questions,
           };
-          await axios.put(`http://localhost:3001/titles/${id}`, newEntry);
+          await axios.put(`http://localhost:3001/templates/${id}`, newEntry);
         }
       } else {
-        // Adding mode
         if (activeSection === "title") {
           newEntry = {
             department: selectedDepartment,
@@ -124,22 +138,29 @@ const Checklist = () => {
             title: newTitle,
             heading: newHeading,
             template: selectedTemplate,
+            questions,
           };
-          await axios.post("http://localhost:3001/titles", newEntry);
+          await axios.post("http://localhost:3001/templates", newEntry);
         }
       }
 
-      // Fetch the updated data
-      const [titlesResponse, headingsResponse] = await Promise.all([
-        axios.get("http://localhost:3001/titles"),
-        axios.get("http://localhost:3001/headings"),
-      ]);
+      const [titlesResponse, headingsResponse, templatesResponse] =
+        await Promise.all([
+          axios.get("http://localhost:3001/titles"),
+          axios.get("http://localhost:3001/headings"),
+          axios.get("http://localhost:3001/templates"),
+        ]);
 
       setTitles(titlesResponse.data);
       setHeadings(headingsResponse.data);
-      setChecklist([...titlesResponse.data, ...headingsResponse.data]); // Combine titles and headings
+      setTemplates(templatesResponse.data);
+      setChecklist([
+        ...titlesResponse.data,
+        ...headingsResponse.data,
+        ...templatesResponse.data,
+      ]);
 
-      handleClose(); // Close the dialog after adding or editing
+      handleClose();
     } catch (error) {
       console.error("Error adding or editing entry:", error);
     } finally {
@@ -152,12 +173,30 @@ const Checklist = () => {
     setEditIndex(index);
     setIsEditing(true);
 
-    const itemToEdit =
-      activeSection === "title" ? titles[index] : headings[index];
-    setSelectedDepartment(itemToEdit.department);
-    setSelectedSection(itemToEdit.section);
-    setNewTitle(itemToEdit.title);
-    setNewHeading(itemToEdit.heading || "");
+    let itemToEdit;
+
+    if (activeSection === "title") {
+      itemToEdit = titles[index];
+      setSelectedDepartment(itemToEdit.department);
+      setSelectedSection(itemToEdit.section);
+      setNewTitle(itemToEdit.title);
+      setNewHeading("");
+    } else if (activeSection === "header") {
+      itemToEdit = headings[index];
+      setSelectedDepartment(itemToEdit.department);
+      setSelectedSection(itemToEdit.section);
+      setNewTitle(itemToEdit.title);
+      setNewHeading(itemToEdit.heading || "");
+    } else if (activeSection === "template") {
+      itemToEdit = templates[index];
+      setNewTitle(itemToEdit.title);
+      setNewHeading(itemToEdit.heading);
+      setSelectedTemplate(itemToEdit.template);
+      setQuestions(
+        Array.isArray(itemToEdit.questions) ? itemToEdit.questions : []
+      );
+    }
+
     setOpenDialog(true);
   };
 
@@ -169,17 +208,21 @@ const Checklist = () => {
     } else if (activeSection === "header") {
       itemToDelete = headings[index]; // Find the heading to delete
     } else if (activeSection === "template") {
-      itemToDelete = titles[index]; // Find the template to delete
+      itemToDelete = templates[index]; // Find the template to delete
     }
 
     // Ensure itemToDelete is defined
     if (itemToDelete) {
       try {
-        if (activeSection === "title" || activeSection === "template") {
+        if (activeSection === "title") {
           await axios.delete(`http://localhost:3001/titles/${itemToDelete.id}`);
         } else if (activeSection === "header") {
           await axios.delete(
             `http://localhost:3001/headings/${itemToDelete.id}`
+          );
+        } else if (activeSection === "template") {
+          await axios.delete(
+            `http://localhost:3001/templates/${itemToDelete.id}`
           );
         }
 
@@ -188,7 +231,10 @@ const Checklist = () => {
           setTitles(titles.filter((item, i) => i !== index));
         } else if (activeSection === "header") {
           setHeadings(headings.filter((item, i) => i !== index));
+        } else if (activeSection === "template") {
+          setTemplates(templates.filter((item, i) => i !== index));
         }
+
         setChecklist(checklist.filter((item) => item.id !== itemToDelete.id));
       } catch (error) {
         console.error("Error deleting item:", error);
@@ -204,6 +250,7 @@ const Checklist = () => {
       setNewTitle("");
       setNewHeading("");
       setSelectedTemplate("");
+      setQuestions([""]);
       setOpenDialog(false); // Ensure the dialog is closed when "Title" or "Header" or "Template" is clicked
     }
   };
@@ -211,6 +258,18 @@ const Checklist = () => {
   const handleDepartmentChange = (e) => {
     setSelectedDepartment(e.target.value);
     setSelectedSection(""); // Reset section when department changes
+  };
+
+  //template
+
+  const handleQuestionChange = (e, index) => {
+    const newQuestions = [...questions];
+    newQuestions[index] = e.target.value;
+    setQuestions(newQuestions);
+  };
+
+  const handleAddQuestion = () => {
+    setQuestions([...questions, ""]);
   };
 
   return (
@@ -348,7 +407,6 @@ const Checklist = () => {
           </TableBody>
         </Table>
       )}
-
       {activeSection === "template" && (
         <Table>
           <TableHead>
@@ -356,30 +414,32 @@ const Checklist = () => {
               <TableCell>Title</TableCell>
               <TableCell>Heading</TableCell>
               <TableCell>Template</TableCell>
+              <TableCell>Questions</TableCell>
               <TableCell>Action</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {checklist
-              .filter((item) => item.template)
-              .map((item, index) => (
-                <TableRow key={index}>
-                  <TableCell>{item.title}</TableCell>
-                  <TableCell>{item.heading}</TableCell>
-                  <TableCell>{item.template}</TableCell>
-                  <TableCell>
-                    <Button color="primary" onClick={() => handleEdit(index)}>
-                      Edit
-                    </Button>
-                    <Button
-                      color="secondary"
-                      onClick={() => handleDelete(index)}
-                    >
-                      Delete
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+            {templates.map((item, index) => (
+              <TableRow key={index}>
+                <TableCell>{item.title}</TableCell>
+                <TableCell>{item.heading}</TableCell>
+                <TableCell>{item.template}</TableCell>
+                <TableCell>
+                  {Array.isArray(item.questions) &&
+                    item.questions.map((question, qIndex) => (
+                      <Typography key={qIndex}>{question.text}</Typography>
+                    ))}
+                </TableCell>
+                <TableCell>
+                  <Button color="primary" onClick={() => handleEdit(index)}>
+                    Edit
+                  </Button>
+                  <Button color="secondary" onClick={() => handleDelete(index)}>
+                    Delete
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       )}
@@ -543,6 +603,96 @@ const Checklist = () => {
                 onChange={(e) => setNewHeading(e.target.value)}
                 disabled={!newTitle} // Disable if no title is selected
               />
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose} color="primary">
+              Cancel
+            </Button>
+            <Button onClick={handleAdd} color="primary">
+              {isEditing ? "Update" : "Add"}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
+
+      {activeSection === "template" && (
+        <Dialog open={openDialog} onClose={handleClose}>
+          <DialogTitle>
+            {isEditing ? "Edit Template" : "Add New Template"}
+          </DialogTitle>
+          <DialogContent>
+            <Box>
+              {/* Dropdown for Title */}
+              <Select
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                fullWidth
+                displayEmpty
+                variant="outlined"
+                margin="dense"
+              >
+                <MenuItem value="" disabled>
+                  Select Title
+                </MenuItem>
+                {headings.map((heading, index) => (
+                  <MenuItem key={index} value={heading.title}>
+                    {heading.title}
+                  </MenuItem>
+                ))}
+              </Select>
+              {/* Dropdown for Heading */}
+              <Select
+                value={newHeading}
+                onChange={(e) => setNewHeading(e.target.value)}
+                fullWidth
+                displayEmpty
+                variant="outlined"
+                margin="dense"
+                disabled={!newTitle} // Disable if no title is selected
+              >
+                <MenuItem value="" disabled>
+                  Select Heading
+                </MenuItem>
+                {headings
+                  .filter((heading) => heading.title === newTitle)
+                  .map((heading, index) => (
+                    <MenuItem key={index} value={heading.heading}>
+                      {heading.heading}
+                    </MenuItem>
+                  ))}
+              </Select>
+              {/* Dropdown for Template */}
+              <Select
+                value={selectedTemplate}
+                onChange={(e) => setSelectedTemplate(e.target.value)}
+                fullWidth
+                displayEmpty
+                variant="outlined"
+                margin="dense"
+              >
+                <MenuItem value="" disabled>
+                  Select Template
+                </MenuItem>
+                <MenuItem value="daily">Daily</MenuItem>
+                <MenuItem value="weekly">Weekly</MenuItem>
+                <MenuItem value="monthly">Monthly</MenuItem>
+              </Select>
+              {/* Dynamic Question Inputs */}
+              {questions.map((question, index) => (
+                <TextField
+                  key={index}
+                  margin="dense"
+                  label={`Question ${index + 1}`}
+                  fullWidth
+                  variant="outlined"
+                  value={question}
+                  onChange={(e) => handleQuestionChange(e, index)}
+                />
+              ))}
+              <Button onClick={handleAddQuestion} color="primary">
+                Add Question
+              </Button>
             </Box>
           </DialogContent>
           <DialogActions>
