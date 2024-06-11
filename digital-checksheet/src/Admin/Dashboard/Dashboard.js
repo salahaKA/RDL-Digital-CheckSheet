@@ -31,11 +31,11 @@ const Dashboard = () => {
           axios.get("http://localhost:3001/templates"),
         ]);
 
-        console.log("Departments:", departmentsResponse.data);
-        console.log("Sections:", sectionsResponse.data);
-        console.log("Titles:", titlesResponse.data);
-        console.log("Headings:", headingsResponse.data);
-        console.log("Templates:", templatesResponse.data);
+        // console.log("Departments:", departmentsResponse.data);
+        // console.log("Sections:", sectionsResponse.data);
+        // console.log("Titles:", titlesResponse.data);
+        // console.log("Headings:", headingsResponse.data);
+        // console.log("Templates:", templatesResponse.data);
 
         setDepartments(departmentsResponse.data);
         setSections(sectionsResponse.data);

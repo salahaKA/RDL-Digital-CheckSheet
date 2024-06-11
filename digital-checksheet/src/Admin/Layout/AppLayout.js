@@ -26,7 +26,7 @@ const AppLayout = ({ children }) => {
                   <Link to="/checklist">Checklist</Link>
                 </li>
                 <li>
-                  <Link to="/video">View</Link>
+                  <Link to="/view">View</Link>
                 </li>
               </ul>
             </nav>

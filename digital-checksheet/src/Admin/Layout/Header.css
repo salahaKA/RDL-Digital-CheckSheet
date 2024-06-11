@@ -1,9 +1,17 @@
 /* src/Header.css */
-/* .header {
+.header {
     background-color: #3f51b5; 
-  } */
+  }
   
   .title {
     flex-grow: 1;
+    font-weight: bold;
+    font-family: "fangsong";
+    font-weight: 800;
+
+  }
+  .header {
+    margin-bottom: 0; /* Remove bottom margin */
+    padding-bottom: 0; /* Remove bottom padding */
   }
   

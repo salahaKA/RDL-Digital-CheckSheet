@@ -22,7 +22,7 @@ function App() {
             <Route path="/dashboard" element={<Dashboard></Dashboard>} />
             <Route path="/master" element={<Master />} />
             <Route path="/checklist" element={<Checklist />} />
-            <Route path="/video" element={<h1>View</h1>} />
+            <Route path="/view" element={<h1>View</h1>} />
             <Route path="*" element={<h1>404 - Page Not Found</h1>} />
           </Routes>
         </AppLayout>

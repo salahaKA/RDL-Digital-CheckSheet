@@ -25,15 +25,17 @@ const Header = () => {
         {showLogoutButton && (
           <Button
             sx={{
-              backgroundColor: "#ff5722", // Set your desired background color here
-              color: "white", // Set the text color to white for better contrast
+              backgroundColor: "#fff", // Set your desired background color here
+              color: "blue", // Set the text color to white for better contrast
+
               "&:hover": {
                 backgroundColor: "#e64a19", // Set a different background color on hover
+                color: "#fff",
               },
             }}
             onClick={handleLogout}
           >
-            Logout
+            LOGOUT
           </Button>
         )}
       </Toolbar>

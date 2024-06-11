@@ -10,6 +10,7 @@ import {
 import "./DepartmentTable.css";
 
 const DepartmentTable = ({ departments }) => {
+  console.log("Departments prop:", departments);
   const safeGetSectionsLength = (department) => {
     return Array.isArray(department.sections) ? department.sections.length : 0;
   };

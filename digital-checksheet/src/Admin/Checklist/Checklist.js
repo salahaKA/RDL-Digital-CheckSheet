@@ -3,6 +3,8 @@ import {
   Button,
   Table,
   TableBody,
+  TableContainer,
+  Paper,
   TableCell,
   TableHead,
   TableRow,
@@ -38,6 +40,11 @@ const Checklist = () => {
 
   const [templates, setTemplates] = useState([]); // New state for templates
   const [questions, setQuestions] = useState([""]);
+
+  const [questionType, setQuestionType] = useState(""); // Define state for question type
+
+  const [viewAllQuestions, setViewAllQuestions] = useState(false);
+  const [questionsToView, setQuestionsToView] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -272,6 +279,23 @@ const Checklist = () => {
     setQuestions([...questions, ""]);
   };
 
+  //Questions view
+  const handleViewAllQuestions = (questions) => {
+    setQuestionsToView(questions);
+    setViewAllQuestions(true);
+  };
+
+  const closeQuestionsDialog = () => {
+    setViewAllQuestions(false);
+    setQuestionsToView([]);
+  };
+
+  const handleDeleteQuestion = (index) => {
+    const newQuestions = [...questions];
+    newQuestions.splice(index, 1);
+    setQuestions(newQuestions);
+  };
+
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
@@ -345,103 +369,162 @@ const Checklist = () => {
           </Button>
         </Box>
       )}
-
       {activeSection === "title" && (
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Department</TableCell>
-              <TableCell>Section</TableCell>
-              <TableCell>Title</TableCell>
-              <TableCell>Action</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {titles.map((item, index) => (
-              <TableRow key={index}>
-                <TableCell>{item.department}</TableCell>
-                <TableCell>{item.section}</TableCell>
-                <TableCell>{item.title}</TableCell>
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
                 <TableCell>
-                  <Button color="primary" onClick={() => handleEdit(index)}>
-                    Edit
-                  </Button>
-                  <Button color="secondary" onClick={() => handleDelete(index)}>
-                    Delete
-                  </Button>
+                  <h3>Department</h3>
+                </TableCell>
+                <TableCell>
+                  <h3>Section</h3>
+                </TableCell>
+                <TableCell>
+                  <h3>Title</h3>
+                </TableCell>
+                <TableCell>
+                  <h3>Action</h3>
                 </TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHead>
+            <TableBody>
+              {titles.map((item, index) => (
+                <TableRow key={index}>
+                  <TableCell>{item.department}</TableCell>
+                  <TableCell>{item.section}</TableCell>
+                  <TableCell>{item.title}</TableCell>
+                  <TableCell>
+                    <Button color="primary" onClick={() => handleEdit(index)}>
+                      Edit
+                    </Button>
+                    <Button
+                      color="secondary"
+                      onClick={() => handleDelete(index)}
+                    >
+                      Delete
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       )}
 
       {activeSection === "header" && (
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Department</TableCell>
-              <TableCell>Section</TableCell>
-              <TableCell>Title</TableCell>
-              <TableCell>Heading</TableCell>
-              <TableCell>Action</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {headings.map((item, index) => (
-              <TableRow key={index}>
-                <TableCell>{item.department}</TableCell>
-                <TableCell>{item.section}</TableCell>
-                <TableCell>{item.title}</TableCell>
-                <TableCell>{item.heading}</TableCell>
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
                 <TableCell>
-                  <Button color="primary" onClick={() => handleEdit(index)}>
-                    Edit
-                  </Button>
-                  <Button color="secondary" onClick={() => handleDelete(index)}>
-                    Delete
-                  </Button>
+                  <h3>Department</h3>
+                </TableCell>
+                <TableCell>
+                  <h3>Section</h3>
+                </TableCell>
+                <TableCell>
+                  <h3>Title</h3>
+                </TableCell>
+                <TableCell>
+                  <h3>Heading</h3>
+                </TableCell>
+                <TableCell>
+                  <h3>Action</h3>
                 </TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHead>
+            <TableBody>
+              {headings.map((item, index) => (
+                <TableRow key={index}>
+                  <TableCell>{item.department}</TableCell>
+                  <TableCell>{item.section}</TableCell>
+                  <TableCell>{item.title}</TableCell>
+                  <TableCell>{item.heading}</TableCell>
+                  <TableCell>
+                    <Button color="primary" onClick={() => handleEdit(index)}>
+                      Edit
+                    </Button>
+                    <Button
+                      color="secondary"
+                      onClick={() => handleDelete(index)}
+                    >
+                      Delete
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       )}
+
       {activeSection === "template" && (
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Title</TableCell>
-              <TableCell>Heading</TableCell>
-              <TableCell>Template</TableCell>
-              <TableCell>Questions</TableCell>
-              <TableCell>Action</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {templates.map((item, index) => (
-              <TableRow key={index}>
-                <TableCell>{item.title}</TableCell>
-                <TableCell>{item.heading}</TableCell>
-                <TableCell>{item.template}</TableCell>
-                <TableCell>
-                  {Array.isArray(item.questions) &&
-                    item.questions.map((question, qIndex) => (
-                      <Typography key={qIndex}>{question.text}</Typography>
-                    ))}
-                </TableCell>
-                <TableCell>
-                  <Button color="primary" onClick={() => handleEdit(index)}>
-                    Edit
-                  </Button>
-                  <Button color="secondary" onClick={() => handleDelete(index)}>
-                    Delete
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <>
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>
+                    <h3>Title</h3>
+                  </TableCell>
+                  <TableCell>
+                    <h3>Heading</h3>
+                  </TableCell>
+                  <TableCell>
+                    <h3>Template</h3>
+                  </TableCell>
+                  <TableCell>
+                    <h3>Questions</h3>
+                  </TableCell>
+                  <TableCell>
+                    <h3>Action</h3>
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {templates.map((item, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{item.title}</TableCell>
+                    <TableCell>{item.heading}</TableCell>
+                    <TableCell>{item.template}</TableCell>
+                    <TableCell>
+                      {item.questions && item.questions.length > 0 ? (
+                        <>
+                          {item.questions.slice(0, 2).map((question, i) => (
+                            <div key={i}>{`${i + 1}. ${question}`}</div>
+                          ))}
+                          {item.questions.length > 2 && (
+                            <Button
+                              onClick={() =>
+                                handleViewAllQuestions(item.questions)
+                              }
+                            >
+                              View All Questions
+                            </Button>
+                          )}
+                        </>
+                      ) : (
+                        "N/A"
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Button color="primary" onClick={() => handleEdit(index)}>
+                        Edit
+                      </Button>
+                      <Button
+                        color="secondary"
+                        onClick={() => handleDelete(index)}
+                      >
+                        Delete
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </>
       )}
 
       {activeSection === "title" && (
@@ -615,95 +698,159 @@ const Checklist = () => {
           </DialogActions>
         </Dialog>
       )}
-
       {activeSection === "template" && (
-        <Dialog open={openDialog} onClose={handleClose}>
-          <DialogTitle>
-            {isEditing ? "Edit Template" : "Add New Template"}
-          </DialogTitle>
-          <DialogContent>
-            <Box>
-              {/* Dropdown for Title */}
-              <Select
-                value={newTitle}
-                onChange={(e) => setNewTitle(e.target.value)}
-                fullWidth
-                displayEmpty
-                variant="outlined"
-                margin="dense"
-              >
-                <MenuItem value="" disabled>
-                  Select Title
-                </MenuItem>
-                {headings.map((heading, index) => (
-                  <MenuItem key={index} value={heading.title}>
-                    {heading.title}
+        <>
+          <Dialog open={openDialog} onClose={handleClose}>
+            <DialogTitle>
+              {isEditing ? "Edit Template" : "Add New Template"}
+            </DialogTitle>
+            <DialogContent>
+              <Box>
+                {/* Dropdown for Title */}
+                <Select
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  fullWidth
+                  displayEmpty
+                  variant="outlined"
+                  margin="dense"
+                >
+                  <MenuItem value="" disabled>
+                    Select Title
                   </MenuItem>
-                ))}
-              </Select>
-              {/* Dropdown for Heading */}
-              <Select
-                value={newHeading}
-                onChange={(e) => setNewHeading(e.target.value)}
-                fullWidth
-                displayEmpty
-                variant="outlined"
-                margin="dense"
-                disabled={!newTitle} // Disable if no title is selected
-              >
-                <MenuItem value="" disabled>
-                  Select Heading
-                </MenuItem>
-                {headings
-                  .filter((heading) => heading.title === newTitle)
-                  .map((heading, index) => (
-                    <MenuItem key={index} value={heading.heading}>
-                      {heading.heading}
+                  {headings.map((heading, index) => (
+                    <MenuItem key={index} value={heading.title}>
+                      {heading.title}
                     </MenuItem>
                   ))}
-              </Select>
-              {/* Dropdown for Template */}
-              <Select
-                value={selectedTemplate}
-                onChange={(e) => setSelectedTemplate(e.target.value)}
-                fullWidth
-                displayEmpty
-                variant="outlined"
-                margin="dense"
-              >
-                <MenuItem value="" disabled>
-                  Select Template
-                </MenuItem>
-                <MenuItem value="daily">Daily</MenuItem>
-                <MenuItem value="weekly">Weekly</MenuItem>
-                <MenuItem value="monthly">Monthly</MenuItem>
-              </Select>
-              {/* Dynamic Question Inputs */}
-              {questions.map((question, index) => (
-                <TextField
-                  key={index}
-                  margin="dense"
-                  label={`Question ${index + 1}`}
+                </Select>
+                {/* Dropdown for Heading */}
+                <Select
+                  value={newHeading}
+                  onChange={(e) => setNewHeading(e.target.value)}
                   fullWidth
+                  displayEmpty
                   variant="outlined"
-                  value={question}
-                  onChange={(e) => handleQuestionChange(e, index)}
-                />
-              ))}
-              <Button onClick={handleAddQuestion} color="primary">
-                Add Question
+                  margin="dense"
+                  disabled={!newTitle} // Disable if no title is selected
+                >
+                  <MenuItem value="" disabled>
+                    Select Heading
+                  </MenuItem>
+                  {headings
+                    .filter((heading) => heading.title === newTitle)
+                    .map((heading, index) => (
+                      <MenuItem key={index} value={heading.heading}>
+                        {heading.heading}
+                      </MenuItem>
+                    ))}
+                </Select>
+                {/* Dropdown for Template */}
+                <Select
+                  value={selectedTemplate}
+                  onChange={(e) => setSelectedTemplate(e.target.value)}
+                  fullWidth
+                  displayEmpty
+                  variant="outlined"
+                  margin="dense"
+                >
+                  <MenuItem value="" disabled>
+                    Select Template
+                  </MenuItem>
+                  <MenuItem value="daily">Daily</MenuItem>
+                  <MenuItem value="weekly">Weekly</MenuItem>
+                  <MenuItem value="monthly">Monthly</MenuItem>
+                </Select>
+                {/* Dropdown for Question Type */}
+                <Select
+                  value={questionType}
+                  onChange={(e) => setQuestionType(e.target.value)}
+                  fullWidth
+                  displayEmpty
+                  variant="outlined"
+                  margin="dense"
+                >
+                  <MenuItem value="" disabled>
+                    Select Question Type
+                  </MenuItem>
+                  <MenuItem value="mcq">MCQ</MenuItem>
+                  <MenuItem value="yesno">Yes/No</MenuItem>
+                </Select>
+                {/* Dynamic Question Inputs */}
+                {questions.map((question, index) => (
+                  <Box key={index} mb={2} display="flex" alignItems="center">
+                    <TextField
+                      label={`Question ${index + 1}`}
+                      value={question}
+                      onChange={(e) => handleQuestionChange(e, index)}
+                      fullWidth
+                      style={{ marginBottom: "8px" }}
+                    />
+                    <Button
+                      onClick={() => handleDeleteQuestion(index)}
+                      color="secondary"
+                    >
+                      Delete
+                    </Button>
+                  </Box>
+                ))}
+                <Button onClick={handleAddQuestion} color="primary">
+                  Add Question
+                </Button>
+              </Box>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleClose} color="primary">
+                Cancel
               </Button>
-            </Box>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleClose} color="primary">
-              Cancel
-            </Button>
-            <Button onClick={handleAdd} color="primary">
-              {isEditing ? "Update" : "Add"}
-            </Button>
-          </DialogActions>
-        </Dialog>
+              <Button onClick={handleAdd} color="primary">
+                {isEditing ? "Update" : "Add"}
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          <Dialog open={viewAllQuestions} onClose={closeQuestionsDialog}>
+            <DialogTitle>All Questions</DialogTitle>
+            <DialogContent>
+              {questionsToView.map((question, index) => (
+                <Typography key={index}>{`${
+                  index + 1
+                }. ${question}`}</Typography>
+              ))}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={closeQuestionsDialog}>Close</Button>
+            </DialogActions>
+          </Dialog>
+
+          <Dialog open={viewAllQuestions} onClose={closeQuestionsDialog}>
+            <DialogTitle>All Questions</DialogTitle>
+            <DialogContent>
+              {questionsToView.map((question, index) => (
+                <Typography key={index}>{`${
+                  index + 1
+                }. ${question}`}</Typography>
+              ))}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={closeQuestionsDialog}>Close</Button>
+            </DialogActions>
+          </Dialog>
+
+          <Dialog open={viewAllQuestions} onClose={closeQuestionsDialog}>
+            <DialogTitle>All Questions</DialogTitle>
+            <DialogContent>
+              {questionsToView.map((question, index) => (
+                <Typography key={index}>{`${
+                  index + 1
+                }. ${question}`}</Typography>
+              ))}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={closeQuestionsDialog}>Close</Button>
+            </DialogActions>
+          </Dialog>
+        </>
       )}
     </Box>
   );
