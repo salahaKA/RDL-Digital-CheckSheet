@@ -8,6 +8,7 @@ import { AppProvider } from "./Admin/Master/Context";
 import Master from "./Admin/Master/Master";
 import AppLayout from "./Admin/Layout/AppLayout";
 import Dashboard from "./Admin/Dashboard/Dashboard";
+import View from "./View/View";
 
 function App() {
   return (
@@ -22,7 +23,7 @@ function App() {
             <Route path="/dashboard" element={<Dashboard></Dashboard>} />
             <Route path="/master" element={<Master />} />
             <Route path="/checklist" element={<Checklist />} />
-            <Route path="/view" element={<h1>View</h1>} />
+            <Route path="/view" element={<View></View>} />
             <Route path="*" element={<h1>404 - Page Not Found</h1>} />
           </Routes>
         </AppLayout>
