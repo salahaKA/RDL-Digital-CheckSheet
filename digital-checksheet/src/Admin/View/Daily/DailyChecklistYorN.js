@@ -12,7 +12,7 @@ import {
   FormControlLabel,
   Radio,
 } from "@mui/material";
-import { AppContext } from "../../Admin/Master/Context";
+import { AppContext } from "../../Master/Context";
 import axios from "axios";
 
 const DailyChecklist = () => {
@@ -23,7 +23,47 @@ const DailyChecklist = () => {
   const [templateType, setTemplateType] = useState("MCQ");
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
-  const { departments, sections, templates } = useContext(AppContext);
+  const [departments, setDepartments] = useState([]);
+  const [sections, setSections] = useState([]);
+  const [templates, setTemplates] = useState([]);
+
+  useEffect(() => {
+    // Fetch departments
+    const fetchDepartments = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3001/api/departments"
+        );
+        setDepartments(response.data);
+      } catch (error) {
+        console.error("Error fetching departments:", error);
+      }
+    };
+
+    // Fetch sections
+    const fetchSections = async () => {
+      try {
+        const response = await axios.get("http://localhost:3001/api/sections");
+        setSections(response.data);
+      } catch (error) {
+        console.error("Error fetching sections:", error);
+      }
+    };
+
+    // Fetch templates
+    const fetchTemplates = async () => {
+      try {
+        const response = await axios.get("http://localhost:3001/api/templates");
+        setTemplates(response.data);
+      } catch (error) {
+        console.error("Error fetching templates:", error);
+      }
+    };
+
+    fetchDepartments();
+    fetchSections();
+    fetchTemplates();
+  }, []);
 
   useEffect(() => {
     // Fetch template questions or other necessary data
@@ -49,7 +89,7 @@ const DailyChecklist = () => {
   return (
     <Box sx={{ padding: 2 }}>
       <Typography variant="h4" gutterBottom>
-        Daily Cheksheet View
+        Daily Checklist View
       </Typography>
       <Box
         sx={{
@@ -125,8 +165,7 @@ const DailyChecklist = () => {
           {Array.isArray(questions) && questions.length > 0 ? (
             questions.map((question, index) => (
               <TableRow key={index}>
-                {/* <TableCell>{question.title}</TableCell> */}
-                <TableCell></TableCell>
+                <TableCell>{question.id}</TableCell>
                 <TableCell>
                   <RadioGroup
                     row

@@ -46,6 +46,14 @@ const Checklist = () => {
   const [viewAllQuestions, setViewAllQuestions] = useState(false);
   const [questionsToView, setQuestionsToView] = useState([]);
 
+  const [numQuestions, setNumQuestions] = useState(1); // State for number of questions
+
+  const [numQuestionsError, setNumQuestionsError] = useState("");
+
+  const [options, setOptions] = useState(
+    Array.from({ length: numQuestions }, () => Array(4).fill(""))
+  );
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -294,6 +302,99 @@ const Checklist = () => {
     const newQuestions = [...questions];
     newQuestions.splice(index, 1);
     setQuestions(newQuestions);
+
+    const newOptions = [...options];
+    newOptions.splice(index, 1);
+    setOptions(newOptions);
+
+    // Decrement numQuestions
+    setNumQuestions(numQuestions - 1);
+  };
+
+  const renderQuestions = () => {
+    return questions.map((question, index) => (
+      <Box key={index} mb={2}>
+        <TextField
+          label={`Question ${index + 1}`}
+          value={question}
+          onChange={(e) => handleQuestionChange(e, index)}
+          fullWidth
+          style={{ marginBottom: "8px" }}
+        />
+        {questionType === "mcq" && (
+          <>
+            <TextField
+              label="Option 1"
+              value={options[index] ? options[index][0] : ""}
+              onChange={(e) => handleOptionChange(e, index, 0)}
+              fullWidth
+              style={{ marginBottom: "8px" }}
+            />
+            <TextField
+              label="Option 2"
+              value={options[index] ? options[index][1] : ""}
+              onChange={(e) => handleOptionChange(e, index, 1)}
+              fullWidth
+              style={{ marginBottom: "8px" }}
+            />
+            <TextField
+              label="Option 3"
+              value={options[index] ? options[index][2] : ""}
+              onChange={(e) => handleOptionChange(e, index, 2)}
+              fullWidth
+              style={{ marginBottom: "8px" }}
+            />
+            <TextField
+              label="Option 4"
+              value={options[index] ? options[index][3] : ""}
+              onChange={(e) => handleOptionChange(e, index, 3)}
+              fullWidth
+              style={{ marginBottom: "8px" }}
+            />
+          </>
+        )}
+        <Button onClick={() => handleDeleteQuestion(index)} color="secondary">
+          Delete
+        </Button>
+      </Box>
+    ));
+  };
+
+  const handleNumQuestionsChange = (e) => {
+    const value = e.target.value.trim();
+    if (value === "" || isNaN(value)) {
+      setNumQuestions("");
+      setQuestions([]);
+      setOptions(Array.from({ length: 1 }, () => Array(4).fill("")));
+      setNumQuestionsError("Please enter a valid number.");
+    } else {
+      const num = parseInt(value, 10);
+      setNumQuestions(num);
+      if (num > questions.length) {
+        const newQuestions = [
+          ...questions,
+          ...Array(num - questions.length).fill(""),
+        ];
+        setQuestions(newQuestions);
+        const newOptions = [
+          ...options,
+          ...Array(num - questions.length).fill(Array(4).fill("")),
+        ];
+        setOptions(newOptions);
+      } else {
+        const newQuestions = questions.slice(0, num);
+        setQuestions(newQuestions);
+        const newOptions = options.slice(0, num);
+        setOptions(newOptions);
+      }
+      setNumQuestionsError("");
+    }
+  };
+
+  const handleOptionChange = (e, questionIndex, optionIndex) => {
+    const newOptions = [...options]; // Create a copy of the options array
+    newOptions[questionIndex][optionIndex] = e.target.value; // Update the value at the specified question and option index
+    setOptions(newOptions); // Update the options state with the new array
   };
 
   return (
@@ -698,6 +799,7 @@ const Checklist = () => {
           </DialogActions>
         </Dialog>
       )}
+
       {activeSection === "template" && (
         <>
           <Dialog open={openDialog} onClose={handleClose}>
@@ -776,27 +878,19 @@ const Checklist = () => {
                   <MenuItem value="mcq">MCQ</MenuItem>
                   <MenuItem value="yesno">Yes/No</MenuItem>
                 </Select>
+                {/* Input for Number of Questions */}
+                <TextField
+                  type="number"
+                  label="Number of Questions"
+                  value={numQuestions}
+                  onChange={handleNumQuestionsChange}
+                  fullWidth
+                  margin="normal"
+                  error={!!numQuestionsError}
+                  helperText={numQuestionsError}
+                />
                 {/* Dynamic Question Inputs */}
-                {questions.map((question, index) => (
-                  <Box key={index} mb={2} display="flex" alignItems="center">
-                    <TextField
-                      label={`Question ${index + 1}`}
-                      value={question}
-                      onChange={(e) => handleQuestionChange(e, index)}
-                      fullWidth
-                      style={{ marginBottom: "8px" }}
-                    />
-                    <Button
-                      onClick={() => handleDeleteQuestion(index)}
-                      color="secondary"
-                    >
-                      Delete
-                    </Button>
-                  </Box>
-                ))}
-                <Button onClick={handleAddQuestion} color="primary">
-                  Add Question
-                </Button>
+                {renderQuestions()}
               </Box>
             </DialogContent>
             <DialogActions>
@@ -806,34 +900,6 @@ const Checklist = () => {
               <Button onClick={handleAdd} color="primary">
                 {isEditing ? "Update" : "Add"}
               </Button>
-            </DialogActions>
-          </Dialog>
-
-          <Dialog open={viewAllQuestions} onClose={closeQuestionsDialog}>
-            <DialogTitle>All Questions</DialogTitle>
-            <DialogContent>
-              {questionsToView.map((question, index) => (
-                <Typography key={index}>{`${
-                  index + 1
-                }. ${question}`}</Typography>
-              ))}
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={closeQuestionsDialog}>Close</Button>
-            </DialogActions>
-          </Dialog>
-
-          <Dialog open={viewAllQuestions} onClose={closeQuestionsDialog}>
-            <DialogTitle>All Questions</DialogTitle>
-            <DialogContent>
-              {questionsToView.map((question, index) => (
-                <Typography key={index}>{`${
-                  index + 1
-                }. ${question}`}</Typography>
-              ))}
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={closeQuestionsDialog}>Close</Button>
             </DialogActions>
           </Dialog>
 

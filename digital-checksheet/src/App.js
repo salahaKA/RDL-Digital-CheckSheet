@@ -8,8 +8,8 @@ import { AppProvider } from "./Admin/Master/Context";
 import Master from "./Admin/Master/Master";
 import AppLayout from "./Admin/Layout/AppLayout";
 import Dashboard from "./Admin/Dashboard/Dashboard";
-import View from "./View/View";
-
+import View from "./Admin/View/View";
+import DailyChecklist from "./Admin/View/Daily/DailyChecklistYorN";
 function App() {
   return (
     <AppProvider>
@@ -24,6 +24,10 @@ function App() {
             <Route path="/master" element={<Master />} />
             <Route path="/checklist" element={<Checklist />} />
             <Route path="/view" element={<View></View>} />
+            <Route
+              path="/dailychecklist"
+              element={<DailyChecklist></DailyChecklist>}
+            />
             <Route path="*" element={<h1>404 - Page Not Found</h1>} />
           </Routes>
         </AppLayout>

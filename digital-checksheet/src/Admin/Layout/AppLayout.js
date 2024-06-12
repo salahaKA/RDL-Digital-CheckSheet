@@ -1,5 +1,11 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
+import {
+  FaTachometerAlt,
+  FaClipboardList,
+  FaTable,
+  FaEye,
+} from "react-icons/fa";
 import "./AppLayout.css";
 import Header from "./Header";
 
@@ -17,16 +23,24 @@ const AppLayout = ({ children }) => {
             <nav>
               <ul>
                 <li>
-                  <Link to="/dashboard">Dashboard</Link>
+                  <Link to="/dashboard">
+                    <FaTachometerAlt /> Dashboard
+                  </Link>
                 </li>
                 <li>
-                  <Link to="/master">Master</Link>
+                  <Link to="/master">
+                    <FaTable /> Master
+                  </Link>
                 </li>
                 <li>
-                  <Link to="/checklist">Checklist</Link>
+                  <Link to="/checklist">
+                    <FaClipboardList /> Checklist
+                  </Link>
                 </li>
                 <li>
-                  <Link to="/view">View</Link>
+                  <Link to="/view">
+                    <FaEye /> View
+                  </Link>
                 </li>
               </ul>
             </nav>
