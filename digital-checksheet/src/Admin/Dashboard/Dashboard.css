@@ -1,26 +1,88 @@
-/* Dashboard.css */
-
+/* General styling for the dashboard container */
 .dashboard-container {
-    padding: 20px;
-    background-color: #f8f8f8;
-    min-height: 100vh;
-  }
-  
-  .dashboard-container h4 {
-    color: #0b0423;
-    font-weight: bold;
-    margin-bottom: 20px;
-    font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-  }
-  
+  padding: 20px;
+  background-color: #f0f2f5;
+  min-height: 100vh;
+  font-family: 'Arial, sans-serif';
+}
+
+/* Styling for the main heading */
+.dashboard-container h4 {
+  color: #2c3e50;
+  font-weight: bold;
+  margin-bottom: 20px;
+  font-size: 2em; /* Increased font size */
+}
+
+/* Styling for paper elements */
+.dashboard-paper {
+  padding: 20px;
+  background-color: #ffffff;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  transition: box-shadow 0.3s ease;
+}
+
+.dashboard-paper:hover {
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Styling for overview cards */
+.overview-card {
+  text-align: center;
+  padding: 15px;
+  border-radius: 10px;
+  background-color: #ffffff;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.overview-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Custom styling for card titles */
+.overview-card-title {
+  font-size: 1.2em;
+  color: #2980b9;
+  margin-bottom: 5px;
+}
+
+/* Custom styling for card counts */
+.overview-card-count {
+  font-size: 2em;
+  font-weight: bold;
+  color: #27ae60;
+}
+
+/* Styling for the table container */
+.table-container {
+  margin-top: 20px;
+}
+
+/* General styling for the Grid */
+.grid-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
   .dashboard-paper {
-    padding: 20px;
-    background-color: #ffffff;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
+    padding: 15px;
   }
-  
-  .table-container {
-    margin-top: 20px;
+
+  .overview-card {
+    padding: 10px;
   }
-  
+
+  .overview-card-title {
+    font-size: 1em;
+  }
+
+  .overview-card-count {
+    font-size: 1.5em;
+  }
+}
