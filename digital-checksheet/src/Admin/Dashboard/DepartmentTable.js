@@ -9,12 +9,7 @@ import {
 } from "@mui/material";
 import "./DepartmentTable.css";
 
-const DepartmentTable = ({ departments }) => {
-  console.log("Departments prop:", departments);
-  const safeGetSectionsLength = (department) => {
-    return Array.isArray(department.sections) ? department.sections.length : 0;
-  };
-
+const DepartmentTable = ({ departments, getSectionsCount }) => {
   return (
     <Table>
       <TableHead>
@@ -27,7 +22,7 @@ const DepartmentTable = ({ departments }) => {
         {departments.map((department) => (
           <TableRow key={department.id}>
             <TableCell>{department.name}</TableCell>
-            <TableCell>{safeGetSectionsLength(department)}</TableCell>
+            <TableCell>{getSectionsCount(department.name)}</TableCell>
           </TableRow>
         ))}
       </TableBody>

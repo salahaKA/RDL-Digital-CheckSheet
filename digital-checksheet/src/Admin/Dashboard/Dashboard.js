@@ -31,12 +31,6 @@ const Dashboard = () => {
           axios.get("http://localhost:3001/templates"),
         ]);
 
-        // console.log("Departments:", departmentsResponse.data);
-        // console.log("Sections:", sectionsResponse.data);
-        // console.log("Titles:", titlesResponse.data);
-        // console.log("Headings:", headingsResponse.data);
-        // console.log("Templates:", templatesResponse.data);
-
         setDepartments(departmentsResponse.data);
         setSections(sectionsResponse.data);
         setTitles(titlesResponse.data);
@@ -50,8 +44,10 @@ const Dashboard = () => {
     fetchData();
   }, []);
 
-  const safeGetSectionsLength = (dep) => {
-    return Array.isArray(dep.sections) ? dep.sections.length : 0;
+  // Helper function to count sections for each department
+  const getSectionsCount = (departmentName) => {
+    return sections.filter((section) => section.department === departmentName)
+      .length;
   };
 
   return (
@@ -81,7 +77,10 @@ const Dashboard = () => {
             <Typography variant="h6" gutterBottom>
               Departments Overview
             </Typography>
-            <DepartmentTable departments={departments} />
+            <DepartmentTable
+              departments={departments}
+              getSectionsCount={getSectionsCount}
+            />
           </Paper>
         </Grid>
         <Grid item xs={12} md={6}>
@@ -92,7 +91,7 @@ const Dashboard = () => {
               datasets: [
                 {
                   label: "Number of Sections",
-                  data: departments.map(safeGetSectionsLength),
+                  data: departments.map((dep) => getSectionsCount(dep.name)),
                   backgroundColor: "rgba(75, 192, 192, 0.6)",
                 },
               ],
