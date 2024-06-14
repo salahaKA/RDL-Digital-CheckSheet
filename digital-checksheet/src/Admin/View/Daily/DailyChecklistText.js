@@ -13,13 +13,66 @@ import { TextareaAutosize } from "@mui/base";
 import axios from "axios";
 
 const DailyChecklistText = () => {
+  const [heading, setHeading] = useState("");
   const [department, setDepartment] = useState("");
   const [section, setSection] = useState("");
-  const [sheetNo, setSheetNo] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [templateType, setTemplateType] = useState("Text");
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
+
+  const [departments, setDepartments] = useState([]);
+  const [sections, setSections] = useState([]);
+  const [templates, setTemplates] = useState([]);
+
+  useEffect(() => {
+    // Fetch departments
+    const fetchDepartments = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3001/api/departments"
+        );
+        setDepartments(response.data);
+      } catch (error) {
+        console.error("Error fetching departments:", error);
+      }
+    };
+
+    // Fetch sections
+    const fetchSections = async () => {
+      try {
+        const response = await axios.get("http://localhost:3001/api/sections");
+        setSections(response.data);
+      } catch (error) {
+        console.error("Error fetching sections:", error);
+      }
+    };
+
+    // Fetch templates
+    const fetchTemplates = async () => {
+      try {
+        const response = await axios.get("http://localhost:3001/api/templates");
+        setTemplates(response.data);
+      } catch (error) {
+        console.error("Error fetching templates:", error);
+      }
+    };
+
+    // Fetch heading
+    const fetchHeading = async () => {
+      try {
+        const response = await axios.get("http://localhost:3001/api/heading");
+        setHeading(response.data.heading); // Assuming the API returns an object with 'heading' key
+      } catch (error) {
+        console.error("Error fetching heading:", error);
+      }
+    };
+
+    fetchDepartments();
+    fetchSections();
+    fetchTemplates();
+    fetchHeading();
+  }, []);
 
   useEffect(() => {
     // Fetch template questions or other necessary data
@@ -56,24 +109,16 @@ const DailyChecklistText = () => {
         }}
       >
         <Box sx={{ display: "flex", gap: 2 }}>
+          <Typography>Heading:</Typography>
+          <Typography variant="body1">{heading}</Typography>
+        </Box>
+        <Box sx={{ display: "flex", gap: 2 }}>
           <Typography>Department:</Typography>
-          <TextField
-            variant="outlined"
-            size="small"
-            value={department}
-            onChange={(e) => setDepartment(e.target.value)}
-            sx={{ width: 200 }}
-          />
+          <Typography variant="body1">{department}</Typography>
         </Box>
         <Box sx={{ display: "flex", gap: 2 }}>
           <Typography>Section:</Typography>
-          <TextField
-            variant="outlined"
-            size="small"
-            value={section}
-            onChange={(e) => setSection(e.target.value)}
-            sx={{ width: 200 }}
-          />
+          <Typography variant="body1">{section}</Typography>
         </Box>
         <Box sx={{ display: "flex", gap: 2 }}>
           <Typography>Type:</Typography>
@@ -93,16 +138,6 @@ const DailyChecklistText = () => {
             size="small"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            sx={{ width: 200 }}
-          />
-        </Box>
-        <Box sx={{ display: "flex", gap: 2 }}>
-          <Typography>Sheet No:</Typography>
-          <TextField
-            variant="outlined"
-            size="small"
-            value={sheetNo}
-            onChange={(e) => setSheetNo(e.target.value)}
             sx={{ width: 200 }}
           />
         </Box>

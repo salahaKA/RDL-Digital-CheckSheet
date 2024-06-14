@@ -421,6 +421,13 @@ app.post("/templates", (req, res) => {
 app.put("/templates/:id", (req, res) => {
   const { id } = req.params;
   const { title, heading, template, questions } = req.body;
+
+  if (!Array.isArray(questions)) {
+    return res
+      .status(400)
+      .json({ error: "Invalid format for questions. It should be an array." });
+  }
+
   const query =
     "UPDATE templates SET title = ?, heading = ?, template = ?, questions = ? WHERE id = ?";
   db.execute(

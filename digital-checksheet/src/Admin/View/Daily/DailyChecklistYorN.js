@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -7,20 +7,19 @@ import {
   TableRow,
   Box,
   Typography,
-  TextField,
   RadioGroup,
   FormControlLabel,
   Radio,
+  TextField,
 } from "@mui/material";
-import { AppContext } from "../../Master/Context";
 import axios from "axios";
 
 const DailyChecklist = () => {
+  const [heading, setHeading] = useState("");
   const [department, setDepartment] = useState("");
   const [section, setSection] = useState("");
-  const [sheetNo, setSheetNo] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]); // Default to today's date
   const [templateType, setTemplateType] = useState("MCQ");
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]); // Default to today's date
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
   const [departments, setDepartments] = useState([]);
@@ -60,9 +59,20 @@ const DailyChecklist = () => {
       }
     };
 
+    // Fetch heading
+    const fetchHeading = async () => {
+      try {
+        const response = await axios.get("http://localhost:3001/api/heading");
+        setHeading(response.data.heading); // Assuming the API returns an object with 'heading' key
+      } catch (error) {
+        console.error("Error fetching heading:", error);
+      }
+    };
+
     fetchDepartments();
     fetchSections();
     fetchTemplates();
+    fetchHeading();
   }, []);
 
   useEffect(() => {
@@ -91,6 +101,15 @@ const DailyChecklist = () => {
       <Typography variant="h4" gutterBottom>
         Daily Checklist View
       </Typography>
+
+      {/* Display fetched heading */}
+      {heading && (
+        <Typography variant="h5" gutterBottom>
+          {heading}
+        </Typography>
+      )}
+
+      {/* Department */}
       <Box
         sx={{
           display: "flex",
@@ -100,24 +119,16 @@ const DailyChecklist = () => {
         }}
       >
         <Box sx={{ display: "flex", gap: 2 }}>
+          <Typography>Heading:</Typography>
+          <Typography variant="body1">{heading}</Typography>
+        </Box>
+        <Box sx={{ display: "flex", gap: 2 }}>
           <Typography>Department:</Typography>
-          <TextField
-            variant="outlined"
-            size="small"
-            value={department}
-            onChange={(e) => setDepartment(e.target.value)}
-            sx={{ width: 200 }}
-          />
+          <Typography variant="body1">{department}</Typography>
         </Box>
         <Box sx={{ display: "flex", gap: 2 }}>
           <Typography>Section:</Typography>
-          <TextField
-            variant="outlined"
-            size="small"
-            value={section}
-            onChange={(e) => setSection(e.target.value)}
-            sx={{ width: 200 }}
-          />
+          <Typography variant="body1">{section}</Typography>
         </Box>
         <Box sx={{ display: "flex", gap: 2 }}>
           <Typography>Type:</Typography>
@@ -140,17 +151,9 @@ const DailyChecklist = () => {
             sx={{ width: 200 }}
           />
         </Box>
-        <Box sx={{ display: "flex", gap: 2 }}>
-          <Typography>Sheet No:</Typography>
-          <TextField
-            variant="outlined"
-            size="small"
-            value={sheetNo}
-            onChange={(e) => setSheetNo(e.target.value)}
-            sx={{ width: 200 }}
-          />
-        </Box>
       </Box>
+
+      {/* Questions */}
       <Typography variant="h6" gutterBottom>
         Questions
       </Typography>

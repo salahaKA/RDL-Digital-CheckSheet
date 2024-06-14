@@ -20,7 +20,6 @@ import {
 } from "@mui/material";
 import { AppContext } from "../Master/Context"; // Import the context
 import axios from "axios";
-import "./Checklist.css";
 
 const Checklist = () => {
   const [checklist, setChecklist] = useState([]);
@@ -106,58 +105,28 @@ const Checklist = () => {
     try {
       let newEntry;
       if (isEditing && editIndex !== null) {
-        if (activeSection === "title") {
-          const id = titles[editIndex].id;
-          newEntry = {
-            department: selectedDepartment,
-            section: selectedSection,
-            title: newTitle,
-          };
-          await axios.put(`http://localhost:3001/titles/${id}`, newEntry);
-        } else if (activeSection === "header") {
-          const id = headings[editIndex].id;
-          newEntry = {
-            department: selectedDepartment,
-            section: selectedSection,
-            title: newTitle,
-            heading: newHeading,
-          };
-          await axios.put(`http://localhost:3001/headings/${id}`, newEntry);
-        } else if (activeSection === "template") {
+        if (activeSection === "template") {
           const id = templates[editIndex].id;
           newEntry = {
             title: newTitle,
             heading: newHeading,
             template: selectedTemplate,
-            questions,
+            questions: formatQuestions(),
           };
           await axios.put(`http://localhost:3001/templates/${id}`, newEntry);
         }
+        // other sections ...
       } else {
-        if (activeSection === "title") {
-          newEntry = {
-            department: selectedDepartment,
-            section: selectedSection,
-            title: newTitle,
-          };
-          await axios.post("http://localhost:3001/titles", newEntry);
-        } else if (activeSection === "header") {
-          newEntry = {
-            department: selectedDepartment,
-            section: selectedSection,
-            title: newTitle,
-            heading: newHeading,
-          };
-          await axios.post("http://localhost:3001/headings", newEntry);
-        } else if (activeSection === "template") {
+        if (activeSection === "template") {
           newEntry = {
             title: newTitle,
             heading: newHeading,
             template: selectedTemplate,
-            questions,
+            questions: formatQuestions(),
           };
           await axios.post("http://localhost:3001/templates", newEntry);
         }
+        // other sections ...
       }
 
       const [titlesResponse, headingsResponse, templatesResponse] =
@@ -185,6 +154,13 @@ const Checklist = () => {
     }
   };
 
+  const formatQuestions = () => {
+    return questions.map((question, index) => ({
+      question,
+      options: options[index] || ["", "", "", ""],
+    }));
+  };
+
   const handleEdit = (index) => {
     setEditIndex(index);
     setIsEditing(true);
@@ -208,9 +184,16 @@ const Checklist = () => {
       setNewTitle(itemToEdit.title);
       setNewHeading(itemToEdit.heading);
       setSelectedTemplate(itemToEdit.template);
-      setQuestions(
-        Array.isArray(itemToEdit.questions) ? itemToEdit.questions : []
-      );
+
+      if (Array.isArray(itemToEdit.questions)) {
+        setQuestions(itemToEdit.questions.map((q) => q.question));
+        setOptions(
+          itemToEdit.questions.map((q) => q.options || ["", "", "", ""])
+        );
+      } else {
+        setQuestions([]);
+        setOptions([]);
+      }
     }
 
     setOpenDialog(true);
@@ -290,7 +273,12 @@ const Checklist = () => {
 
   //Questions view
   const handleViewAllQuestions = (questions) => {
-    setQuestionsToView(questions);
+    setQuestionsToView(
+      questions.map((q) => ({
+        question: q.question,
+        options: q.options || [],
+      }))
+    );
     setViewAllQuestions(true);
   };
 
@@ -322,36 +310,18 @@ const Checklist = () => {
           fullWidth
           style={{ marginBottom: "8px" }}
         />
-        {questionType === "mcq" && (
+        {questionType === "mcq" && options[index] && (
           <>
-            <TextField
-              label="Option 1"
-              value={options[index] ? options[index][0] : ""}
-              onChange={(e) => handleOptionChange(e, index, 0)}
-              fullWidth
-              style={{ marginBottom: "8px" }}
-            />
-            <TextField
-              label="Option 2"
-              value={options[index] ? options[index][1] : ""}
-              onChange={(e) => handleOptionChange(e, index, 1)}
-              fullWidth
-              style={{ marginBottom: "8px" }}
-            />
-            <TextField
-              label="Option 3"
-              value={options[index] ? options[index][2] : ""}
-              onChange={(e) => handleOptionChange(e, index, 2)}
-              fullWidth
-              style={{ marginBottom: "8px" }}
-            />
-            <TextField
-              label="Option 4"
-              value={options[index] ? options[index][3] : ""}
-              onChange={(e) => handleOptionChange(e, index, 3)}
-              fullWidth
-              style={{ marginBottom: "8px" }}
-            />
+            {options[index].map((option, optionIndex) => (
+              <TextField
+                key={optionIndex}
+                label={`Option ${optionIndex + 1}`}
+                value={option}
+                onChange={(e) => handleOptionChange(e, index, optionIndex)}
+                fullWidth
+                style={{ marginBottom: "8px" }}
+              />
+            ))}
           </>
         )}
         <Button onClick={() => handleDeleteQuestion(index)} color="secondary">
@@ -393,9 +363,44 @@ const Checklist = () => {
   };
 
   const handleOptionChange = (e, questionIndex, optionIndex) => {
-    const newOptions = [...options]; // Create a copy of the options array
-    newOptions[questionIndex][optionIndex] = e.target.value; // Update the value at the specified question and option index
-    setOptions(newOptions); // Update the options state with the new array
+    const newOptions = [...options];
+    newOptions[questionIndex][optionIndex] = e.target.value;
+    setOptions(newOptions);
+  };
+
+  {
+    viewAllQuestions && (
+      <Paper
+        style={{
+          position: "fixed",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          padding: "16px",
+          zIndex: 1000,
+          maxHeight: "80vh",
+          overflowY: "auto",
+        }}
+      >
+        <Typography variant="h6">All Questions</Typography>
+        {questionsToView.map((question, index) => (
+          <Box key={index} mb={2}>
+            <Typography>{`${index + 1}. ${question}`}</Typography>
+          </Box>
+        ))}
+        <Button
+          onClick={() => setViewAllQuestions(false)}
+          color="primary"
+          variant="contained"
+        >
+          Close
+        </Button>
+      </Paper>
+    );
+  }
+
+  const openQuestionsView = () => {
+    setViewAllQuestions(true);
   };
 
   return (
@@ -476,10 +481,18 @@ const Checklist = () => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Department</TableCell>
-                <TableCell>Section</TableCell>
-                <TableCell>Title</TableCell>
-                <TableCell>Action</TableCell>
+                <TableCell>
+                  <h3>Department</h3>
+                </TableCell>
+                <TableCell>
+                  <h3>Section</h3>
+                </TableCell>
+                <TableCell>
+                  <h3>Title</h3>
+                </TableCell>
+                <TableCell>
+                  <h3>Action</h3>
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -511,11 +524,21 @@ const Checklist = () => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Department</TableCell>
-                <TableCell>Section</TableCell>
-                <TableCell>Title</TableCell>
-                <TableCell>Heading</TableCell>
-                <TableCell>Action</TableCell>
+                <TableCell>
+                  <h3>Department</h3>
+                </TableCell>
+                <TableCell>
+                  <h3>Section</h3>
+                </TableCell>
+                <TableCell>
+                  <h3>Title</h3>
+                </TableCell>
+                <TableCell>
+                  <h3>Heading</h3>
+                </TableCell>
+                <TableCell>
+                  <h3>Action</h3>
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -549,11 +572,21 @@ const Checklist = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Title</TableCell>
-                  <TableCell>Heading</TableCell>
-                  <TableCell>Template</TableCell>
-                  <TableCell>Questions</TableCell>
-                  <TableCell>Action</TableCell>
+                  <TableCell>
+                    <h3>Title</h3>
+                  </TableCell>
+                  <TableCell>
+                    <h3>Heading</h3>
+                  </TableCell>
+                  <TableCell>
+                    <h3>Template</h3>
+                  </TableCell>
+                  <TableCell>
+                    <h3>Questions</h3>
+                  </TableCell>
+                  <TableCell>
+                    <h3>Action</h3>
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -563,10 +596,23 @@ const Checklist = () => {
                     <TableCell>{item.heading}</TableCell>
                     <TableCell>{item.template}</TableCell>
                     <TableCell>
-                      {item.questions && item.questions.length > 0 ? (
+                      {Array.isArray(item.questions) &&
+                      item.questions.length > 0 ? (
                         <>
-                          {item.questions.slice(0, 2).map((question, i) => (
-                            <div key={i}>{`${i + 1}. ${question}`}</div>
+                          {item.questions.slice(0, 2).map((questionObj, i) => (
+                            <div key={i}>
+                              <strong>{`${i + 1}. ${
+                                questionObj.question
+                              }`}</strong>
+                              {questionObj.options &&
+                                questionObj.options.length > 0 && (
+                                  <ul>
+                                    {questionObj.options.map((option, j) => (
+                                      <li key={j}>{option}</li>
+                                    ))}
+                                  </ul>
+                                )}
+                            </div>
                           ))}
                           {item.questions.length > 2 && (
                             <Button
@@ -781,7 +827,6 @@ const Checklist = () => {
             </DialogTitle>
             <DialogContent>
               <Box>
-                {/* Dropdown for Title */}
                 <Select
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
@@ -799,7 +844,6 @@ const Checklist = () => {
                     </MenuItem>
                   ))}
                 </Select>
-                {/* Dropdown for Heading */}
                 <Select
                   value={newHeading}
                   onChange={(e) => setNewHeading(e.target.value)}
@@ -807,7 +851,7 @@ const Checklist = () => {
                   displayEmpty
                   variant="outlined"
                   margin="dense"
-                  disabled={!newTitle} // Disable if no title is selected
+                  disabled={!newTitle}
                 >
                   <MenuItem value="" disabled>
                     Select Heading
@@ -820,7 +864,6 @@ const Checklist = () => {
                       </MenuItem>
                     ))}
                 </Select>
-                {/* Dropdown for Template */}
                 <Select
                   value={selectedTemplate}
                   onChange={(e) => setSelectedTemplate(e.target.value)}
@@ -836,7 +879,6 @@ const Checklist = () => {
                   <MenuItem value="weekly">Weekly</MenuItem>
                   <MenuItem value="monthly">Monthly</MenuItem>
                 </Select>
-                {/* Dropdown for Question Type */}
                 <Select
                   value={questionType}
                   onChange={(e) => setQuestionType(e.target.value)}
@@ -850,8 +892,8 @@ const Checklist = () => {
                   </MenuItem>
                   <MenuItem value="mcq">MCQ</MenuItem>
                   <MenuItem value="yesno">Yes/No</MenuItem>
+                  <MenuItem value="text">Text</MenuItem>
                 </Select>
-                {/* Input for Number of Questions */}
                 <TextField
                   type="number"
                   label="Number of Questions"
@@ -862,7 +904,6 @@ const Checklist = () => {
                   error={!!numQuestionsError}
                   helperText={numQuestionsError}
                 />
-                {/* Dynamic Question Inputs */}
                 {renderQuestions()}
               </Box>
             </DialogContent>
@@ -876,19 +917,47 @@ const Checklist = () => {
             </DialogActions>
           </Dialog>
 
-          <Dialog open={viewAllQuestions} onClose={closeQuestionsDialog}>
-            <DialogTitle>All Questions</DialogTitle>
-            <DialogContent>
-              {questionsToView.map((question, index) => (
-                <Typography key={index}>{`${
-                  index + 1
-                }. ${question}`}</Typography>
+          {viewAllQuestions && (
+            <Paper
+              style={{
+                position: "fixed",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                width: "595px",
+                height: "500px",
+                padding: "32px",
+                zIndex: 1000,
+                overflowY: "auto",
+              }}
+            >
+              <Typography variant="h6" gutterBottom>
+                All Questions
+              </Typography>
+              {questionsToView.map((item, index) => (
+                <Box key={index} mb={2}>
+                  <Typography>{`${index + 1}. ${item.question}`}</Typography>
+                  {item.options.length > 0 && (
+                    <Box ml={2} mt={1}>
+                      {item.options.map((option, optionIndex) => (
+                        <Typography key={optionIndex}>
+                          {-`${option}`}
+                        </Typography>
+                      ))}
+                    </Box>
+                  )}
+                </Box>
               ))}
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={closeQuestionsDialog}>Close</Button>
-            </DialogActions>
-          </Dialog>
+              <Button
+                onClick={() => setViewAllQuestions(false)}
+                color="primary"
+                variant="contained"
+                style={{ marginTop: "16px" }}
+              >
+                Close
+              </Button>
+            </Paper>
+          )}
         </>
       )}
     </Box>
