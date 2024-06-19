@@ -54,6 +54,8 @@ const Checklist = () => {
     Array.from({ length: numQuestions }, () => Array(4).fill(""))
   );
 
+  const [selectedQuestionType, setSelectedQuestionType] = useState("");
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -104,29 +106,62 @@ const Checklist = () => {
   const handleAdd = async () => {
     try {
       let newEntry;
+
       if (isEditing && editIndex !== null) {
-        if (activeSection === "template") {
+        if (activeSection === "title") {
+          const id = titles[editIndex].id;
+          newEntry = {
+            department: selectedDepartment,
+            section: selectedSection,
+            title: newTitle,
+          };
+          await axios.put(`http://localhost:3001/titles/${id}`, newEntry);
+        } else if (activeSection === "header") {
+          const id = headings[editIndex].id;
+          newEntry = {
+            department: selectedDepartment,
+            section: selectedSection,
+            title: newTitle,
+            heading: newHeading,
+          };
+          await axios.put(`http://localhost:3001/headings/${id}`, newEntry);
+        } else if (activeSection === "template") {
           const id = templates[editIndex].id;
           newEntry = {
             title: newTitle,
             heading: newHeading,
             template: selectedTemplate,
+            question_type: selectedQuestionType,
             questions: formatQuestions(),
           };
           await axios.put(`http://localhost:3001/templates/${id}`, newEntry);
         }
-        // other sections ...
       } else {
-        if (activeSection === "template") {
+        if (activeSection === "title") {
+          newEntry = {
+            department: selectedDepartment,
+            section: selectedSection,
+            title: newTitle,
+          };
+          await axios.post("http://localhost:3001/titles", newEntry);
+        } else if (activeSection === "header") {
+          newEntry = {
+            department: selectedDepartment,
+            section: selectedSection,
+            title: newTitle,
+            heading: newHeading,
+          };
+          await axios.post("http://localhost:3001/headings", newEntry);
+        } else if (activeSection === "template") {
           newEntry = {
             title: newTitle,
             heading: newHeading,
             template: selectedTemplate,
+            question_type: selectedQuestionType,
             questions: formatQuestions(),
           };
           await axios.post("http://localhost:3001/templates", newEntry);
         }
-        // other sections ...
       }
 
       const [titlesResponse, headingsResponse, templatesResponse] =
@@ -154,11 +189,20 @@ const Checklist = () => {
     }
   };
 
+  // Function to format questions based on question type
   const formatQuestions = () => {
-    return questions.map((question, index) => ({
-      question,
-      options: options[index] || ["", "", "", ""],
-    }));
+    return questions.map((question, index) => {
+      if (selectedQuestionType === "mcq") {
+        return {
+          question,
+          options: options[index], // Store options only for MCQ type
+        };
+      } else {
+        return {
+          question, // Store question text only for Yes/No and Text types
+        };
+      }
+    });
   };
 
   const handleEdit = (index) => {
@@ -184,6 +228,7 @@ const Checklist = () => {
       setNewTitle(itemToEdit.title);
       setNewHeading(itemToEdit.heading);
       setSelectedTemplate(itemToEdit.template);
+      setSelectedQuestionType(itemToEdit.question_type || "");
 
       if (Array.isArray(itemToEdit.questions)) {
         setQuestions(itemToEdit.questions.map((q) => q.question));
@@ -310,13 +355,13 @@ const Checklist = () => {
           fullWidth
           style={{ marginBottom: "8px" }}
         />
-        {questionType === "mcq" && options[index] && (
+        {selectedQuestionType === "mcq" && (
           <>
-            {options[index].map((option, optionIndex) => (
+            {[...Array(4)].map((_, optionIndex) => (
               <TextField
                 key={optionIndex}
                 label={`Option ${optionIndex + 1}`}
-                value={option}
+                value={options[index] ? options[index][optionIndex] : ""}
                 onChange={(e) => handleOptionChange(e, index, optionIndex)}
                 fullWidth
                 style={{ marginBottom: "8px" }}
@@ -481,10 +526,18 @@ const Checklist = () => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Department</TableCell>
-                <TableCell>Section</TableCell>
-                <TableCell>Title</TableCell>
-                <TableCell>Action</TableCell>
+                <TableCell>
+                  <h3>Department</h3>
+                </TableCell>
+                <TableCell>
+                  <h3>Section</h3>
+                </TableCell>
+                <TableCell>
+                  <h3>Title</h3>
+                </TableCell>
+                <TableCell>
+                  <h3>Action</h3>
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -516,11 +569,21 @@ const Checklist = () => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Department</TableCell>
-                <TableCell>Section</TableCell>
-                <TableCell>Title</TableCell>
-                <TableCell>Heading</TableCell>
-                <TableCell>Action</TableCell>
+                <TableCell>
+                  <h3>Department</h3>
+                </TableCell>
+                <TableCell>
+                  <h3>Section</h3>
+                </TableCell>
+                <TableCell>
+                  <h3>Title</h3>
+                </TableCell>
+                <TableCell>
+                  <h3>Heading</h3>
+                </TableCell>
+                <TableCell>
+                  <h3>Action</h3>
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -554,11 +617,21 @@ const Checklist = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Title</TableCell>
-                  <TableCell>Heading</TableCell>
-                  <TableCell>Template</TableCell>
-                  <TableCell>Questions</TableCell>
-                  <TableCell>Action</TableCell>
+                  <TableCell>
+                    <h3>Title</h3>
+                  </TableCell>
+                  <TableCell>
+                    <h3>Heading</h3>
+                  </TableCell>
+                  <TableCell>
+                    <h3>Template</h3>
+                  </TableCell>
+                  <TableCell>
+                    <h3>Questions</h3>
+                  </TableCell>
+                  <TableCell>
+                    <h3>Action</h3>
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -852,8 +925,8 @@ const Checklist = () => {
                   <MenuItem value="monthly">Monthly</MenuItem>
                 </Select>
                 <Select
-                  value={questionType}
-                  onChange={(e) => setQuestionType(e.target.value)}
+                  value={selectedQuestionType}
+                  onChange={(e) => setSelectedQuestionType(e.target.value)}
                   fullWidth
                   displayEmpty
                   variant="outlined"
@@ -888,7 +961,6 @@ const Checklist = () => {
               </Button>
             </DialogActions>
           </Dialog>
-
           {viewAllQuestions && (
             <Paper
               style={{
@@ -909,12 +981,12 @@ const Checklist = () => {
               {questionsToView.map((item, index) => (
                 <Box key={index} mb={2}>
                   <Typography>{`${index + 1}. ${item.question}`}</Typography>
-                  {item.options.length > 0 && (
+                  {item.options && item.options.length > 0 && (
                     <Box ml={2} mt={1}>
                       {item.options.map((option, optionIndex) => (
-                        <Typography key={optionIndex}>
-                          {-`${option}`}
-                        </Typography>
+                        <Typography
+                          key={optionIndex}
+                        >{`- ${option}`}</Typography>
                       ))}
                     </Box>
                   )}

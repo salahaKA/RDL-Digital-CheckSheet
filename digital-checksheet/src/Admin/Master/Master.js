@@ -1,5 +1,4 @@
 import React, { useState, useContext, useEffect } from "react";
-
 import {
   Button,
   Table,
@@ -23,6 +22,7 @@ import "./Master.css";
 const Master = () => {
   const [activeSection, setActiveSection] = useState("department"); // Set default section to 'department'
   const [openDialog, setOpenDialog] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const [newSection, setNewSection] = useState("");
   const [newSectionDescription, setNewSectionDescription] = useState("");
@@ -67,30 +67,35 @@ const Master = () => {
     setOpenDialog(false);
   };
 
-  const handleAddOrEdit = async () => {
+  const handleAddOrEdit = () => {
     if (activeSection === "department") {
       if (isEditing) {
-        await updateDepartment(currentEditIndex, {
+        const updatedDepartment = {
           id: departments[currentEditIndex].id,
           name: newSection,
           description: newSectionDescription,
+        };
+        updateDepartment(currentEditIndex, updatedDepartment);
+
+        // Update related sections
+        sections.forEach((section, index) => {
+          if (section.department === departments[currentEditIndex].name) {
+            updateSection(index, { ...section, department: newSection });
+          }
         });
       } else {
-        await addDepartment({
-          name: newSection,
-          description: newSectionDescription,
-        });
+        addDepartment({ name: newSection, description: newSectionDescription });
       }
     } else if (activeSection === "section") {
       if (isEditing) {
-        await updateSection(currentEditIndex, {
+        updateSection(currentEditIndex, {
           id: sections[currentEditIndex].id,
           department: selectedDepartment,
           section: newSection,
           description: newSectionDescription,
         });
       } else {
-        await addSection({
+        addSection({
           department: selectedDepartment,
           section: newSection,
           description: newSectionDescription,
@@ -101,32 +106,37 @@ const Master = () => {
     setNewSection("");
     setNewSectionDescription("");
     handleClose();
-    // Fetch updated data after adding or editing
-    fetchDepartments();
-    fetchSections(); // Fetch updated sections data
   };
 
   const handleDelete = (index) => {
-    const departmentIdToDelete =
-      activeSection === "department" ? departments[index].id : null;
-    const departmentNameToDelete =
-      activeSection === "department" ? departments[index].name : null;
-    const isDepartmentUsedInSection = sections.some(
-      (section) => section.department === departmentNameToDelete
+    if (activeSection === "department") {
+      const departmentToDelete = departments[index];
+      const sectionsUsingDepartment = sections.filter(
+        (section) => section.department === departmentToDelete.name
+      );
+
+      if (sectionsUsingDepartment.length > 0) {
+        // Prompt for confirmation
+        setCurrentEditIndex(index);
+        setConfirmDialog(true);
+      } else {
+        removeDepartment(departmentToDelete.id);
+      }
+    } else if (activeSection === "section") {
+      removeSection(sections[index].id);
+    }
+  };
+
+  const confirmDelete = () => {
+    const departmentToDelete = departments[currentEditIndex];
+    const sectionsToDelete = sections.filter(
+      (section) => section.department === departmentToDelete.name
     );
 
-    if (isDepartmentUsedInSection) {
-      // Display alert message
-      alert(
-        "You can't delete this department because it is used in a section."
-      );
-    } else {
-      if (activeSection === "department") {
-        removeDepartment(departmentIdToDelete);
-      } else if (activeSection === "section") {
-        removeSection(sections[index].id);
-      }
-    }
+    removeDepartment(departmentToDelete.id);
+    sectionsToDelete.forEach((section) => removeSection(section.id));
+
+    setConfirmDialog(false);
   };
 
   const handleItemClick = (item) => {
@@ -154,9 +164,15 @@ const Master = () => {
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell>Department</TableCell>
-            <TableCell>Description</TableCell>
-            <TableCell>Action</TableCell>
+            <TableCell>
+              <h3>Department</h3>
+            </TableCell>
+            <TableCell>
+              <h3>Description</h3>
+            </TableCell>
+            <TableCell>
+              <h3>Action</h3>
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -203,10 +219,18 @@ const Master = () => {
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell>Department</TableCell>
-            <TableCell>Section</TableCell>
-            <TableCell>Description</TableCell>
-            <TableCell>Action</TableCell>
+            <TableCell>
+              <h3>Department</h3>
+            </TableCell>
+            <TableCell>
+              <h3>Section</h3>
+            </TableCell>
+            <TableCell>
+              <h3>Description</h3>
+            </TableCell>
+            <TableCell>
+              <h3>Action</h3>
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -243,7 +267,7 @@ const Master = () => {
   };
 
   return (
-    <Box className="Master-container">
+    <Box>
       <Typography variant="h4" gutterBottom>
         Master Content
       </Typography>
@@ -330,6 +354,38 @@ const Master = () => {
           </Button>
           <Button onClick={handleAddOrEdit} color="primary">
             {isEditing ? "Update" : "Add"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={confirmDialog}
+        onClose={() => setConfirmDialog(false)}
+        className="custom-dialog"
+      >
+        <DialogTitle className="dialog-title">Confirm Deletion</DialogTitle>
+        <DialogContent className="dialog-content">
+          <Typography>
+            Are you sure you want to delete this department? This action will
+            also remove all associated sections. This operation cannot be
+            undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions className="dialog-actions">
+          <Button
+            className="CancelButton"
+            onClick={() => setConfirmDialog(false)}
+            color="primary"
+          >
+            Cancel
+          </Button>
+          <Button
+            className="ConfirmButton"
+            onClick={confirmDelete}
+            color="secondary"
+            variant="contained"
+          >
+            Confirm
           </Button>
         </DialogActions>
       </Dialog>

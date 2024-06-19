@@ -7,136 +7,78 @@ import {
   TableRow,
   Box,
   Typography,
-  Checkbox,
   FormControlLabel,
+  Checkbox,
   TextField,
+  Button,
+  Paper,
 } from "@mui/material";
-import { styled } from "@mui/material/styles";
 import axios from "axios";
 
-const StyledTable = styled(Table)({
-  border: "1px solid #ddd",
-  width: "100%",
-});
-
-const StyledTableCell = styled(TableCell)({
-  border: "1px solid #ddd",
-  padding: "8px",
-});
-
-const StyledTableHead = styled(TableHead)({
-  backgroundColor: "#f5f5f5",
-});
-
-const StyledFormControlLabel = styled(FormControlLabel)({
-  marginRight: 0,
-});
-
-const StyledBox = styled(Box)({
-  maxWidth: "100%",
-  margin: "0 auto",
-  padding: "20px",
-  backgroundColor: "#fff",
-  boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
-  borderRadius: "8px",
-});
-
-const StyledTextField = styled(TextField)({
-  width: "200px",
-});
-
-const WeeklyChecklistMCQ = () => {
+const WeeklyChecklistMCQ = ({ templateId }) => {
+  const [title, setTitle] = useState("");
   const [heading, setHeading] = useState("");
   const [department, setDepartment] = useState("");
   const [section, setSection] = useState("");
-  const [templateType, setTemplateType] = useState("MCQ");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [templateType, setTemplateType] = useState("MCQ");
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
-
-  const [departments, setDepartments] = useState([]);
-  const [sections, setSections] = useState([]);
-  const [templates, setTemplates] = useState([]);
+  const [checklistView, setChecklistView] = useState(false);
 
   useEffect(() => {
-    const fetchDepartments = async () => {
+    const fetchTemplateData = async () => {
+      if (!templateId) {
+        console.error("No template ID provided");
+        return;
+      }
+
       try {
         const response = await axios.get(
-          "http://localhost:3001/api/departments"
+          `http://localhost:3001/api/template/${templateId}`
         );
-        setDepartments(response.data);
+        const template = response.data;
+
+        setTitle(template.title || "");
+        setHeading(template.heading || "");
+        setDepartment(template.department || "");
+        setSection(template.section || "");
+        setTemplateType(template.template || "MCQ");
+        setQuestions(template.questions || []);
       } catch (error) {
-        console.error("Error fetching departments:", error);
+        console.error("Error fetching template data:", error);
       }
     };
 
-    const fetchSections = async () => {
-      try {
-        const response = await axios.get("http://localhost:3001/api/sections");
-        setSections(response.data);
-      } catch (error) {
-        console.error("Error fetching sections:", error);
-      }
-    };
+    fetchTemplateData();
+  }, [templateId]);
 
-    const fetchTemplates = async () => {
-      try {
-        const response = await axios.get("http://localhost:3001/api/templates");
-        setTemplates(response.data);
-      } catch (error) {
-        console.error("Error fetching templates:", error);
-      }
-    };
-
-    const fetchHeading = async () => {
-      try {
-        const response = await axios.get("http://localhost:3001/api/heading");
-        setHeading(response.data.heading);
-      } catch (error) {
-        console.error("Error fetching heading:", error);
-      }
-    };
-
-    fetchDepartments();
-    fetchSections();
-    fetchTemplates();
-    fetchHeading();
-  }, []);
-
-  useEffect(() => {
-    const fetchTemplateQuestions = async () => {
-      try {
-        const response = await axios.get("http://localhost:3001/templates");
-        setQuestions(response.data);
-      } catch (error) {
-        console.error("Error fetching template questions:", error);
-      }
-    };
-
-    fetchTemplateQuestions();
-  }, []);
-
-  const handleOptionChange = (questionId, option, day) => {
+  const handleCheckboxChange = (questionId, option, day) => {
     setAnswers((prevAnswers) => ({
       ...prevAnswers,
       [questionId]: {
         ...prevAnswers[questionId],
-        [day]: {
-          ...prevAnswers[questionId][day],
-          [option]: !prevAnswers[questionId]?.[day]?.[option],
-        },
+        [day]: prevAnswers[questionId]?.[day]?.includes(option)
+          ? prevAnswers[questionId][day].filter((answer) => answer !== option)
+          : [...(prevAnswers[questionId][day] || []), option],
       },
     }));
   };
 
   const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const options = ["Option 1", "Option 2", "Option 3", "Option 4"];
 
   return (
-    <StyledBox>
+    <Box sx={{ padding: 2 }}>
       <Typography variant="h4" gutterBottom>
-        Weekly Checklist (MCQ)
+        {title}
       </Typography>
+
+      {heading && (
+        <Typography variant="h5" gutterBottom>
+          {heading}
+        </Typography>
+      )}
+
       <Box
         sx={{
           display: "flex",
@@ -145,10 +87,6 @@ const WeeklyChecklistMCQ = () => {
           marginBottom: 4,
         }}
       >
-        <Box sx={{ display: "flex", gap: 2 }}>
-          <Typography>Heading:</Typography>
-          <Typography variant="body1">{heading}</Typography>
-        </Box>
         <Box sx={{ display: "flex", gap: 2 }}>
           <Typography>Department:</Typography>
           <Typography variant="body1">{department}</Typography>
@@ -159,12 +97,7 @@ const WeeklyChecklistMCQ = () => {
         </Box>
         <Box sx={{ display: "flex", gap: 2 }}>
           <Typography>Type:</Typography>
-          <StyledTextField
-            variant="outlined"
-            size="small"
-            value={templateType}
-            onChange={(e) => setTemplateType(e.target.value)}
-          />
+          <Typography variant="body1">{templateType}</Typography>
         </Box>
         <Box sx={{ display: "flex", gap: 2 }}>
           <Typography>Date:</Typography>
@@ -178,60 +111,159 @@ const WeeklyChecklistMCQ = () => {
           />
         </Box>
       </Box>
-      <Typography variant="h6" gutterBottom>
-        Questions
-      </Typography>
-      <StyledTable>
-        <StyledTableHead>
+
+      <Table>
+        <TableHead>
           <TableRow>
-            <StyledTableCell>Question</StyledTableCell>
+            <TableCell>Question</TableCell>
             {daysOfWeek.map((day) => (
-              <StyledTableCell
-                key={day}
-                sx={{ width: "120px", textAlign: "center" }}
-              >
-                {day}
-              </StyledTableCell>
+              <TableCell key={day}>{day}</TableCell>
             ))}
           </TableRow>
-        </StyledTableHead>
+        </TableHead>
         <TableBody>
           {Array.isArray(questions) && questions.length > 0 ? (
             questions.map((question, index) => (
               <TableRow key={index}>
-                <StyledTableCell>{question.id}</StyledTableCell>
+                <TableCell>{question.question}</TableCell>
                 {daysOfWeek.map((day) => (
-                  <StyledTableCell key={day} sx={{ textAlign: "center" }}>
-                    {options.map((option) => (
-                      <StyledFormControlLabel
+                  <TableCell key={day}>
+                    {question.options.map((option) => (
+                      <FormControlLabel
                         key={option}
                         control={
                           <Checkbox
                             checked={
-                              answers[question.id]?.[day]?.[option] || false
+                              answers[question.id]?.[day]?.includes(option) ||
+                              false
                             }
                             onChange={() =>
-                              handleOptionChange(question.id, option, day)
+                              handleCheckboxChange(question.id, option, day)
                             }
                           />
                         }
                         label={option}
                       />
                     ))}
-                  </StyledTableCell>
+                  </TableCell>
                 ))}
               </TableRow>
             ))
           ) : (
             <TableRow>
-              <StyledTableCell colSpan={8}>
-                No questions available
-              </StyledTableCell>
+              <TableCell colSpan={8}>No questions available</TableCell>
             </TableRow>
           )}
         </TableBody>
-      </StyledTable>
-    </StyledBox>
+      </Table>
+
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={() => setChecklistView(true)}
+        sx={{ mt: 2 }}
+      >
+        View Checklist
+      </Button>
+
+      {checklistView && (
+        <Paper
+          style={{
+            position: "fixed",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "80%",
+            height: "80%",
+            padding: "32px",
+            zIndex: 1000,
+            overflowY: "auto",
+          }}
+        >
+          <Typography variant="h6" gutterBottom>
+            {title}
+          </Typography>
+          <Typography variant="h6" gutterBottom>
+            {heading}
+          </Typography>
+
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Typography variant="body2">Department:</Typography>
+            <Typography variant="body2">{department}</Typography>
+          </Box>
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Typography variant="body2">Section:</Typography>
+            <Typography variant="body2">{section}</Typography>
+          </Box>
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Typography variant="body2">Type:</Typography>
+            <Typography variant="body2">{templateType}</Typography>
+          </Box>
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Typography variant="body2">Date:</Typography>
+            <Typography variant="body2">{date}</Typography>
+          </Box>
+
+          <Typography variant="subtitle1" gutterBottom>
+            Questions
+          </Typography>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Question</TableCell>
+                {daysOfWeek.map((day) => (
+                  <TableCell key={day}>{day}</TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {Array.isArray(questions) && questions.length > 0 ? (
+                questions.map((question, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{question.question}</TableCell>
+                    {daysOfWeek.map((day) => (
+                      <TableCell key={day}>
+                        {question.options.map((option) => (
+                          <FormControlLabel
+                            key={option}
+                            control={
+                              <Checkbox
+                                checked={
+                                  answers[question.id]?.[day]?.includes(
+                                    option
+                                  ) || false
+                                }
+                                onChange={() =>
+                                  handleCheckboxChange(question.id, option, day)
+                                }
+                              />
+                            }
+                            label={option}
+                          />
+                        ))}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={8}>No questions available</TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => setChecklistView(false)}
+            sx={{ mt: 2 }}
+          >
+            Close
+          </Button>
+        </Paper>
+      )}
+    </Box>
   );
 };
 

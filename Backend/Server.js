@@ -31,7 +31,9 @@ app.get("/", (req, res) => {
   res.send("Backend server is running");
 });
 
-// Admin credentials
+//-----------------------------------------------------------------------------------------------------------------------------------------------
+// Login API
+// Admin credentials----------------------------------------------------------------------------------------------------------------------------
 const adminEmail = "adminorg@example.com";
 const adminPassword = "adminorg123"; // You should hash this password
 
@@ -108,7 +110,6 @@ app.post("/departments", (req, res) => {
 });
 
 // Update a department
-
 app.put("/departments/:id", (req, res) => {
   const { id } = req.params;
   const { name, description } = req.body;
@@ -119,17 +120,7 @@ app.put("/departments/:id", (req, res) => {
       res.status(500).json({ error: "Database error" });
       return;
     }
-    // Update department name in the sections table
-    const updateSectionsQuery =
-      "UPDATE sections SET department = ? WHERE department = (SELECT name FROM department WHERE id = ?)";
-    db.execute(updateSectionsQuery, [name, id], (err) => {
-      if (err) {
-        console.error("Error updating sections:", err);
-        res.status(500).json({ error: "Database error" });
-        return;
-      }
-      res.status(200).json({ message: "Department updated" });
-    });
+    res.status(200).json({ message: "Department updated" });
   });
 });
 
@@ -232,7 +223,23 @@ app.get("/sections", (req, res) => {
   });
 });
 
-// Get all titles
+// Add a new title
+// Add a new title
+app.post("/titles", (req, res) => {
+  console.log("Request received:", req.body); // Add this line
+  const { department, section, title } = req.body;
+  const query =
+    "INSERT INTO titles (department, section, title) VALUES (?, ?, ?)";
+  db.execute(query, [department, section, title], (err, results) => {
+    if (err) {
+      console.error("Database query error:", err);
+      res.status(500).json({ error: "Database error" });
+      return;
+    }
+    res.status(201).json({ message: "Title added", titleId: results.insertId });
+  });
+});
+
 app.get("/titles", (req, res) => {
   const query = "SELECT * FROM titles";
   db.query(query, (err, results) => {
@@ -245,35 +252,21 @@ app.get("/titles", (req, res) => {
   });
 });
 
-// Add a new title
-app.post("/titles", (req, res) => {
-  const { title, department, section } = req.body;
-
-  // Check if all necessary fields are provided
-  if (!title || !department || !section) {
-    res
-      .status(400)
-      .json({ error: "Title, department, and section are required" });
-    return;
-  }
-
-  const query =
-    "INSERT INTO titles (title, department, section) VALUES (?, ?, ?)";
-
-  db.query(query, [title, department, section], (err, result) => {
+// Delete a title
+app.delete("/titles/:id", (req, res) => {
+  const { id } = req.params;
+  const query = "DELETE FROM titles WHERE id = ?";
+  db.execute(query, [id], (err) => {
     if (err) {
-      console.error("Database insert error:", err);
+      console.error("Database delete error:", err);
       res.status(500).json({ error: "Database error" });
       return;
     }
-
-    res
-      .status(201)
-      .json({ message: "Title added successfully", id: result.insertId });
+    res.status(200).json({ message: "Title deleted successfully" });
   });
 });
 
-// Update an existing title
+// Update a title
 app.put("/titles/:id", (req, res) => {
   const { title, department, section } = req.body;
   const id = parseInt(req.params.id); // Convert id to a number
@@ -298,33 +291,42 @@ app.put("/titles/:id", (req, res) => {
   });
 });
 
-app.delete("/titles/:id", (req, res) => {
+// Get a single title for editing
+app.get("/titles/:id", (req, res) => {
   const { id } = req.params;
-  const query = "DELETE FROM titles WHERE id = ?";
-  db.query(query, [id], (err) => {
-    if (err) {
-      console.error("Database delete error:", err);
-      res.status(500).json({ error: "Database error" });
-      return;
-    }
-    res.status(200).json({ message: "Title deleted successfully" });
-  });
-});
-// Get sections by department
-app.get("/sections/:department", (req, res) => {
-  const { department } = req.params;
-  const query = "SELECT * FROM sections WHERE department = ?";
-  db.query(query, [department], (err, results) => {
+  const query = "SELECT * FROM titles WHERE id = ?";
+  db.query(query, [id], (err, results) => {
     if (err) {
       console.error("Database query error:", err);
       res.status(500).json({ error: "Database error" });
       return;
     }
-    res.status(200).json(results);
+    if (results.length === 0) {
+      res.status(404).json({ error: "Title not found" });
+      return;
+    }
+    res.status(200).json(results[0]); // Send the first (and only) result as JSON
   });
 });
 
-// Get all headings
+//heading
+app.post("/headings", (req, res) => {
+  console.log("Request received:", req.body); // Add this line
+  const { department, section, title, heading } = req.body;
+  const query =
+    "INSERT INTO headings (department, section, title ,heading) VALUES (?, ?, ? ,?)";
+  db.execute(query, [department, section, title, heading], (err, results) => {
+    if (err) {
+      console.error("Database query error:", err);
+      res.status(500).json({ error: "Database error" });
+      return;
+    }
+    res
+      .status(201)
+      .json({ message: "heading added", titleId: results.insertId });
+  });
+});
+
 app.get("/headings", (req, res) => {
   const query = "SELECT * FROM headings";
   db.query(query, (err, results) => {
@@ -337,51 +339,40 @@ app.get("/headings", (req, res) => {
   });
 });
 
-// Add a new heading
-app.post("/headings", (req, res) => {
-  const { department, section, title, heading } = req.body;
-  const query =
-    "INSERT INTO headings (department, section, title, heading) VALUES (?, ?, ?, ?)";
-  db.query(query, [department, section, title, heading], (err, result) => {
-    if (err) {
-      console.error("Database insert error:", err);
-      res.status(500).json({ error: "Database error" });
-      return;
-    }
-    res.status(200).json({
-      message: "Heading added successfully",
-      headingId: result.insertId,
-    });
-  });
-});
-
-// Update an existing heading
 app.put("/headings/:id", (req, res) => {
-  const { department, section, title, heading } = req.body;
-  const { id } = req.params;
+  const { heading, title, department, section } = req.body;
+  const id = parseInt(req.params.id); // Convert id to a number
+
+  // Check if all necessary fields are provided
+  if (!title || !department || !section || !heading) {
+    res
+      .status(400)
+      .json({ error: "heading,Title, department, and section are required" });
+    return;
+  }
+
   const query =
-    "UPDATE headings SET department = ?, section = ?, title = ?, heading = ? WHERE id = ?";
-  db.query(query, [department, section, title, heading, id], (err) => {
+    "UPDATE headings SET heading = ?, title = ?, department = ?, section = ? WHERE id = ?";
+  db.query(query, [heading, title, department, section, id], (err) => {
     if (err) {
       console.error("Database update error:", err);
       res.status(500).json({ error: "Database error" });
       return;
     }
-    res.status(200).json({ message: "Heading updated successfully" });
+    res.status(200).json({ message: "Title updated successfully" });
   });
 });
 
-// Delete a heading
 app.delete("/headings/:id", (req, res) => {
   const { id } = req.params;
   const query = "DELETE FROM headings WHERE id = ?";
-  db.query(query, [id], (err) => {
+  db.execute(query, [id], (err) => {
     if (err) {
       console.error("Database delete error:", err);
       res.status(500).json({ error: "Database error" });
       return;
     }
-    res.status(200).json({ message: "Heading deleted successfully" });
+    res.status(200).json({ message: "heading deleted successfully" });
   });
 });
 
@@ -398,13 +389,64 @@ app.get("/templates", (req, res) => {
   });
 });
 
+app.get("/api/template/:id", (req, res) => {
+  const { id } = req.params;
+  const query = `
+      SELECT t.*, h.department, h.section 
+      FROM templates t
+      LEFT JOIN headings h ON t.title = h.title 
+      WHERE t.id = ?`;
+
+  db.execute(query, [id], (err, results) => {
+    if (err) {
+      console.error("Database query error:", err);
+      res.status(500).json({ error: "Database error" });
+      return;
+    }
+
+    if (results.length > 0) {
+      const template = results[0];
+      try {
+        // Validate and parse the questions field
+        if (typeof template.questions === "string") {
+          template.questions = JSON.parse(template.questions);
+        }
+        res.status(200).json(template);
+      } catch (parseError) {
+        console.error("Error parsing questions JSON:", parseError);
+        res.status(500).json({ error: "Invalid format for questions" });
+      }
+    } else {
+      res.status(404).json({ error: "Template not found" });
+    }
+  });
+});
+
+// Add a new template
 app.post("/templates", (req, res) => {
-  const { title, heading, template, questions } = req.body;
+  const { title, heading, template, question_type, questions } = req.body;
+
+  // Validate questions format
+  if (!Array.isArray(questions)) {
+    return res.status(400).json({ error: "Questions should be an array" });
+  }
+
+  // Ensure MCQ questions contain options
+  if (question_type === "mcq") {
+    for (const question of questions) {
+      if (!question.options || !Array.isArray(question.options)) {
+        return res
+          .status(400)
+          .json({ error: "MCQ questions should have an options array" });
+      }
+    }
+  }
+
   const query =
-    "INSERT INTO templates (title, heading, template, questions) VALUES (?, ?, ?, ?)";
+    "INSERT INTO templates (title, heading, template, question_type, questions) VALUES (?, ?, ?, ?, ?)";
   db.execute(
     query,
-    [title, heading, template, JSON.stringify(questions)],
+    [title, heading, template, question_type, JSON.stringify(questions)],
     (err, results) => {
       if (err) {
         console.error("Database query error:", err);
@@ -418,9 +460,10 @@ app.post("/templates", (req, res) => {
   );
 });
 
+// Update an existing template
 app.put("/templates/:id", (req, res) => {
   const { id } = req.params;
-  const { title, heading, template, questions } = req.body;
+  const { title, heading, template, question_type, questions } = req.body;
 
   if (!Array.isArray(questions)) {
     return res
@@ -429,10 +472,10 @@ app.put("/templates/:id", (req, res) => {
   }
 
   const query =
-    "UPDATE templates SET title = ?, heading = ?, template = ?, questions = ? WHERE id = ?";
+    "UPDATE templates SET title = ?, heading = ?, template = ?, question_type = ?, questions = ? WHERE id = ?";
   db.execute(
     query,
-    [title, heading, template, JSON.stringify(questions), id],
+    [title, heading, template, question_type, JSON.stringify(questions), id],
     (err) => {
       if (err) {
         console.error("Database query error:", err);
@@ -457,6 +500,9 @@ app.delete("/templates/:id", (req, res) => {
   });
 });
 
+//---------------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------------------
+
 app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+  console.log(`Server running on port ${port}`);
 });
