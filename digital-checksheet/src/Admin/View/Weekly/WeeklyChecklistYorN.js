@@ -35,7 +35,7 @@ const StyledFormControlLabel = styled(FormControlLabel)({
 });
 
 const StyledBox = styled(Box)({
-  maxWidth: "800px",
+  maxWidth: "100%",
   margin: "0 auto",
   padding: "20px",
   backgroundColor: "#fff",

@@ -18,7 +18,7 @@ const DailyChecklist = () => {
   const [heading, setHeading] = useState("");
   const [department, setDepartment] = useState("");
   const [section, setSection] = useState("");
-  const [templateType, setTemplateType] = useState("MCQ");
+  const [templateType, setTemplateType] = useState("Y/N");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]); // Default to today's date
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});

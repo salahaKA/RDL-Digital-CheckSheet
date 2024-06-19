@@ -481,18 +481,10 @@ const Checklist = () => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>
-                  <h3>Department</h3>
-                </TableCell>
-                <TableCell>
-                  <h3>Section</h3>
-                </TableCell>
-                <TableCell>
-                  <h3>Title</h3>
-                </TableCell>
-                <TableCell>
-                  <h3>Action</h3>
-                </TableCell>
+                <TableCell>Department</TableCell>
+                <TableCell>Section</TableCell>
+                <TableCell>Title</TableCell>
+                <TableCell>Action</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -524,21 +516,11 @@ const Checklist = () => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>
-                  <h3>Department</h3>
-                </TableCell>
-                <TableCell>
-                  <h3>Section</h3>
-                </TableCell>
-                <TableCell>
-                  <h3>Title</h3>
-                </TableCell>
-                <TableCell>
-                  <h3>Heading</h3>
-                </TableCell>
-                <TableCell>
-                  <h3>Action</h3>
-                </TableCell>
+                <TableCell>Department</TableCell>
+                <TableCell>Section</TableCell>
+                <TableCell>Title</TableCell>
+                <TableCell>Heading</TableCell>
+                <TableCell>Action</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -572,21 +554,11 @@ const Checklist = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>
-                    <h3>Title</h3>
-                  </TableCell>
-                  <TableCell>
-                    <h3>Heading</h3>
-                  </TableCell>
-                  <TableCell>
-                    <h3>Template</h3>
-                  </TableCell>
-                  <TableCell>
-                    <h3>Questions</h3>
-                  </TableCell>
-                  <TableCell>
-                    <h3>Action</h3>
-                  </TableCell>
+                  <TableCell>Title</TableCell>
+                  <TableCell>Heading</TableCell>
+                  <TableCell>Template</TableCell>
+                  <TableCell>Questions</TableCell>
+                  <TableCell>Action</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
