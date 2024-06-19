@@ -1,3 +1,5 @@
+/* src/AppLayout.css */
+
 /* General styling for the entire layout */
 .container {
   display: flex;
@@ -11,6 +13,7 @@
 .main-layout {
   display: flex;
   flex: 1;
+  overflow: hidden; /* Prevent main layout from expanding beyond viewport */
   background-color: #ffffff;
 }
 
@@ -23,6 +26,10 @@
   padding: 20px;
   font-weight: 500;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0; /* Stick to the top */
+  height: 100vh; /* Full height of the viewport */
+  overflow-y: auto; /* Scroll if content overflows */
 }
 
 .sidebar .logo {
@@ -74,6 +81,9 @@
 .header {
   margin-bottom: 0; /* Remove bottom margin */
   padding-bottom: 0; /* Remove bottom padding */
+  position: sticky;
+  top: 0;
+  z-index: 1000; /* Ensure header is above other content */
 }
 
 /* Mobile view adjustments */
@@ -83,6 +93,7 @@
     flex-direction: row;
     justify-content: space-between;
     padding: 10px;
+    height: auto; /* Adjust height for mobile */
   }
 
   .content {

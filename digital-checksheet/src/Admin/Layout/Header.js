@@ -17,17 +17,20 @@ const Header = () => {
   const showLogoutButton = location.pathname !== "/";
 
   return (
-    <AppBar position="static" className="header">
+    <AppBar position="sticky" className="header">
       <Toolbar>
-        <Typography variant="h6" className="title">
+        <Typography
+          variant="h6"
+          className="title"
+          style={{ fontFamily: "fangsong" }}
+        >
           Digital Checksheet
         </Typography>
         {showLogoutButton && (
           <Button
             sx={{
               backgroundColor: "#fff", // Set your desired background color here
-              color: "blue", // Set the text color to white for better contrast
-
+              color: "Blue", // Set the text color to white for better contrast
               "&:hover": {
                 backgroundColor: "#e64a19", // Set a different background color on hover
                 color: "#fff",
