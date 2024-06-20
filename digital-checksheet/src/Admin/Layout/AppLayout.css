@@ -19,11 +19,11 @@
 
 /* Sidebar styling */
 .sidebar {
-  width: 250px;
   flex-shrink: 0;
   background: linear-gradient(180deg, #333, #444);
   color: #ffffff;
   padding: 20px;
+  width: 200px;
   font-weight: 500;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
   position: sticky;
@@ -84,39 +84,4 @@
   position: sticky;
   top: 0;
   z-index: 1000; /* Ensure header is above other content */
-}
-
-/* Mobile view adjustments */
-@media (max-width: 768px) {
-  .sidebar {
-    width: 100%;
-    flex-direction: row;
-    justify-content: space-between;
-    padding: 10px;
-    height: auto; /* Adjust height for mobile */
-  }
-
-  .content {
-    padding: 10px;
-  }
-
-  .sidebar nav a {
-    font-size: 1em; /* Adjusted font size */
-    padding: 8px;
-  }
-
-  .sidebar nav a svg {
-    font-size: 1.2em; /* Adjusted icon size */
-  }
-}
-
-/* Desktop view adjustments */
-@media (min-width: 769px) {
-  .sidebar {
-    width: 200px;
-  }
-
-  .content {
-    padding: 20px;
-  }
 }
