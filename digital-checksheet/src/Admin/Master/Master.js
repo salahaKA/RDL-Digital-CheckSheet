@@ -123,18 +123,23 @@ const Master = () => {
         removeDepartment(departmentToDelete.id);
       }
     } else if (activeSection === "section") {
-      removeSection(sections[index].id);
+      setCurrentEditIndex(index); // Set the index of the section to delete
+      setConfirmDialog(true); // Open the confirmation dialog
     }
   };
 
   const confirmDelete = () => {
-    const departmentToDelete = departments[currentEditIndex];
-    const sectionsToDelete = sections.filter(
-      (section) => section.department === departmentToDelete.name
-    );
+    if (activeSection === "department") {
+      const departmentToDelete = departments[currentEditIndex];
+      const sectionsToDelete = sections.filter(
+        (section) => section.department === departmentToDelete.name
+      );
 
-    removeDepartment(departmentToDelete.id);
-    sectionsToDelete.forEach((section) => removeSection(section.id));
+      removeDepartment(departmentToDelete.id);
+      sectionsToDelete.forEach((section) => removeSection(section.id));
+    } else if (activeSection === "section") {
+      removeSection(sections[currentEditIndex].id);
+    }
 
     setConfirmDialog(false);
   };
@@ -311,19 +316,16 @@ const Master = () => {
           ) : (
             <Box>
               <Select
+                margin="dense"
+                label="Department"
+                fullWidth
+                variant="outlined"
                 value={selectedDepartment}
                 onChange={(e) => setSelectedDepartment(e.target.value)}
-                fullWidth
-                displayEmpty
-                variant="outlined"
-                margin="dense"
               >
-                <MenuItem value="" disabled>
-                  Select Department
-                </MenuItem>
-                {departments.map((item, index) => (
-                  <MenuItem key={index} value={item.name}>
-                    {item.name}
+                {departments.map((department, index) => (
+                  <MenuItem key={index} value={department.name}>
+                    {department.name}
                   </MenuItem>
                 ))}
               </Select>
@@ -343,6 +345,8 @@ const Master = () => {
               label="Description"
               fullWidth
               variant="outlined"
+              multiline
+              rows={4}
               value={newSectionDescription}
               onChange={(e) => setNewSectionDescription(e.target.value)}
             />
@@ -358,33 +362,25 @@ const Master = () => {
         </DialogActions>
       </Dialog>
 
-      <Dialog
-        open={confirmDialog}
-        onClose={() => setConfirmDialog(false)}
-        className="custom-dialog"
-      >
-        <DialogTitle className="dialog-title">Confirm Deletion</DialogTitle>
-        <DialogContent className="dialog-content">
+      <Dialog open={confirmDialog} onClose={() => setConfirmDialog(false)}>
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>
           <Typography>
-            Are you sure you want to delete this department? This action will
-            also remove all associated sections. This operation cannot be
-            undone.
+            Are you sure you want to delete this {activeSection}? This action
+            also remove all associated section {activeSection}. This operation
+            cannot be undone.
           </Typography>
         </DialogContent>
-        <DialogActions className="dialog-actions">
+        <DialogActions>
           <Button
-            className="CancelButton"
             onClick={() => setConfirmDialog(false)}
+            variant="contained"
             color="primary"
+            style={{ marginRight: 8 }}
           >
             Cancel
           </Button>
-          <Button
-            className="ConfirmButton"
-            onClick={confirmDelete}
-            color="secondary"
-            variant="contained"
-          >
+          <Button onClick={confirmDelete} variant="contained" color="secondary">
             Confirm
           </Button>
         </DialogActions>
