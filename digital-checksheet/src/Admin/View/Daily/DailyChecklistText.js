@@ -17,6 +17,7 @@ const DailyChecklistText = ({ templateId }) => {
   const [templateData, setTemplateData] = useState(null);
   const [answers, setAnswers] = useState({});
   const [checklistView, setChecklistView] = useState(false);
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
 
   useEffect(() => {
     const fetchTemplateData = async () => {
@@ -50,57 +51,71 @@ const DailyChecklistText = ({ templateId }) => {
   }
 
   return (
-    <Box sx={{ padding: 2 }}>
-      <Typography variant="h4" gutterBottom>
-        {templateData.title}
-      </Typography>
-
-      {templateData.heading && (
-        <Typography variant="h5" gutterBottom>
-          {templateData.heading}
+    <Box>
+      <Paper sx={{ padding: 1 }}>
+        <Typography
+          variant="h2"
+          gutterBottom
+          align="center"
+          sx={{
+            fontWeight: "bold",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            fontSize: "2rem",
+          }}
+        >
+          {templateData.title}
         </Typography>
-      )}
 
-      <Box sx={{ display: "flex", gap: 2 }}>
-        <Typography>Department:</Typography>
-        <Typography variant="body1">{templateData.department}</Typography>
-      </Box>
-      <Box sx={{ display: "flex", gap: 2 }}>
-        <Typography>Section:</Typography>
-        <Typography variant="body1">{templateData.section}</Typography>
-      </Box>
-      <Box sx={{ display: "flex", gap: 2 }}>
-        <Typography>Type:</Typography>
-        <TextField
-          variant="outlined"
-          size="small"
-          value={templateData.template}
-          onChange={(e) =>
-            setTemplateData({ ...templateData, template: e.target.value })
-          }
-          sx={{ width: 200 }}
-        />
-      </Box>
-      <Box sx={{ display: "flex", gap: 2 }}>
-        <Typography>Date:</Typography>
-        <TextField
-          variant="outlined"
-          type="date"
-          size="small"
-          value={new Date().toISOString().split("T")[0]}
-          disabled
-          sx={{ width: 200 }}
-        />
-      </Box>
+        {templateData.heading && (
+          <Typography variant="h5" gutterBottom sx={{ fontSize: "bold" }}>
+            {templateData.heading}
+          </Typography>
+        )}
 
-      <Typography variant="h6" gutterBottom>
-        Questions
-      </Typography>
-      <Table>
+        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+          <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+            Department:
+          </Typography>
+          <Typography variant="body2">{templateData.department}</Typography>
+        </Box>
+        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+          <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+            Section:
+          </Typography>
+          <Typography variant="body2">{templateData.section}</Typography>
+        </Box>
+        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+          <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+            Type:
+          </Typography>
+          <Typography variant="body2">{templateData.template}</Typography>
+        </Box>
+        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+          <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+            Date:
+          </Typography>
+          <TextField
+            variant="outlined"
+            type="date"
+            size="small"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            sx={{ width: 140 }}
+          />
+        </Box>
+      </Paper>
+
+      <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell>Question</TableCell>
-            <TableCell>Response</TableCell>
+            <TableCell sx={{ fontSize: "0.9rem", padding: "4px" }}>
+              Question
+            </TableCell>
+            <TableCell sx={{ fontSize: "0.9rem", padding: "4px" }}>
+              Response
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -108,8 +123,10 @@ const DailyChecklistText = ({ templateId }) => {
           templateData.questions.length > 0 ? (
             templateData.questions.map((question, index) => (
               <TableRow key={index}>
-                <TableCell>{question.question}</TableCell>
-                <TableCell>
+                <TableCell sx={{ fontSize: "0.8rem", padding: "4px" }}>
+                  {question.question}
+                </TableCell>
+                <TableCell sx={{ fontSize: "0.8rem", padding: "4px" }}>
                   <textarea
                     style={{
                       width: "100%",
@@ -126,113 +143,16 @@ const DailyChecklistText = ({ templateId }) => {
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={2}>No questions available</TableCell>
+              <TableCell
+                colSpan={2}
+                sx={{ fontSize: "0.8rem", padding: "4px" }}
+              >
+                No questions available
+              </TableCell>
             </TableRow>
           )}
         </TableBody>
       </Table>
-
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => setChecklistView(true)}
-        sx={{ mt: 2 }}
-      >
-        View Checklist
-      </Button>
-
-      {checklistView && (
-        <Paper
-          style={{
-            position: "fixed",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: "595px",
-            height: "500px",
-            padding: "32px",
-            zIndex: 1000,
-            overflowY: "auto",
-          }}
-        >
-          <Typography variant="h6" gutterBottom>
-            {templateData.title}
-          </Typography>
-
-          {templateData.heading && (
-            <Typography variant="subtitle1" gutterBottom>
-              {templateData.heading}
-            </Typography>
-          )}
-
-          <Box sx={{ display: "flex", gap: 1 }}>
-            <Typography variant="body2">Department:</Typography>
-            <Typography variant="body2">{templateData.department}</Typography>
-          </Box>
-          <Box sx={{ display: "flex", gap: 1 }}>
-            <Typography variant="body2">Section:</Typography>
-            <Typography variant="body2">{templateData.section}</Typography>
-          </Box>
-          <Box sx={{ display: "flex", gap: 1 }}>
-            <Typography variant="body2">Type:</Typography>
-            <Typography variant="body2">{templateData.template}</Typography>
-          </Box>
-          <Box sx={{ display: "flex", gap: 1 }}>
-            <Typography variant="body2">Date:</Typography>
-            <Typography variant="body2">
-              {new Date().toISOString().split("T")[0]}
-            </Typography>
-          </Box>
-
-          <Typography variant="subtitle1" gutterBottom>
-            Questions
-          </Typography>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Question</TableCell>
-                <TableCell>Response</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {Array.isArray(templateData.questions) &&
-              templateData.questions.length > 0 ? (
-                templateData.questions.map((question, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{question.question}</TableCell>
-                    <TableCell>
-                      <textarea
-                        style={{
-                          width: "100%",
-                          minHeight: "50px",
-                          resize: "vertical",
-                        }}
-                        value={answers[question.id] || ""}
-                        onChange={(e) =>
-                          handleTextChange(question.id, e.target.value)
-                        }
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={2}>No questions available</TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => setChecklistView(false)}
-            sx={{ mt: 2 }}
-          >
-            Close
-          </Button>
-        </Paper>
-      )}
     </Box>
   );
 };

@@ -422,16 +422,20 @@ app.get("/api/template/:id", (req, res) => {
   });
 });
 
-// Add a new template
 app.post("/templates", (req, res) => {
-  const { title, heading, template, question_type, questions } = req.body;
+  const {
+    title,
+    heading,
+    template,
+    question_type,
+    question_number,
+    questions,
+  } = req.body;
 
-  // Validate questions format
   if (!Array.isArray(questions)) {
     return res.status(400).json({ error: "Questions should be an array" });
   }
 
-  // Ensure MCQ questions contain options
   if (question_type === "mcq") {
     for (const question of questions) {
       if (!question.options || !Array.isArray(question.options)) {
@@ -443,10 +447,17 @@ app.post("/templates", (req, res) => {
   }
 
   const query =
-    "INSERT INTO templates (title, heading, template, question_type, questions) VALUES (?, ?, ?, ?, ?)";
+    "INSERT INTO templates (title, heading, template, question_type, question_number, questions) VALUES (?, ?, ?, ?, ?, ?)";
   db.execute(
     query,
-    [title, heading, template, question_type, JSON.stringify(questions)],
+    [
+      title,
+      heading,
+      template,
+      question_type,
+      question_number,
+      JSON.stringify(questions),
+    ],
     (err, results) => {
       if (err) {
         console.error("Database query error:", err);
@@ -460,10 +471,16 @@ app.post("/templates", (req, res) => {
   );
 });
 
-// Update an existing template
 app.put("/templates/:id", (req, res) => {
   const { id } = req.params;
-  const { title, heading, template, question_type, questions } = req.body;
+  const {
+    title,
+    heading,
+    template,
+    question_type,
+    question_number,
+    questions,
+  } = req.body;
 
   if (!Array.isArray(questions)) {
     return res
@@ -472,10 +489,18 @@ app.put("/templates/:id", (req, res) => {
   }
 
   const query =
-    "UPDATE templates SET title = ?, heading = ?, template = ?, question_type = ?, questions = ? WHERE id = ?";
+    "UPDATE templates SET title = ?, heading = ?, template = ?, question_type = ?, question_number = ?, questions = ? WHERE id = ?";
   db.execute(
     query,
-    [title, heading, template, question_type, JSON.stringify(questions), id],
+    [
+      title,
+      heading,
+      template,
+      question_type,
+      question_number,
+      JSON.stringify(questions),
+      id,
+    ],
     (err) => {
       if (err) {
         console.error("Database query error:", err);

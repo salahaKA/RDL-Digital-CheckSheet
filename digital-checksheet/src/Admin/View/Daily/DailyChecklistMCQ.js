@@ -76,12 +76,24 @@ const DailyChecklistMCQ = ({ templateId }) => {
 
   return (
     <Box sx={{ padding: 2 }}>
-      <Typography variant="h4" gutterBottom>
+      <Typography
+        variant="h2"
+        gutterBottom
+        align="center"
+        sx={{
+          fontWeight: "bold",
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          fontSize: "2rem",
+        }}
+      >
+        {" "}
         {title}
       </Typography>
 
       {heading && (
-        <Typography variant="h5" gutterBottom>
+        <Typography variant="h5" gutterBottom sx={{ fontSize: "bold" }}>
           {heading}
         </Typography>
       )}

@@ -11,8 +11,6 @@ import DailyChecklist from "./Admin/View/Daily/DailyChecklistYorN";
 import DailyChecklistMCQ from "./Admin/View/Daily/DailyChecklistMCQ";
 import DailyChecklistText from "./Admin/View/Daily/DailyChecklistText";
 import WeeklyChecklistYorN from "./Admin/View/Weekly/WeeklyChecklistYorN";
-import WeeklyChecklistMCQ from "./Admin/View/Weekly/WeeklyChecklistMCQ";
-import WeeklyChecklistText from "./Admin/View/Weekly/WeeklyChecklistText";
 
 function App() {
   return (
@@ -43,14 +41,7 @@ function App() {
               path="/weeklychecklistyn"
               element={<WeeklyChecklistYorN></WeeklyChecklistYorN>}
             />
-            <Route
-              path="/weeklychecklistmcq"
-              element={<WeeklyChecklistMCQ></WeeklyChecklistMCQ>}
-            />
-            <Route
-              path="/weeklychecklisttext"
-              element={<WeeklyChecklistText></WeeklyChecklistText>}
-            />
+
             <Route path="*" element={<h1>404 - Page Not Found</h1>} />
           </Routes>
         </AppLayout>

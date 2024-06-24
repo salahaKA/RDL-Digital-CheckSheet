@@ -35,6 +35,9 @@ const Checklist = () => {
   const [allSections, setAllSections] = useState([]); // Renamed sections state
   const [headings, setHeadings] = useState([]); // Add headings state
 
+  const [currentEditIndex, setCurrentEditIndex] = useState(null);
+  const [confirmDialog, setConfirmDialog] = useState(false);
+
   const [isEditing, setIsEditing] = useState(false);
   const [editIndex, setEditIndex] = useState(null);
 
@@ -45,14 +48,12 @@ const Checklist = () => {
 
   const [viewAllQuestions, setViewAllQuestions] = useState(false);
   const [questionsToView, setQuestionsToView] = useState([]);
-
-  const [numQuestions, setNumQuestions] = useState(1); // State for number of questions
-
+  const [numQuestions, setNumQuestions] = useState("");
   const [numQuestionsError, setNumQuestionsError] = useState("");
 
-  const [options, setOptions] = useState(
-    Array.from({ length: numQuestions }, () => Array(4).fill(""))
-  );
+  const [options, setOptions] = useState(() => {
+    return Array.from({ length: numQuestions }, () => Array(4).fill(""));
+  });
 
   const [selectedQuestionType, setSelectedQuestionType] = useState("");
 
@@ -132,6 +133,7 @@ const Checklist = () => {
             heading: newHeading,
             template: selectedTemplate,
             question_type: selectedQuestionType,
+            question_number: numQuestions,
             questions: formatQuestions(),
           };
           await axios.put(`http://localhost:3001/templates/${id}`, newEntry);
@@ -158,6 +160,7 @@ const Checklist = () => {
             heading: newHeading,
             template: selectedTemplate,
             question_type: selectedQuestionType,
+            question_number: numQuestions,
             questions: formatQuestions(),
           };
           await axios.post("http://localhost:3001/templates", newEntry);
@@ -231,20 +234,44 @@ const Checklist = () => {
       setSelectedQuestionType(itemToEdit.question_type || "");
 
       if (Array.isArray(itemToEdit.questions)) {
-        setQuestions(itemToEdit.questions.map((q) => q.question));
-        setOptions(
-          itemToEdit.questions.map((q) => q.options || ["", "", "", ""])
+        const questionsArray = itemToEdit.questions.map((q) => q.question);
+        const optionsArray = itemToEdit.questions.map(
+          (q) => q.options || ["", "", "", ""]
         );
+        setQuestions(questionsArray);
+        setOptions(optionsArray);
+        setNumQuestions(questionsArray.length); // Set numQuestions based on the number of questions in the item
       } else {
         setQuestions([]);
         setOptions([]);
+        setNumQuestions(0); // Set numQuestions to 0 if there are no questions
       }
     }
 
     setOpenDialog(true);
   };
 
-  const handleDelete = async (index) => {
+  const handleDelete = (index) => {
+    let itemToDelete;
+
+    if (activeSection === "title") {
+      itemToDelete = titles[index]; // Find the title to delete
+    } else if (activeSection === "header") {
+      itemToDelete = headings[index]; // Find the heading to delete
+    } else if (activeSection === "template") {
+      itemToDelete = templates[index]; // Find the template to delete
+    }
+
+    // Ensure itemToDelete is defined
+    if (itemToDelete) {
+      // Prompt for confirmation
+      setCurrentEditIndex(index);
+      setConfirmDialog(true);
+    }
+  };
+
+  const confirmDelete = async () => {
+    const index = currentEditIndex;
     let itemToDelete;
 
     if (activeSection === "title") {
@@ -284,6 +311,8 @@ const Checklist = () => {
         console.error("Error deleting item:", error);
       }
     }
+
+    setConfirmDialog(false); // Close the confirmation dialog
   };
 
   const handleItemClick = (item) => {
@@ -394,7 +423,7 @@ const Checklist = () => {
         setQuestions(newQuestions);
         const newOptions = [
           ...options,
-          ...Array(num - questions.length).fill(Array(4).fill("")),
+          ...Array(num - options.length).fill(Array(4).fill("")),
         ];
         setOptions(newOptions);
       } else {
@@ -443,10 +472,6 @@ const Checklist = () => {
       </Paper>
     );
   }
-
-  const openQuestionsView = () => {
-    setViewAllQuestions(true);
-  };
 
   return (
     <Box>
@@ -1004,6 +1029,28 @@ const Checklist = () => {
           )}
         </>
       )}
+      <Dialog open={confirmDialog} onClose={() => setConfirmDialog(false)}>
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete this {activeSection}? This action
+            cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setConfirmDialog(false)}
+            variant="contained"
+            color="primary"
+            style={{ marginRight: 8 }}
+          >
+            Cancel
+          </Button>
+          <Button onClick={confirmDelete} variant="contained" color="secondary">
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
