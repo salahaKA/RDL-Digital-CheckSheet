@@ -34,7 +34,7 @@ const Login = ({ setIsLoggedIn, setRole }) => {
         if (role === "super_admin") {
           navigate("/superdashboard");
         } else if (role === "admin") {
-          navigate("/admin");
+          navigate("/dashboard");
         } else {
           navigate("/superdashboard");
         }

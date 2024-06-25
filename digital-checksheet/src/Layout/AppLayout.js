@@ -16,7 +16,6 @@ const AppLayout = ({ children }) => {
 
   return (
     <div className="container">
-      <Header />
       <div className="main-layout">
         {showSidebar && (
           <aside className="sidebar">
