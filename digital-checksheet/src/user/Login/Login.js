@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "./Login.css";
+import axios from "axios";
+// import email_icon from "../Assests/email.png";
 import email_icon from "../../Assests/email.png";
 import password_icon from "../../Assests/password.png";
 import eye_icon from "../../Assests/eye.png";
 import eye_off_icon from "../../Assests/eye_off.png";
-import axios from "axios";
+import "./Login.css";
 
-const Login = () => {
+const Login = ({ setIsLoggedIn, setRole }) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,7 +21,6 @@ const Login = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
     try {
       const response = await axios.post("http://localhost:3001/api/login", {
         email,
@@ -29,7 +29,16 @@ const Login = () => {
 
       if (response.status === 200) {
         console.log("Login successful", response.data);
-        navigate("/dashboard");
+        setIsLoggedIn(true);
+        const role = response.data.role;
+        setRole(role); // Update role state
+        if (role === "super_admin") {
+          navigate("/superdashboard"); // Navigate to /dashboard for super admin role
+        } else if (role === "admin") {
+          navigate("/admin"); // Navigate to /admin for admin role
+        } else {
+          navigate("/superdashboard"); // Default to /dashboard
+        }
       } else {
         setError(response.data.error);
       }
@@ -40,10 +49,10 @@ const Login = () => {
   };
 
   return (
-    <form className="containerr" onSubmit={handleSubmit}>
-      <div className="headerr">
-        <div className="textt">Sign In</div>
-        <div className="underlinee"></div>
+    <form className="container" onSubmit={handleSubmit}>
+      <div className="header">
+        <div className="text">Sign In</div>
+        <div className="underline"></div>
       </div>
       <div className="inputs">
         <div className="input">
@@ -56,7 +65,6 @@ const Login = () => {
             required
           />
         </div>
-
         <div className="input password-input">
           <img src={password_icon} alt="Password Icon" />
           <input
@@ -74,9 +82,7 @@ const Login = () => {
           />
         </div>
       </div>
-
       {error && <div className="error-message">{error}</div>}
-
       <div className="input-group">
         <label>
           <input type="checkbox" />
@@ -86,7 +92,6 @@ const Login = () => {
           <Link to="/forgot-password">Forgot Password?</Link>
         </div>
       </div>
-
       <button type="submit">Login Now</button>
       <p className="login-link">
         Don't have an account? <Link to="/Register">Signup now</Link>

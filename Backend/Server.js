@@ -3,28 +3,133 @@ const mysql = require("mysql2");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
+const multer = require("multer");
+const path = require("path");
 
 const app = express();
 const port = 3001;
 
-// Create MySQL connection
-const db = mysql.createConnection({
+// Database configuration
+const dbConfig = {
   host: "localhost",
   user: "root",
   password: "Salaha@07root",
   database: "mydatabase",
-});
+};
 
-db.connect((err) => {
-  if (err) {
-    console.error("Error connecting to MySQL:", err);
-    return;
-  }
-  console.log("Connected to MySQL database");
-});
+// Create MySQL connection pool
+const pool = mysql.createPool(dbConfig);
+
+// Test the MySQL connection
+function testConnection() {
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error("Database connection failed:", err);
+      if (connection) {
+        connection.release();
+      }
+      return;
+    }
+    console.log("Connected to the database");
+    connection.release();
+  });
+}
+
+testConnection(); // Test the connection when the server starts
 
 app.use(bodyParser.json());
 app.use(cors());
+app.use(express.json());
+app.use(express.static(path.join(__dirname, "uploads")));
+
+// Configure Multer for file uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "./uploads/"); // Ensure to create this 'uploads' directory in your project
+  },
+  filename: function (req, file, cb) {
+    cb(
+      null,
+      new Date().toISOString().replace(/:/g, "-") + "-" + file.originalname
+    );
+  },
+});
+
+const upload = multer({ storage: storage });
+
+// Initialize MySQL tables and insert super admin credentials
+function initDatabase() {
+  const organizationsTable = `
+        CREATE TABLE IF NOT EXISTS organizations (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255) NOT NULL,
+            address VARCHAR(255) NOT NULL,
+            phone_number VARCHAR(50) NOT NULL,
+            email VARCHAR(255) NOT NULL,
+            password VARCHAR(255) NOT NULL,
+            person_name VARCHAR(255) NOT NULL,
+            logo VARCHAR(255) NOT NULL
+        );
+    `;
+
+  const loginTable = `
+        CREATE TABLE IF NOT EXISTS login (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            email VARCHAR(255) NOT NULL UNIQUE,
+            password VARCHAR(255) NOT NULL
+        );
+    `;
+
+  const admin_LoginTable = `
+        CREATE TABLE IF NOT EXISTS admin_login (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            email VARCHAR(255) NOT NULL UNIQUE,
+            password VARCHAR(255) NOT NULL
+        );
+    `;
+
+  pool.query(organizationsTable, (err, results) => {
+    if (err) {
+      console.error("Error creating organizations table:", err);
+    } else {
+      console.log("Organizations table created or already exists");
+    }
+  });
+
+  pool.query(loginTable, (err, results) => {
+    if (err) {
+      console.error("Error creating login table:", err);
+    } else {
+      console.log("Login table created or already exists");
+      // Insert super admin credentials if they do not exist
+      const superAdminEmail = "rdltech@gmail.com";
+      const superAdminPassword = "rdltech987";
+      const hashedPassword = bcrypt.hashSync(superAdminPassword, 10); // Synchronous hashing for simplicity
+      const query = `
+                INSERT INTO login (email, password)
+                VALUES (?, ?)
+                ON DUPLICATE KEY UPDATE email=email
+            `;
+      pool.query(query, [superAdminEmail, hashedPassword], (err, results) => {
+        if (err) {
+          console.error("Error inserting super admin credentials:", err);
+        } else {
+          console.log("Super admin credentials inserted or already exist");
+        }
+      });
+    }
+  });
+
+  pool.query(admin_LoginTable, (err, results) => {
+    if (err) {
+      console.error("Error creating admin_login table:", err);
+    } else {
+      console.log("Admin login table created or already exists");
+    }
+  });
+}
+
+initDatabase(); // Initialize the database
 
 // Default route for testing server
 app.get("/", (req, res) => {
@@ -34,48 +139,168 @@ app.get("/", (req, res) => {
 //-----------------------------------------------------------------------------------------------------------------------------------------------
 // Login API
 // Admin credentials----------------------------------------------------------------------------------------------------------------------------
-const adminEmail = "adminorg@example.com";
-const adminPassword = "adminorg123"; // You should hash this password
+// const adminEmail = "adminorg@example.com";
+// const adminPassword = "adminorg123";
 
-app.post("/api/login", async (req, res) => {
-  const { email, password } = req.body;
+// app.post("/api/login", async (req, res) => {
+//   const { email, password } = req.body;
 
-  if (email === adminEmail && password === adminPassword) {
-    const hashedPassword = await bcrypt.hash(password, 10);
+//   if (email === adminEmail && password === adminPassword) {
+//     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const query = "SELECT * FROM adminlogin WHERE email = ?";
-    db.execute(query, [email], (err, results) => {
+//     const query = "SELECT * FROM admin_login WHERE email = ?";
+//     pool.execute(query, [email], (err, results) => {
+//       if (err) {
+//         console.error("Database query error:", err);
+//         res.status(500).json({ error: "Database error" });
+//         return;
+//       }
+
+//       if (results.length === 0) {
+//         const insertQuery =
+//           "INSERT INTO admin_login (email, password) VALUES (?, ?)";
+//         pool.execute(
+//           insertQuery,
+//           [email, hashedPassword],
+//           (err, insertResult) => {
+//             if (err) {
+//               console.error("Database insert error:", err);
+//               res.status(500).json({ error: "Database error" });
+//               return;
+//             }
+
+//             res
+//               .status(200)
+//               .json({ message: "Login successful and credentials stored" });
+//           }
+//         );
+//       } else {
+//         res.status(200).json({ message: "Login successful" });
+//       }
+//     });
+//   } else {
+//     res.status(401).json({ error: "Invalid credentials" });
+//   }
+// });
+
+// Middleware to log admin activities
+function logAdminActivity(email, action) {
+  if (action === "login") {
+    // Exclude logging for super admin login
+    if (email === "rdltech@gmail.com") {
+      return; // Skip logging for super admin login
+    }
+
+    // Fetch organization name based on email
+    const getOrgQuery = "SELECT name FROM organizations WHERE email = ?";
+    pool.query(getOrgQuery, [email], (err, results) => {
       if (err) {
-        console.error("Database query error:", err);
-        res.status(500).json({ error: "Database error" });
+        console.error(Error`fetching organization name for ${email}:`, err);
         return;
       }
 
-      if (results.length === 0) {
-        const insertQuery =
-          "INSERT INTO adminlogin (email, password) VALUES (?, ?)";
-        db.execute(
-          insertQuery,
-          [email, hashedPassword],
-          (err, insertResult) => {
-            if (err) {
-              console.error("Database insert error:", err);
-              res.status(500).json({ error: "Database error" });
-              return;
-            }
+      if (results.length > 0) {
+        const { name } = results[0];
 
-            res
-              .status(200)
-              .json({ message: "Login successful and credentials stored" });
+        // Log admin login with organization name
+        const logQuery = `
+                  "INSERT INTO logs (name, email, login_time, status)
+                  VALUES (?, ?, CURRENT_TIMESTAMP, ?)"
+              `;
+        pool.query(logQuery, [name, email, "logged in"], (err, results) => {
+          if (err) {
+            console.error(Error`logging ${action} activity for ${email}:`, err);
+          } else {
+            console.log(`${action} activity logged for ${email}`);
           }
-        );
+        });
       } else {
-        res.status(200).json({ message: "Login successful" });
+        console.error(`Organization not found for email: ${email}`);
       }
     });
-  } else {
-    res.status(401).json({ error: "Invalid credentials" });
+  } else if (action === "logout") {
+    // Log admin logout
+    const logQuery = `
+          UPDATE logs
+          SET logout_time = CURRENT_TIMESTAMP, status = 'logged out'
+          WHERE email = ? AND logout_time IS NULL
+      `;
+    pool.query(logQuery, [email], (err, results) => {
+      if (err) {
+        console.error(Error`logging ${action} activity for ${email}:`, err);
+      } else {
+        console.log(`${action} activity logged for ${email}`);
+      }
+    });
   }
+}
+
+// Admin login endpoint
+app.post("/api/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  // Explicitly check for rdltech super admin credentials (if needed)
+  if (email === "rdltech@gmail.com" && password === "rdltech987") {
+    logAdminActivity(email, "login"); // Log login activity
+    return res
+      .status(200)
+      .json({ message: "Logged in successfully", role: "super_admin" });
+  }
+
+  // Check if user exists in the login table (super admin)
+  let query = "SELECT * FROM login WHERE email = ?";
+  pool.query(query, [email], async (err, results) => {
+    if (err) {
+      console.error("Error fetching login:", err);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+
+    if (results.length > 0) {
+      // If login exists, compare passwords
+      const superAdmin = results[0];
+      const match = await bcrypt.compare(password, superAdmin.password);
+      if (match) {
+        logAdminActivity(email, "login"); // Log login activity
+        return res
+          .status(200)
+          .json({ message: "Logged in successfully", role: "super_admin" });
+      } else {
+        return res.status(400).json({ error: "Invalid credentials" });
+      }
+    } else {
+      // Check if user exists in the admin_login table (admin)
+      query = "SELECT * FROM admin_login WHERE email = ?";
+      pool.query(query, [email], async (err, results) => {
+        if (err) {
+          console.error("Error fetching admin login:", err);
+          return res.status(500).json({ error: "Internal server error" });
+        }
+
+        if (results.length === 0) {
+          return res.status(400).json({ error: "Invalid credentials" });
+        }
+
+        const admin = results[0];
+        const match = await bcrypt.compare(password, admin.password);
+        if (match) {
+          logAdminActivity(email, "login"); // Log login activity
+          return res
+            .status(200)
+            .json({ message: "Logged in successfully", role: "admin" });
+        } else {
+          return res.status(400).json({ error: "Invalid credentials" });
+        }
+      });
+    }
+  });
+});
+
+// Admin logout endpoint
+app.post("/api/logout", async (req, res) => {
+  const { email } = req.body;
+
+  logAdminActivity(email, "logout"); // Log admin activity
+  return res.status(200).json({ message: "Logged out successfully" });
 });
 
 // Department APIs
@@ -83,7 +308,7 @@ app.post("/api/login", async (req, res) => {
 // Get all departments
 app.get("/departments", (req, res) => {
   const query = "SELECT * FROM department";
-  db.execute(query, (err, results) => {
+  pool.execute(query, (err, results) => {
     if (err) {
       console.error("Database query error:", err);
       res.status(500).json({ error: "Database error" });
@@ -97,7 +322,7 @@ app.get("/departments", (req, res) => {
 app.post("/departments", (req, res) => {
   const { name, description } = req.body;
   const query = "INSERT INTO department (name, description) VALUES (?, ?)";
-  db.execute(query, [name, description], (err, results) => {
+  pool.execute(query, [name, description], (err, results) => {
     if (err) {
       console.error("Database query error:", err);
       res.status(500).json({ error: "Database error" });
@@ -114,7 +339,7 @@ app.put("/departments/:id", (req, res) => {
   const { id } = req.params;
   const { name, description } = req.body;
   const query = "UPDATE department SET name = ?, description = ? WHERE id = ?";
-  db.execute(query, [name, description, id], (err) => {
+  pool.execute(query, [name, description, id], (err) => {
     if (err) {
       console.error("Database query error:", err);
       res.status(500).json({ error: "Database error" });
@@ -126,7 +351,7 @@ app.put("/departments/:id", (req, res) => {
 
 app.get("/departments", (req, res) => {
   const query = "SELECT * FROM departments";
-  db.query(query, (err, results) => {
+  pool.query(query, (err, results) => {
     if (err) {
       console.error("Database query error:", err);
       res.status(500).json({ error: "Database error" });
@@ -140,7 +365,7 @@ app.get("/departments", (req, res) => {
 app.delete("/departments/:id", (req, res) => {
   const { id } = req.params;
   const query = "DELETE FROM department WHERE id = ?";
-  db.execute(query, [id], (err) => {
+  pool.execute(query, [id], (err) => {
     if (err) {
       console.error("Database query error:", err);
       res.status(500).json({ error: "Database error" });
@@ -153,7 +378,7 @@ app.delete("/departments/:id", (req, res) => {
 // Get all sections
 app.get("/sections", (req, res) => {
   const query = "SELECT * FROM sections";
-  db.query(query, (err, results) => {
+  pool.query(query, (err, results) => {
     if (err) {
       console.error("Database query error:", err);
       res.status(500).json({ error: "Database error" });
@@ -168,7 +393,7 @@ app.post("/sections", (req, res) => {
   const { department, section, description } = req.body;
   const query =
     "INSERT INTO sections (department, section, description) VALUES (?, ?, ?)";
-  db.query(query, [department, section, description], (err, result) => {
+  pool.query(query, [department, section, description], (err, result) => {
     if (err) {
       console.error("Database insert error:", err);
       res.status(500).json({ error: "Database error" });
@@ -186,7 +411,7 @@ app.put("/sections/:id", (req, res) => {
   const { id } = req.params;
   const query =
     "UPDATE sections SET department = ?, section = ?, description = ? WHERE id = ?";
-  db.query(query, [department, section, description, id], (err) => {
+  pool.query(query, [department, section, description, id], (err) => {
     if (err) {
       console.error("Database update error:", err);
       res.status(500).json({ error: "Database error" });
@@ -200,7 +425,7 @@ app.put("/sections/:id", (req, res) => {
 app.delete("/sections/:id", (req, res) => {
   const { id } = req.params;
   const query = "DELETE FROM sections WHERE id = ?";
-  db.query(query, [id], (err) => {
+  pool.query(query, [id], (err) => {
     if (err) {
       console.error("Database delete error:", err);
       res.status(500).json({ error: "Database error" });
@@ -213,7 +438,7 @@ app.delete("/sections/:id", (req, res) => {
 // Get all sections
 app.get("/sections", (req, res) => {
   const query = "SELECT * FROM sections";
-  db.query(query, (err, results) => {
+  pool.query(query, (err, results) => {
     if (err) {
       console.error("Database query error:", err);
       res.status(500).json({ error: "Database error" });
@@ -230,7 +455,7 @@ app.post("/titles", (req, res) => {
   const { department, section, title } = req.body;
   const query =
     "INSERT INTO titles (department, section, title) VALUES (?, ?, ?)";
-  db.execute(query, [department, section, title], (err, results) => {
+  pool.execute(query, [department, section, title], (err, results) => {
     if (err) {
       console.error("Database query error:", err);
       res.status(500).json({ error: "Database error" });
@@ -242,7 +467,7 @@ app.post("/titles", (req, res) => {
 
 app.get("/titles", (req, res) => {
   const query = "SELECT * FROM titles";
-  db.query(query, (err, results) => {
+  pool.query(query, (err, results) => {
     if (err) {
       console.error("Database query error:", err);
       res.status(500).json({ error: "Database error" });
@@ -256,7 +481,7 @@ app.get("/titles", (req, res) => {
 app.delete("/titles/:id", (req, res) => {
   const { id } = req.params;
   const query = "DELETE FROM titles WHERE id = ?";
-  db.execute(query, [id], (err) => {
+  pool.execute(query, [id], (err) => {
     if (err) {
       console.error("Database delete error:", err);
       res.status(500).json({ error: "Database error" });
@@ -281,7 +506,7 @@ app.put("/titles/:id", (req, res) => {
 
   const query =
     "UPDATE titles SET title = ?, department = ?, section = ? WHERE id = ?";
-  db.query(query, [title, department, section, id], (err) => {
+  pool.query(query, [title, department, section, id], (err) => {
     if (err) {
       console.error("Database update error:", err);
       res.status(500).json({ error: "Database error" });
@@ -295,7 +520,7 @@ app.put("/titles/:id", (req, res) => {
 app.get("/titles/:id", (req, res) => {
   const { id } = req.params;
   const query = "SELECT * FROM titles WHERE id = ?";
-  db.query(query, [id], (err, results) => {
+  pool.query(query, [id], (err, results) => {
     if (err) {
       console.error("Database query error:", err);
       res.status(500).json({ error: "Database error" });
@@ -315,7 +540,7 @@ app.post("/headings", (req, res) => {
   const { department, section, title, heading } = req.body;
   const query =
     "INSERT INTO headings (department, section, title ,heading) VALUES (?, ?, ? ,?)";
-  db.execute(query, [department, section, title, heading], (err, results) => {
+  pool.execute(query, [department, section, title, heading], (err, results) => {
     if (err) {
       console.error("Database query error:", err);
       res.status(500).json({ error: "Database error" });
@@ -329,7 +554,7 @@ app.post("/headings", (req, res) => {
 
 app.get("/headings", (req, res) => {
   const query = "SELECT * FROM headings";
-  db.query(query, (err, results) => {
+  pool.query(query, (err, results) => {
     if (err) {
       console.error("Database query error:", err);
       res.status(500).json({ error: "Database error" });
@@ -353,7 +578,7 @@ app.put("/headings/:id", (req, res) => {
 
   const query =
     "UPDATE headings SET heading = ?, title = ?, department = ?, section = ? WHERE id = ?";
-  db.query(query, [heading, title, department, section, id], (err) => {
+  pool.query(query, [heading, title, department, section, id], (err) => {
     if (err) {
       console.error("Database update error:", err);
       res.status(500).json({ error: "Database error" });
@@ -366,7 +591,7 @@ app.put("/headings/:id", (req, res) => {
 app.delete("/headings/:id", (req, res) => {
   const { id } = req.params;
   const query = "DELETE FROM headings WHERE id = ?";
-  db.execute(query, [id], (err) => {
+  pool.execute(query, [id], (err) => {
     if (err) {
       console.error("Database delete error:", err);
       res.status(500).json({ error: "Database error" });
@@ -379,7 +604,7 @@ app.delete("/headings/:id", (req, res) => {
 // Templates APIs
 app.get("/templates", (req, res) => {
   const query = "SELECT * FROM templates";
-  db.query(query, (err, results) => {
+  pool.query(query, (err, results) => {
     if (err) {
       console.error("Database query error:", err);
       res.status(500).json({ error: "Database error" });
@@ -397,7 +622,7 @@ app.get("/api/template/:id", (req, res) => {
       LEFT JOIN headings h ON t.title = h.title 
       WHERE t.id = ?`;
 
-  db.execute(query, [id], (err, results) => {
+  pool.execute(query, [id], (err, results) => {
     if (err) {
       console.error("Database query error:", err);
       res.status(500).json({ error: "Database error" });
@@ -448,7 +673,7 @@ app.post("/templates", (req, res) => {
 
   const query =
     "INSERT INTO templates (title, heading, template, question_type, question_number, questions) VALUES (?, ?, ?, ?, ?, ?)";
-  db.execute(
+  pool.execute(
     query,
     [
       title,
@@ -490,7 +715,7 @@ app.put("/templates/:id", (req, res) => {
 
   const query =
     "UPDATE templates SET title = ?, heading = ?, template = ?, question_type = ?, question_number = ?, questions = ? WHERE id = ?";
-  db.execute(
+  pool.execute(
     query,
     [
       title,
@@ -515,7 +740,7 @@ app.put("/templates/:id", (req, res) => {
 app.delete("/templates/:id", (req, res) => {
   const { id } = req.params;
   const query = "DELETE FROM templates WHERE id = ?";
-  db.execute(query, [id], (err) => {
+  pool.execute(query, [id], (err) => {
     if (err) {
       console.error("Database query error:", err);
       res.status(500).json({ error: "Database error" });
@@ -523,6 +748,139 @@ app.delete("/templates/:id", (req, res) => {
     }
     res.status(200).json({ message: "Template deleted" });
   });
+});
+
+// ------------SUPER ADMIN--------------
+
+// Add organization
+app.post("/api/organizations", upload.single("logo"), async (req, res) => {
+  const { name, address, phone_number, email, password, person_name } =
+    req.body;
+  const logo = req.file ? req.file.path : ""; // Assuming logo path is stored in the 'uploads' directory
+
+  try {
+    // Insert into organizations table with plaintext password
+    const query1 = `INSERT INTO organizations (name, address, phone_number, email, password, person_name, logo)
+                      VALUES (?, ?, ?, ?, ?, ?, ?)`;
+    pool.query(
+      query1,
+      [name, address, phone_number, email, password, person_name, logo],
+      async (err, results) => {
+        if (err) {
+          console.error("Error adding organization:", err);
+          return res.status(500).json({ error: "Internal server error" });
+        }
+
+        // Insert into admin_login table with hashed password
+        const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds
+        const query2 = `INSERT INTO admin_login (email, password)
+                          VALUES (?, ?)`;
+        pool.query(query2, [email, hashedPassword], (err, results) => {
+          if (err) {
+            console.error("Error adding admin login:", err);
+            return res.status(500).json({ error: "Internal server error" });
+          }
+          console.log("Organization and admin login added successfully");
+          res.status(200).json({
+            message: "Organization and admin login added successfully",
+          });
+        });
+      }
+    );
+  } catch (error) {
+    console.error("Error processing request:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Update organization
+app.put("/api/organizations/:id", upload.single("logo"), (req, res) => {
+  const { id } = req.params;
+  const { name, address, phone_number, email, password, person_name } =
+    req.body;
+  const logo = req.file ? req.file.path : ""; // Assuming logo path is stored in the 'uploads' directory
+  const query = `UPDATE organizations
+                 SET name=?, address=?, phone_number=?, email=?, password=?, person_name=?, logo=?
+                 WHERE id=?`;
+  pool.query(
+    query,
+    [name, address, phone_number, email, password, person_name, logo, id],
+    (err, results) => {
+      if (err) {
+        console.error("Error updating organization:", err);
+        return res.status(500).json({ error: "Internal server error" });
+      }
+      console.log("Organization updated successfully");
+      res.status(200).json({ message: "Organization updated successfully" });
+    }
+  );
+});
+
+// Delete organization
+app.delete("/api/organizations/:id", (req, res) => {
+  const { id } = req.params;
+
+  // First, fetch the email associated with the organization
+  const getEmailQuery = "SELECT email FROM organizations WHERE id=?";
+  pool.query(getEmailQuery, [id], (err, results) => {
+    if (err) {
+      console.error("Error fetching organization for deletion:", err);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: "Organization not found" });
+    }
+
+    const email = results[0].email;
+
+    // Delete from organizations table
+    const deleteOrgQuery = "DELETE FROM organizations WHERE id=?";
+    pool.query(deleteOrgQuery, [id], (err, results) => {
+      if (err) {
+        console.error("Error deleting organization:", err);
+        return res.status(500).json({ error: "Internal server error" });
+      }
+
+      // Delete from admin_login table
+      const deleteAdminQuery = "DELETE FROM admin_login WHERE email=?";
+      pool.query(deleteAdminQuery, [email], (err, results) => {
+        if (err) {
+          console.error("Error deleting admin login:", err);
+          return res.status(500).json({ error: "Internal server error" });
+        }
+        console.log(
+          "Organization and associated admin login deleted successfully"
+        );
+        res.status(200).json({
+          message:
+            "Organization and associated admin login deleted successfully",
+        });
+      });
+    });
+  });
+});
+
+// Fetch organizations
+app.get("/api/organizations", (req, res) => {
+  const query = "SELECT * FROM organizations";
+  pool.query(query, (err, results) => {
+    if (err) {
+      console.error("Error fetching organizations:", err);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+    res.status(200).json(results);
+  });
+});
+
+// File upload endpoint
+app.post("/upload", upload.single("file"), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: "No file uploaded" });
+  }
+  res
+    .status(200)
+    .json({ message: "File uploaded successfully", filePath: req.file.path });
 });
 
 //---------------------------------------------------------------------------------------------------------------------------------------------

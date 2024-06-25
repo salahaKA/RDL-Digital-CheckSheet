@@ -1,0 +1,224 @@
+/* General Styling */
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #eef1f7;
+    color: #333;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .organization {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 20px auto;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Header Styling */
+  .organization-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .organization-header h2 {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 700;
+    color: #1e39c1;
+  }
+  
+  /* Button Styling */
+  .add-btn, .cancel-btn {
+    background-color: #1e39c1;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 25px;
+    margin-right: 10px;
+    transition: all 0.3s ease;
+  }
+  
+  .cancel-btn {
+    background-color: #f44336;
+  }
+  
+  .add-btn:hover, .cancel-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .add-btn:active, .cancel-btn:active {
+    transform: translateY(0);
+  }
+  
+  .add-btn:hover {
+    background-color: #0c16a2;
+  }
+  
+  .cancel-btn:hover {
+    background-color: #da190b;
+  }
+  
+  /* Form Styling */
+  .organization-form {
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+  }
+  
+  .organization-form h3 {
+    font-size: 26px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 15px;
+  }
+  
+  .organization-form input {
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 25px;
+    font-size: 16px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .organization-form input:focus {
+    border-color: #1e39c1;
+    box-shadow: 0 0 8px rgba(30, 57, 193, 0.3);
+    outline: none;
+  }
+  
+  .form-buttons {
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  .form-buttons button {
+    margin-left: 10px;
+  }
+  
+  /* Table Styling */
+  .organization-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  .organization-table th, .organization-table td {
+    padding: 15px;
+    text-align: left;
+    font-size: 16px;
+  }
+  
+  .organization-table th {
+    background-color: #f2f2f2;
+    font-weight: 700;
+  }
+  
+  .organization-table tbody tr:nth-child(odd) {
+    background-color: #f9f9f9;
+  }
+  
+  .organization-table tbody tr:hover {
+    background-color: #f1f1f1;
+    cursor: pointer;
+  }
+  
+  .organization-table img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  .organization-actions {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .edit-btn, .delete-btn {
+    padding: 10px 15px;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+  }
+  
+  .edit-btn {
+    background-color: #1e39c1;
+    color: white;
+  }
+  
+  .edit-btn:hover {
+    background-color: #0c16a2;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .delete-btn {
+    background-color: #f44336;
+    color: white;
+  }
+  
+  .delete-btn:hover {
+    background-color: #da190b;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .error-message {
+    color: red;
+    font-weight: 400;
+    margin-bottom: 10px;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .organization-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .organization-form {
+      width: 100%;
+      padding: 15px;
+    }
+  
+    .form-buttons {
+      flex-direction: column;
+      align-items: flex-end;
+    }
+  
+    .add-btn, .cancel-btn {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+  
+    .organization-table th, .organization-table td {
+      padding: 12px;
+    }
+  
+    .organization-actions {
+      flex-direction: column;
+      gap: 10px;
+    }
+  
+    .edit-btn, .delete-btn {
+      width: 100%;
+      text-align: center;
+    }
+  }

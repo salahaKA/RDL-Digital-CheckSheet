@@ -1,0 +1,31 @@
+.sidebar {
+    width: 250px;
+    background-color: #333; /* Black background */
+    padding: 20px;
+    color: #fff; /* Text color */
+  }
+  
+  .sidebar ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .sidebar ul li {
+    margin-bottom: 10px;
+  }
+  
+  .sidebar ul li a {
+    display: flex;
+    align-items: center;
+    color: #fff;
+    text-decoration: none;
+    font-size: 18px;
+  }
+  
+  /* .sidebar ul li a:hover {
+    color: #007bff;
+  } */
+  
+  .icon {
+    margin-right: 10px;
+  }
