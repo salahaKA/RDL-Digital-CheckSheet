@@ -4,14 +4,14 @@ import { AiOutlineDashboard } from "react-icons/ai";
 import { BsPeopleFill } from "react-icons/bs";
 import { IoNewspaperOutline } from "react-icons/io5";
 import { FiSettings } from "react-icons/fi";
-import "./Sidebar.css"; // Assuming you have a separate CSS file
+import "./Sidebar.css";
 
-function Sidebar() {
+const Sidebar = () => {
   return (
     <div className="sidebar">
       <ul>
         <li>
-          <Link to="/">
+          <Link to="/superdashboard">
             <AiOutlineDashboard className="icon" />
             Dashboard
           </Link>
@@ -37,6 +37,6 @@ function Sidebar() {
       </ul>
     </div>
   );
-}
+};
 
 export default Sidebar;

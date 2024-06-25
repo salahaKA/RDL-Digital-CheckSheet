@@ -6,8 +6,8 @@ import {
   FaTable,
   FaEye,
 } from "react-icons/fa";
-import "./AppLayout.css";
 import Header from "./Header";
+import "./AppLayout.css";
 
 const AppLayout = ({ children }) => {
   const location = useLocation();

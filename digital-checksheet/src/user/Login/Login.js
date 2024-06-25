@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-// import email_icon from "../Assests/email.png";
 import email_icon from "../../Assests/email.png";
 import password_icon from "../../Assests/password.png";
 import eye_icon from "../../Assests/eye.png";
@@ -31,13 +30,13 @@ const Login = ({ setIsLoggedIn, setRole }) => {
         console.log("Login successful", response.data);
         setIsLoggedIn(true);
         const role = response.data.role;
-        setRole(role); // Update role state
+        setRole(role);
         if (role === "super_admin") {
-          navigate("/superdashboard"); // Navigate to /dashboard for super admin role
+          navigate("/superdashboard");
         } else if (role === "admin") {
-          navigate("/admin"); // Navigate to /admin for admin role
+          navigate("/admin");
         } else {
-          navigate("/superdashboard"); // Default to /dashboard
+          navigate("/superdashboard");
         }
       } else {
         setError(response.data.error);
@@ -49,9 +48,9 @@ const Login = ({ setIsLoggedIn, setRole }) => {
   };
 
   return (
-    <form className="container" onSubmit={handleSubmit}>
-      <div className="header">
-        <div className="text">Sign In</div>
+    <form className="containerr" onSubmit={handleSubmit}>
+      <div className="headerr">
+        <div className="textt">Sign In</div>
         <div className="underline"></div>
       </div>
       <div className="inputs">
