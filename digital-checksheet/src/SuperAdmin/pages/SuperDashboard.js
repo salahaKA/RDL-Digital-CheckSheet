@@ -77,12 +77,10 @@ function Dashboard() {
     <div className="dashboard-container">
       <div className="overview-card">
         <h6>Total Organizations Registered</h6>
-
         <div className="count">{totalOrganizations}</div>
       </div>
       <div className="overview-card">
         <h6>Logins Today</h6>
-
         <div className="count">{dailyLogins}</div>
       </div>
       <div className="chart-container">

@@ -1,0 +1,87 @@
+/* General Styling */
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #eef1f7;
+    color: #333;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .logs {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 20px auto;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Header Styling */
+  .logs-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .logs-header h2 {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 700;
+    color: #1e39c1; /* Set heading color to #1e39c1 */
+  }
+  
+  /* Table styles */
+  .logs-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+  }
+  
+  .logs-table th,
+  .logs-table td {
+    padding: 15px;
+    text-align: left;
+    font-size: 16px;
+  }
+  
+  .logs-table th {
+    background-color: #f2f2f2;
+    font-weight: 700;
+    color: #333; /* Darker header text */
+  }
+  
+  .logs-table tbody tr:nth-child(odd) {
+    background-color: #f9f9f9;
+  }
+  
+  .logs-table tbody tr:hover {
+    background-color: #f1f1f1;
+    cursor: pointer;
+  }
+  
+  .logs-table tbody tr {
+    transition: background-color 0.3s ease;
+  }
+  
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .logs-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .logs-header h2 {
+      font-size: 24px;
+    }
+  
+    .logs-table th,
+    .logs-table td {
+      padding: 12px;
+      font-size: 14px;
+    }
+  }
