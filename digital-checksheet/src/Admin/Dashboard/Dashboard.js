@@ -1,94 +1,104 @@
-import React, { useState, useEffect } from "react";
-import Chart from "chart.js/auto";
+// Dashboard.js
+import React, { useEffect, useState } from "react";
+import { Grid, Paper, Typography, Box } from "@mui/material";
 import axios from "axios";
+import DepartmentTable from "./DepartmentTable";
+import OverviewCard from "./OverviewCard";
+import ChartCard from "./ChartCard";
 import "./Dashboard.css";
 
-function Dashboard() {
-  const [organizations, setOrganizations] = useState([]);
-  const [totalOrganizations, setTotalOrganizations] = useState(0);
-  const [dailyLogins, setDailyLogins] = useState(0);
+const Dashboard = () => {
+  const [departments, setDepartments] = useState([]);
+  const [sections, setSections] = useState([]);
+  const [titles, setTitles] = useState([]);
+  const [headings, setHeadings] = useState([]);
+  const [templates, setTemplates] = useState([]);
 
   useEffect(() => {
-    fetchOrganizations();
-    fetchDailyLogins();
+    const fetchData = async () => {
+      try {
+        const [
+          departmentsResponse,
+          sectionsResponse,
+          titlesResponse,
+          headingsResponse,
+          templatesResponse,
+        ] = await Promise.all([
+          axios.get("http://localhost:3001/departments"),
+          axios.get("http://localhost:3001/sections"),
+          axios.get("http://localhost:3001/titles"),
+          axios.get("http://localhost:3001/headings"),
+          axios.get("http://localhost:3001/templates"),
+        ]);
+
+        setDepartments(departmentsResponse.data);
+        setSections(sectionsResponse.data);
+        setTitles(titlesResponse.data);
+        setHeadings(headingsResponse.data);
+        setTemplates(templatesResponse.data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
   }, []);
 
-  const fetchOrganizations = async () => {
-    try {
-      const response = await axios.get(
-        "http://localhost:3001/api/organizations"
-      );
-      setOrganizations(response.data);
-      setTotalOrganizations(response.data.length);
-      createChart(response.data);
-    } catch (error) {
-      console.error("Error fetching organizations:", error);
-    }
-  };
-
-  const fetchDailyLogins = async () => {
-    try {
-      const response = await axios.get(
-        "http://localhost:3001/api/daily-logins"
-      );
-      setDailyLogins(response.data.count);
-    } catch (error) {
-      console.error("Error fetching daily logins:", error);
-    }
-  };
-
-  const createChart = (organizationsData) => {
-    const labels = organizationsData.map((org) => org.name);
-    const data = organizationsData.map((org, index) => index + 1);
-    const ctx = document.getElementById("organizationsChart");
-    new Chart(ctx, {
-      type: "line",
-      data: {
-        labels: labels,
-        datasets: [
-          {
-            label: "Number of Organizations",
-            data: data,
-            borderColor: "rgba(54, 162, 235, 1)",
-            borderWidth: 2,
-            fill: false,
-          },
-        ],
-      },
-      options: {
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: {
-              stepSize: 1,
-            },
-          },
-        },
-        plugins: {
-          legend: {
-            display: false,
-          },
-        },
-      },
-    });
+  // Helper function to count sections for each department
+  const getSectionsCount = (departmentName) => {
+    return sections.filter((section) => section.department === departmentName)
+      .length;
   };
 
   return (
-    <div className="dashboard-container">
-      <div className="overview-card">
-        <h6>Total Organizations Registered</h6>
-        <div className="count">{totalOrganizations}</div>
-      </div>
-      <div className="overview-card">
-        <h6>Logins Today</h6>
-        <div className="count">{dailyLogins}</div>
-      </div>
-      <div className="chart-container">
-        <h2>Organizations Registration Chart</h2>
-        <canvas id="organizationsChart"></canvas>
-      </div>
-    </div>
+    <Box className="dashboard-container">
+      
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={6} lg={2}>
+          <OverviewCard title="Departments" count={departments.length} />
+        </Grid>
+        <Grid item xs={12} md={6} lg={2}>
+          <OverviewCard title="Sections" count={sections.length} />
+        </Grid>
+        <Grid item xs={12} md={6} lg={2}>
+          <OverviewCard title="Titles" count={titles.length} />
+        </Grid>
+        <Grid item xs={12} md={6} lg={2}>
+          <OverviewCard title="Headings" count={headings.length} />
+        </Grid>
+        <Grid item xs={12} md={6} lg={2}>
+          <OverviewCard title="Templates" count={templates.length} />{" "}
+          {/* New OverviewCard for templates */}
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <Paper className="dashboard-paper">
+            <Typography variant="h6" gutterBottom>
+              Departments Overview
+            </Typography>
+            <DepartmentTable
+              departments={departments}
+              getSectionsCount={getSectionsCount}
+            />
+          </Paper>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <ChartCard
+            title="Departments Chart"
+            data={{
+              labels: departments.map((dep) => dep.name),
+              datasets: [
+                {
+                  label: "Number of Sections",
+                  data: departments.map((dep) => getSectionsCount(dep.name)),
+                  backgroundColor: "rgba(75, 192, 192, 0.6)",
+                },
+              ],
+            }}
+          />
+        </Grid>
+      </Grid>
+    </Box>
   );
-}
+};
 
-export default Dashboard;
+export default Dashboard
