@@ -52,7 +52,10 @@ const Dashboard = () => {
 
   return (
     <Box className="dashboard-container">
+<<<<<<< HEAD
       
+=======
+>>>>>>> 0e73a30a7b4c97a9d741cf4080b50b0959d73ca2
       <Grid container spacing={3}>
         <Grid item xs={12} md={6} lg={2}>
           <OverviewCard title="Departments" count={departments.length} />

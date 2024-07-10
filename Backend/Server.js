@@ -57,7 +57,11 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
+<<<<<<< HEAD
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+=======
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+>>>>>>> 0e73a30a7b4c97a9d741cf4080b50b0959d73ca2
 
 // Initialize MySQL tables and insert super admin credentials
 function initDatabase() {
@@ -245,9 +249,21 @@ function logAdminActivity(email, action) {
           return; // Skip logging for super admin login
       }
 
+<<<<<<< HEAD
       // Fetch organization name based on email
       const getOrgQuery = "SELECT name FROM organizations WHERE email = ?";
       pool.query(getOrgQuery, [email], (err, results) => {
+=======
+      if (results.length > 0) {
+        const { name } = results[0];
+
+        // Log admin login with organization name
+        const logQuery = `
+                  INSERT INTO logs (name, email, login_time, status)
+                  VALUES (?, ?, CURRENT_TIMESTAMP, ?)
+              `;
+        pool.query(logQuery, [name, email, "logged in"], (err, results) => {
+>>>>>>> 0e73a30a7b4c97a9d741cf4080b50b0959d73ca2
           if (err) {
               console.error(Error `fetching organization name for ${email}:`, err);
               return;
@@ -928,6 +944,7 @@ app.get("/api/organizations", (req, res) => {
 });
 
 // Fetch logs
+<<<<<<< HEAD
 app.get('/api/logs', (req, res) => {
   const query = 'SELECT * FROM logs ORDER BY date DESC';
   pool.query(query, (err, results) => {
@@ -936,10 +953,21 @@ app.get('/api/logs', (req, res) => {
           return res.status(500).json({ error: 'Internal server error' });
       }
       res.status(200).json(results);
+=======
+app.get("/api/logs", (req, res) => {
+  const query = "SELECT * FROM logs ORDER BY date DESC";
+  pool.query(query, (err, results) => {
+    if (err) {
+      console.error("Error fetching logs:", err);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+    res.status(200).json(results);
+>>>>>>> 0e73a30a7b4c97a9d741cf4080b50b0959d73ca2
   });
 });
 
 // Fetch today's login count
+<<<<<<< HEAD
 app.get('/api/today-logins', (req, res) => {
   // Assuming you have a 'logs' table where login activities are logged
   const today = new Date().toISOString().slice(0, 10); // Get today's date in YYYY-MM-DD format
@@ -957,6 +985,25 @@ app.get('/api/today-logins', (req, res) => {
       } else {
           res.status(200).json({ count: 0 }); // Return 0 if no logins found today
       }
+=======
+app.get("/api/today-logins", (req, res) => {
+  // Assuming you have a 'logs' table where login activities are logged
+  const today = new Date().toISOString().slice(0, 10); // Get today's date in YYYY-MM-DD format
+
+  const query = "SELECT COUNT(*) AS count FROM logs WHERE DATE(date) = ?";
+  pool.query(query, [today], (err, results) => {
+    if (err) {
+      console.error("Error fetching today's logins:", err);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+
+    if (results.length > 0) {
+      const { count } = results[0];
+      res.status(200).json({ count });
+    } else {
+      res.status(200).json({ count: 0 }); // Return 0 if no logins found today
+    }
+>>>>>>> 0e73a30a7b4c97a9d741cf4080b50b0959d73ca2
   });
 });
 
