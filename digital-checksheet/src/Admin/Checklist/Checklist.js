@@ -960,7 +960,7 @@ const Checklist = () => {
                   <MenuItem value="" disabled>
                     Select Question Type
                   </MenuItem>
-                  <MenuItem value="mcq">MCQ</MenuItem>
+                  {/* <MenuItem value="mcq">MCQ</MenuItem> */}
                   <MenuItem value="yesno">Yes/No</MenuItem>
                   <MenuItem value="text">Text</MenuItem>
                 </Select>

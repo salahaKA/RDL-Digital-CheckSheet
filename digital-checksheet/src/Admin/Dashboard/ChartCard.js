@@ -1,6 +1,6 @@
 import React from "react";
 import { Paper, Typography } from "@mui/material";
-import { Bar } from "react-chartjs-2";
+import { Bar, Pie, Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -9,6 +9,9 @@ import {
   Title,
   Tooltip,
   Legend,
+  ArcElement,
+  PointElement,
+  LineElement
 } from "chart.js";
 import "./ChartCard.css";
 ChartJS.register(
@@ -17,16 +20,33 @@ ChartJS.register(
   BarElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  ArcElement,
+  PointElement,
+  LineElement
 );
 
-const ChartCard = ({ title, data }) => {
+const ChartCard = ({ title, data, type}) => {
+  
+  const renderChart = () => {
+    switch (type) {
+      case "bar":
+        return <Bar data={data} />;
+      case "pie":
+        return <Pie data={data} />;
+      case "line":
+        return <Line data={data} />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <Paper className="chart-card">
       <Typography variant="h6" gutterBottom>
         {title}
       </Typography>
-      <Bar data={data} />
+      {renderChart()}
     </Paper>
   );
 };
