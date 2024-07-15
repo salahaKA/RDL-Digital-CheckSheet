@@ -491,21 +491,38 @@ app.get("/titles/:id", (req, res) => {
   });
 });
 
-//heading
+// //heading
+// app.post("/headings", (req, res) => {
+//   console.log("Request received:", req.body); // Add this line
+//   const { department, section, title, heading } = req.body;
+//   const query =
+//     "INSERT INTO headings (department, section, title ,heading) VALUES (?, ?, ? ,?)";
+//   pool.execute(query, [department, section, title, heading], (err, results) => {
+//     if (err) {
+//       console.error("Database query error:", err);
+//       res.status(500).json({ error: "Database error" });
+//       return;
+//     }
+//     res
+//       .status(201)
+//       .json({ message: "heading added", titleId: results.insertId });
+//   });
+// });
+
 app.post("/headings", (req, res) => {
-  console.log("Request received:", req.body); // Add this line
-  const { department, section, title, heading } = req.body;
-  const query =
-    "INSERT INTO headings (department, section, title ,heading) VALUES (?, ?, ? ,?)";
-  pool.execute(query, [department, section, title, heading], (err, results) => {
+  console.log("Request received:", req.body);
+  const { department, section, title, heading, label_number, labels } = req.body;
+  const query = `
+    INSERT INTO headings (department, section, title, heading, label_number, labels) 
+    VALUES (?, ?, ?, ?, ?, ?)
+  `;
+  pool.execute(query, [department, section, title, heading, label_number, labels], (err, results) => {
     if (err) {
       console.error("Database query error:", err);
       res.status(500).json({ error: "Database error" });
       return;
     }
-    res
-      .status(201)
-      .json({ message: "heading added", titleId: results.insertId });
+    res.status(201).json({ message: "Heading added", headingId: results.insertId });
   });
 });
 
@@ -574,7 +591,7 @@ app.get("/templates", (req, res) => {
 app.get("/api/template/:id", (req, res) => {
   const { id } = req.params;
   const query = `
-      SELECT t.*, h.department, h.section 
+      SELECT t.*, h.department, h.section, h.labels, h.label_number AS labelnumber
       FROM templates t
       LEFT JOIN headings h ON t.title = h.title 
       WHERE t.id = ?`;

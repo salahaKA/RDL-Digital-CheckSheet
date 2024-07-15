@@ -1,31 +1,73 @@
+/* src/Sidebar.css */
+
+/* General sidebar styling */
 .sidebar {
-    width: 250px;
-    background-color: #333; /* Black background */
-    padding: 20px;
-    color: #fff; /* Text color */
-  }
-  
-  .sidebar ul {
-    list-style-type: none;
-    padding: 0;
-  }
-  
-  .sidebar ul li {
-    margin-bottom: 10px;
-  }
-  
-  .sidebar ul li a {
-    display: flex;
-    align-items: center;
-    color: #fff;
-    text-decoration: none;
-    font-size: 18px;
-  }
-  
-  /* .sidebar ul li a:hover {
-    color: #007bff;
-  } */
-  
-  .icon {
-    margin-right: 10px;
-  }
+  width: 200px;
+  background-color: #080808;
+  padding: 20px;
+  color: #fff;
+
+}
+
+.sidebar ul li a {
+  display: flex;
+  align-items: center;
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 1.2em;
+  padding: 12px;
+}
+
+/* .sidebar nav a {
+  text-decoration: none;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  font-size: 1.2em;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+} */
+
+.sidebar nav a:hover {
+  background-color: #555;
+}
+
+/* Logo styling */
+.sidebar .logo {
+  margin-bottom: 20px;
+  font-size: 2em; /* Increased font size */
+  font-weight: bold;
+  color: #ffffff;
+  text-align: center;
+}
+
+/* Navigation styling */
+.sidebar nav ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar nav li {
+  margin: 20px 0; /* Increased margin */
+}
+
+.sidebar nav a {
+  text-decoration: none;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  padding: 12px; /* Increased padding */
+  font-size: 1.2em; /* Increased font size */
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.sidebar nav a:hover {
+  background-color: #555;
+}
+
+.sidebar nav a svg {
+  font-size: 1.5em; /* Increased icon size */
+  margin-right: 10px;
+}

@@ -20,7 +20,7 @@
 /* Sidebar styling */
 .sidebar {
   flex-shrink: 0;
-  background: linear-gradient(180deg, #333, #444);
+  background: linear-gradient(180deg, #0e0e0e, #090909);
   color: #ffffff;
   padding: 20px;
   width: 200px;

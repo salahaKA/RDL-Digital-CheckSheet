@@ -34,7 +34,8 @@ const Checklist = () => {
   const [titles, setTitles] = useState([]); // Add titles state
   const [allSections, setAllSections] = useState([]); // Renamed sections state
   const [headings, setHeadings] = useState([]); // Add headings state
-
+  const [labelNumber, setLabelNumber] = useState(0);
+  const [labels, setLabels] = useState([]);
   const [currentEditIndex, setCurrentEditIndex] = useState(null);
   const [confirmDialog, setConfirmDialog] = useState(false);
 
@@ -152,6 +153,8 @@ const Checklist = () => {
             section: selectedSection,
             title: newTitle,
             heading: newHeading,
+            label_number: labelNumber,
+      labels: labels.join(", "), // Join labels array into a comma-separated string
           };
           await axios.post("http://localhost:3001/headings", newEntry);
         } else if (activeSection === "template") {
@@ -191,7 +194,17 @@ const Checklist = () => {
       setEditIndex(null);
     }
   };
+  const handleLabelNumberChange = (e) => {
+    const number = parseInt(e.target.value, 10);
+    setLabelNumber(number);
+    setLabels(Array(number).fill("")); // Initialize labels array with empty strings
+  };
 
+  const handleLabelChange = (index, value) => {
+    const newLabels = [...labels];
+    newLabels[index] = value;
+    setLabels(newLabels);
+  };
   // Function to format questions based on question type
   const formatQuestions = () => {
     return questions.map((question, index) => {
@@ -590,49 +603,57 @@ const Checklist = () => {
       )}
 
       {activeSection === "header" && (
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>
-                  <h3>Department</h3>
-                </TableCell>
-                <TableCell>
-                  <h3>Section</h3>
-                </TableCell>
-                <TableCell>
-                  <h3>Title</h3>
-                </TableCell>
-                <TableCell>
-                  <h3>Heading</h3>
-                </TableCell>
-                <TableCell>
-                  <h3>Action</h3>
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {headings.map((item, index) => (
-                <TableRow key={index}>
-                  <TableCell>{item.department}</TableCell>
-                  <TableCell>{item.section}</TableCell>
-                  <TableCell>{item.title}</TableCell>
-                  <TableCell>{item.heading}</TableCell>
-                  <TableCell>
-                    <Button color="primary" onClick={() => handleEdit(index)}>
-                      Edit
-                    </Button>
-                    <Button
-                      color="secondary"
-                      onClick={() => handleDelete(index)}
-                    >
-                      Delete
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+       <TableContainer component={Paper}>
+       <Table>
+       <TableHead>
+         <TableRow>
+           <TableCell>
+             <h3>Department</h3>
+           </TableCell>
+           <TableCell>
+             <h3>Section</h3>
+           </TableCell>
+           <TableCell>
+             <h3>Title</h3>
+           </TableCell>
+           <TableCell>
+             <h3>Heading</h3>
+           </TableCell>
+           <TableCell>
+             <h3>Label Number</h3>
+           </TableCell>
+           <TableCell>
+             <h3>Labels</h3>
+           </TableCell>
+           <TableCell>
+             <h3>Action</h3>
+           </TableCell>
+         </TableRow>
+       </TableHead>
+       <TableBody>
+         {headings.map((item, index) => (
+           <TableRow key={index}>
+             <TableCell>{item.department}</TableCell>
+             <TableCell>{item.section}</TableCell>
+             <TableCell>{item.title}</TableCell>
+             <TableCell>{item.heading}</TableCell>
+             <TableCell>{item.label_number}</TableCell>
+             <TableCell>{item.labels}</TableCell>
+             <TableCell>
+               <Button color="primary" onClick={() => handleEdit(index)}>
+                 Edit
+               </Button>
+               <Button
+                 color="secondary"
+                 onClick={() => handleDelete(index)}
+               >
+                 Delete
+               </Button>
+             </TableCell>
+           </TableRow>
+         ))}
+       </TableBody>
+     </Table>
         </TableContainer>
       )}
 
@@ -793,100 +814,124 @@ const Checklist = () => {
       )}
 
       {activeSection === "header" && (
-        <Dialog open={openDialog} onClose={handleClose}>
-          <DialogTitle>
-            {isEditing ? "Edit" : "Add New"}{" "}
-            {activeSection.charAt(0).toUpperCase() + activeSection.slice(1)}
-          </DialogTitle>
-          <DialogContent>
-            <Box>
-              {/* Dropdown for Department */}
-              <Select
-                value={selectedDepartment}
-                onChange={handleDepartmentChange}
-                fullWidth
-                displayEmpty
-                variant="outlined"
-                margin="dense"
-              >
-                <MenuItem value="" disabled>
-                  Select Department
-                </MenuItem>
-                {[...new Set(titles.map((item) => item.department))].map(
-                  (department, index) => (
-                    <MenuItem key={index} value={department}>
-                      {department}
-                    </MenuItem>
-                  )
-                )}
-              </Select>
+       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+       <DialogTitle>
+         {isEditing ? "Edit" : "Add New"} Header
+       </DialogTitle>
+       <DialogContent>
+         <Box>
+           {/* Dropdown for Department */}
+           <Select
+             value={selectedDepartment}
+             onChange={handleDepartmentChange}
+             fullWidth
+             displayEmpty
+             variant="outlined"
+             margin="dense"
+           >
+             <MenuItem value="" disabled>
+               Select Department
+             </MenuItem>
+             {[...new Set(titles.map((item) => item.department))].map(
+               (department, index) => (
+                 <MenuItem key={index} value={department}>
+                   {department}
+                 </MenuItem>
+               )
+             )}
+           </Select>
 
-              {/* Dropdown for Section */}
-              <Select
-                value={selectedSection}
-                onChange={(e) => setSelectedSection(e.target.value)}
-                fullWidth
-                displayEmpty
-                variant="outlined"
-                margin="dense"
-                disabled={!selectedDepartment} // Disable if no department is selected
-              >
-                <MenuItem value="" disabled>
-                  Select Section
-                </MenuItem>
-                {selectedDepartment &&
-                  titles
-                    .filter((title) => title.department === selectedDepartment) // Filter titles based on selected department
-                    .map((title, index) => (
-                      <MenuItem key={index} value={title.section}>
-                        {title.section}
-                      </MenuItem> // Use title.section instead of item.section
-                    ))}
-              </Select>
+           {/* Dropdown for Section */}
+           <Select
+             value={selectedSection}
+             onChange={(e) => setSelectedSection(e.target.value)}
+             fullWidth
+             displayEmpty
+             variant="outlined"
+             margin="dense"
+             disabled={!selectedDepartment}
+           >
+             <MenuItem value="" disabled>
+               Select Section
+             </MenuItem>
+             {selectedDepartment &&
+               titles
+                 .filter((title) => title.department === selectedDepartment)
+                 .map((title, index) => (
+                   <MenuItem key={index} value={title.section}>
+                     {title.section}
+                   </MenuItem>
+                 ))}
+           </Select>
 
-              {/* Dropdown for Title */}
-              <Select
-                value={newTitle}
-                onChange={(e) => setNewTitle(e.target.value)}
-                fullWidth
-                displayEmpty
-                variant="outlined"
-                margin="dense"
-                disabled={!selectedSection} // Disable if no section is selected
-              >
-                <MenuItem value="" disabled>
-                  Select Title
-                </MenuItem>
-                {selectedSection &&
-                  titles
-                    .filter((title) => title.section === selectedSection)
-                    .map((title, index) => (
-                      <MenuItem key={index} value={title.title}>
-                        {title.title}
-                      </MenuItem>
-                    ))}
-              </Select>
-              {/* Textfield for Heading */}
-              <TextField
-                margin="dense"
-                label="Heading"
-                fullWidth
-                variant="outlined"
-                value={newHeading}
-                onChange={(e) => setNewHeading(e.target.value)}
-                disabled={!newTitle} // Disable if no title is selected
-              />
-            </Box>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleClose} color="primary">
-              Cancel
-            </Button>
-            <Button onClick={handleAdd} color="primary">
-              {isEditing ? "Update" : "Add"}
-            </Button>
-          </DialogActions>
-        </Dialog>
+           {/* Dropdown for Title */}
+           <Select
+             value={newTitle}
+             onChange={(e) => setNewTitle(e.target.value)}
+             fullWidth
+             displayEmpty
+             variant="outlined"
+             margin="dense"
+             disabled={!selectedSection}
+           >
+             <MenuItem value="" disabled>
+               Select Title
+             </MenuItem>
+             {selectedSection &&
+               titles
+                 .filter((title) => title.section === selectedSection)
+                 .map((title, index) => (
+                   <MenuItem key={index} value={title.title}>
+                     {title.title}
+                   </MenuItem>
+                 ))}
+           </Select>
+
+           {/* Textfield for Heading */}
+           <TextField
+             margin="dense"
+             label="Heading"
+             fullWidth
+             variant="outlined"
+             value={newHeading}
+             onChange={(e) => setNewHeading(e.target.value)}
+             disabled={!newTitle}
+           />
+
+           {/* Textfield for Label Number */}
+           <TextField
+             margin="dense"
+             label="Number of Labels"
+             fullWidth
+             variant="outlined"
+             value={labelNumber}
+             onChange={handleLabelNumberChange}
+             disabled={!newHeading}
+           />
+
+           {/* Dynamic Textfields for Labels */}
+           {Array.from({ length: labelNumber }).map((_, index) => (
+             <TextField
+               key={index}
+               margin="dense"
+               label={`Label ${index + 1}`}
+               fullWidth
+               variant="outlined"
+               value={labels[index] || ""}
+               onChange={(e) => handleLabelChange(index, e.target.value)}
+             />
+           ))}
+         </Box>
+       </DialogContent>
+       <DialogActions>
+         <Button onClick={() => setOpenDialog(false)} color="primary">
+           Cancel
+         </Button>
+         <Button onClick={handleAdd} color="primary">
+           {isEditing ? "Update" : "Add"}
+         </Button>
+       </DialogActions>
+     </Dialog>
       )}
 
       {activeSection === "template" && (
@@ -960,9 +1005,9 @@ const Checklist = () => {
                   <MenuItem value="" disabled>
                     Select Question Type
                   </MenuItem>
-                  {/* <MenuItem value="mcq">MCQ</MenuItem> */}
-                  <MenuItem value="yesno">Yes/No</MenuItem>
-                  <MenuItem value="text">Text</MenuItem>
+                  
+                  <MenuItem value="yesno">Task form</MenuItem>
+                  <MenuItem value="text">Feedback form</MenuItem>
                 </Select>
                 <TextField
                   type="number"

@@ -15,6 +15,7 @@ import {
   Toolbar,
 } from "@mui/material";
 import ReportPage from "./ReportPage";
+import './View.css'
 
 const View = () => {
   const [templates, setTemplates] = useState([]);
@@ -50,7 +51,7 @@ const View = () => {
   };
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
+    <Box sx={{ flexGrow: 1 }} className="view-container">
       <AppBar position="static" sx={{ backgroundColor: "#f5f5f5" }}>
         <Toolbar>
           <Button

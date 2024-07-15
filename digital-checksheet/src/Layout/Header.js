@@ -2,6 +2,7 @@ import React from "react";
 import { AppBar, Toolbar, Typography, Button } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./Header.css"; // Import your styles for Header
+import logo from "../Assests/logo3.png"
 
 const Header = () => {
   const location = useLocation();
@@ -19,6 +20,7 @@ const Header = () => {
   return (
     <AppBar position="sticky" className="header">
       <Toolbar>
+      <img src={logo} alt="Logo" className="logo" />
         <Typography
           variant="h6"
           className="title"

@@ -52,10 +52,6 @@ const Dashboard = () => {
   };
 
 
-  
-
-  
-
   return (
     <Box className="dashboard-container">
       
@@ -104,9 +100,6 @@ const Dashboard = () => {
           />
         </Grid>
 
-        
-
-        
       </Grid>
     </Box>
   );

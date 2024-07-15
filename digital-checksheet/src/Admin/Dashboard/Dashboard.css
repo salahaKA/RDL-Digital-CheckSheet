@@ -4,6 +4,9 @@
   background-color: #f0f2f5;
   min-height: 100vh;
   font-family: 'Arial, sans-serif';
+  /* background-image: url('https://th.bing.com/th/id/OIP.dV-XC44qTcI3sih7mSpVSAHaE8?w=1470&h=980&rs=1&pid=ImgDetMain');  */
+  background-size: cover; /* Ensure the image covers the entire background */
+  background-position: center; /* Center the background image */
 }
 
 /* Styling for the main heading */
