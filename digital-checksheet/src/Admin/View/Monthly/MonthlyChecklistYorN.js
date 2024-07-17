@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import {
   Table,
   TableBody,
@@ -7,23 +8,33 @@ import {
   TableRow,
   Box,
   Typography,
-  Checkbox,
   TextField,
-  Button,
   Paper,
 } from "@mui/material";
-import axios from "axios";
+import { DatePicker } from "@mui/x-date-pickers";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { LocalizationProvider } from "@mui/x-date-pickers";
 
-const MonthlyChecklistYorN = ({ templateId }) => {
+const chunkArray = (array, size) => {
+  const result = [];
+  for (let i = 0; i < array.length; i += size) {
+    result.push(array.slice(i, i + size));
+  }
+  return result;
+};
+
+const MonthlyChecklist = ({ templateId }) => {
   const [title, setTitle] = useState("");
   const [heading, setHeading] = useState("");
   const [department, setDepartment] = useState("");
   const [section, setSection] = useState("");
   const [templateType, setTemplateType] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
-  const [checklistView, setChecklistView] = useState(false);
+  const [labels, setLabels] = useState("");
+  const [labelnumber, setLabelnumber] = useState("");
+  const [labelTexts, setLabelTexts] = useState({});
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   useEffect(() => {
     const fetchTemplateData = async () => {
@@ -33,14 +44,15 @@ const MonthlyChecklistYorN = ({ templateId }) => {
       }
 
       try {
-        const response = await axios.get(`
-          http://localhost:3001/api/template/${templateId}`);
+        const response = await axios.get(`http://localhost:3001/api/template/${templateId}`);
         const template = response.data;
 
         setTitle(template.title || "");
         setHeading(template.heading || "");
         setDepartment(template.department || "");
         setSection(template.section || "");
+        setLabels(template.labels || "");
+        setLabelnumber(template.labelnumber || "");
         setTemplateType(template.template || "");
         setQuestions(template.questions || []);
       } catch (error) {
@@ -51,130 +63,130 @@ const MonthlyChecklistYorN = ({ templateId }) => {
     fetchTemplateData();
   }, [templateId]);
 
-  const handleOptionChange = (questionId, day) => {
+  const handleInputChange = (questionId, day, value) => {
     setAnswers((prevAnswers) => ({
       ...prevAnswers,
       [questionId]: {
         ...prevAnswers[questionId],
-        [day]: !prevAnswers[questionId]?.[day],
+        [day]: value,
       },
     }));
   };
 
-  const daysOfMonth = Array.from({ length: 31 }, (_, i) => i + 1);
+  const handleLabelTextChange = (index, value) => {
+    setLabelTexts((prevTexts) => ({
+      ...prevTexts,
+      [index]: value,
+    }));
+  };
+
+  const getDaysInMonth = (year, month) => {
+    return new Date(year, month + 1, 0).getDate();
+  };
+
+  const renderDaysInMonth = () => {
+    const year = selectedDate.getFullYear();
+    const month = selectedDate.getMonth();
+    const daysInMonth = getDaysInMonth(year, month);
+    return Array.from({ length: daysInMonth }, (_, i) => i + 1);
+  };
+
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
+  };
+
+  const labelArray = labels.split(",");
+  const labelChunks = chunkArray(labelArray, 3);
 
   return (
-    <Box>
-      <Paper sx={{ padding: 1 }}>
-        <Typography
-          variant="h2"
-          gutterBottom
-          align="center"
-          sx={{
-            fontWeight: "bold",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            fontSize: "2rem",
-          }}
-        >
-          {title}
-        </Typography>
-
-        {heading && (
-          <Typography variant="h5" gutterBottom sx={{ fontSize: "bold" }}>
-            {heading}
-          </Typography>
-        )}
-
-        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-          <Typography variant="body2" sx={{ fontWeight: "bold" }}>
-            Department:
-          </Typography>
-          <Typography variant="body2">{department}</Typography>
-        </Box>
-        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-          <Typography variant="body2" sx={{ fontWeight: "bold" }}>
-            Section:
-          </Typography>
-          <Typography variant="body2">{section}</Typography>
-        </Box>
-        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-          <Typography variant="body2" sx={{ fontWeight: "bold" }}>
-            Type:
-          </Typography>
-          <Typography variant="body2">{templateType}</Typography>
-        </Box>
-        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-          <Typography variant="body2" sx={{ fontWeight: "bold" }}>
-            Date:
-          </Typography>
-          <TextField
-            variant="outlined"
-            type="date"
-            size="small"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            sx={{ width: 140 }}
-          />
-        </Box>
-      </Paper>
-
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell sx={{ fontSize: "0.9rem", padding: "4px" }}>
-              Question
-            </TableCell>
-            {daysOfMonth.map((day, index) => (
-              <TableCell
-                key={index}
-                sx={{ fontSize: "0.9rem", padding: "4px", textAlign: "center" }}
-              >
-                {day}
-              </TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {Array.isArray(questions) && questions.length > 0 ? (
-            questions.map((question, index) => (
-              <TableRow key={index}>
-                <TableCell sx={{ fontSize: "0.8rem", padding: "4px" }}>
-                  {question.question}
-                </TableCell>
-                {daysOfMonth.map((day, idx) => (
-                  <TableCell
-                    key={idx}
-                    sx={{
-                      fontSize: "0.8rem",
-                      padding: "4px",
-                      textAlign: "center",
-                    }}
-                  >
-                    <Checkbox
-                      size="small"
-                      checked={answers[question.id]?.[day] || false}
-                      onChange={() => handleOptionChange(question.id, day)}
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
+      <Box sx={{ maxWidth: '100%', overflowX: 'auto' }}>
+        <Paper sx={{ padding: 2, border: "2px solid black", borderRadius: 2 }}>
+          <Box sx={{ marginBottom: 2, textAlign: 'center' }}>
+            <Typography variant="h4" sx={{ fontWeight: 'bold' }}>{title}</Typography>
+            {heading && <Typography variant="h6" sx={{ fontWeight: 'bold' }}>{heading}</Typography>}
+          </Box>
+          
+          {/* Display labels in a table */}
+          <Table size="small" sx={{ border: "1px solid black", marginBottom: 2 }}>
+            <TableBody>
+              {labelChunks.map((chunk, chunkIndex) => (
+                <TableRow key={chunkIndex}>
+                  {chunk.map((label, idx) => (
+                    <TableCell key={idx} colSpan={2} sx={{ border: "1px solid black" }}>
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <Typography variant="body2" sx={{ marginRight: 1 }}>{label}</Typography>
+                        <TextField
+                          variant="outlined"
+                          size="small"
+                          value={labelTexts[chunkIndex * 3 + idx] || ""}
+                          onChange={(e) => handleLabelTextChange(chunkIndex * 3 + idx, e.target.value)}
+                        />
+                      </Box>
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+              <TableRow>
+                <TableCell colSpan={6} sx={{ border: "1px solid black" }}>
+                  <Box sx={{ display: "flex", alignItems: "center" }}>
+                    <Typography variant="body2" sx={{ marginRight: 1 }}>Date:</Typography>
+                    <DatePicker
+                      value={selectedDate}
+                      onChange={handleDateChange}
+                      renderInput={(params) => <TextField {...params} variant="outlined" size="small" />}
                     />
-                  </TableCell>
-                ))}
+                  </Box>
+                </TableCell>
               </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell
-                colSpan={32}
-                sx={{ fontSize: "0.8rem", padding: "4px" }}
-              >
-                No questions available
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-    </Box>
+              <TableRow>
+                <TableCell align="right" sx={{ fontWeight: "bold", border: "1px solid black" }}>Department:</TableCell>
+                <TableCell sx={{ border: "1px solid black" }}>{department}</TableCell>
+                <TableCell align="right" sx={{ fontWeight: "bold", border: "1px solid black" }}>Section:</TableCell>
+                <TableCell sx={{ border: "1px solid black" }}>{section}</TableCell>
+                <TableCell align="right" sx={{ fontWeight: "bold", border: "1px solid black" }}>Type:</TableCell>
+                <TableCell sx={{ border: "1px solid black" }}>{templateType}</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+
+          {/* Display questions and dates in a table */}
+          <Box sx={{ overflowX: 'auto' }}>
+            <Table size="small" sx={{ border: "1px solid black" }}>
+              <TableHead>
+                <TableRow sx={{ backgroundColor: "#f0f0f0" }}>
+                  <TableCell sx={{ fontSize: "0.9rem", padding: "4px", border: "1px solid black" }}>Question</TableCell>
+                  {renderDaysInMonth().map((day) => (
+                    <TableCell key={day} sx={{ fontSize: "0.9rem", padding: "4px", border: "1px solid black" }}>{day}</TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {questions.map((question, index) => (
+                  <TableRow key={index}>
+                    <TableCell sx={{ fontSize: "0.9rem", padding: "4px", border: "1px solid black" }}>
+                      {question.question}
+                    </TableCell>
+                    {renderDaysInMonth().map((day) => (
+                      <TableCell key={`${question.id}_${day}`} sx={{ fontSize: "0.9rem", padding: "4px", border: "1px solid black" }}>
+                        <TextField
+                          variant="outlined"
+                          size="small"
+                          value={answers[question.id]?.[day] || ""}
+                          onChange={(e) => handleInputChange(question.id, day, e.target.value)}
+                          sx={{ width: '60px' }}
+                        />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Box>
+        </Paper>
+      </Box>
+    </LocalizationProvider>
   );
 };
 
-export default MonthlyChecklistYorN;
+export default MonthlyChecklist
