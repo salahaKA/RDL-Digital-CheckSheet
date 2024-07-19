@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import './SuperDashboard.css';
+import React, { useState, useEffect } from "react";
+import Chart from "chart.js/auto";
+import axios from "axios";
+import "./Dashboard.css";
 
 function Dashboard() {
   const [organizations, setOrganizations] = useState([]);

@@ -57,8 +57,6 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
 // Initialize MySQL tables and insert super admin credentials
 function initDatabase() {
   const organizationsTable = `
@@ -138,7 +136,52 @@ app.get("/", (req, res) => {
   res.send("Backend server is running");
 });
 
+//-----------------------------------------------------------------------------------------------------------------------------------------------
+// Login API
+// Admin credentials----------------------------------------------------------------------------------------------------------------------------
+// const adminEmail = "adminorg@example.com";
+// const adminPassword = "adminorg123";
 
+// app.post("/api/login", async (req, res) => {
+//   const { email, password } = req.body;
+
+//   if (email === adminEmail && password === adminPassword) {
+//     const hashedPassword = await bcrypt.hash(password, 10);
+
+//     const query = "SELECT * FROM admin_login WHERE email = ?";
+//     pool.execute(query, [email], (err, results) => {
+//       if (err) {
+//         console.error("Database query error:", err);
+//         res.status(500).json({ error: "Database error" });
+//         return;
+//       }
+
+//       if (results.length === 0) {
+//         const insertQuery =
+//           "INSERT INTO admin_login (email, password) VALUES (?, ?)";
+//         pool.execute(
+//           insertQuery,
+//           [email, hashedPassword],
+//           (err, insertResult) => {
+//             if (err) {
+//               console.error("Database insert error:", err);
+//               res.status(500).json({ error: "Database error" });
+//               return;
+//             }
+
+//             res
+//               .status(200)
+//               .json({ message: "Login successful and credentials stored" });
+//           }
+//         );
+//       } else {
+//         res.status(200).json({ message: "Login successful" });
+//       }
+//     });
+//   } else {
+//     res.status(401).json({ error: "Invalid credentials" });
+//   }
+// });
 
 // Middleware to log admin activities
 function logAdminActivity(email, action) {
@@ -148,13 +191,13 @@ function logAdminActivity(email, action) {
           return; // Skip logging for super admin login
       }
 
-      // Fetch organization name based on email
-      const getOrgQuery = "SELECT name FROM organizations WHERE email = ?";
-      pool.query(getOrgQuery, [email], (err, results) => {
-          if (err) {
-              console.error(Error `fetching organization name for ${email}:`, err);
-              return;
-          }
+    // Fetch organization name based on email
+    const getOrgQuery = "SELECT name FROM organizations WHERE email = ?";
+    pool.query(getOrgQuery, [email], (err, results) => {
+      if (err) {
+        console.error(Error`fetching organization name for ${email}:`, err);
+        return;
+      }
 
           if (results.length > 0) {
               const { name } = results[0];
@@ -164,17 +207,17 @@ function logAdminActivity(email, action) {
                   INSERT INTO logs (name, email, login_time, status)
                   VALUES (?, ?, CURRENT_TIMESTAMP, ?)
               `;
-              pool.query(logQuery, [name, email, "logged in"], (err, results) => {
-                  if (err) {
-                      console.error(`Error logging ${action} activity for ${email}:`, err);
-                  } else {
-                      console.log(`${action} activity logged for ${email}`);
-                  }
-              });
+        pool.query(logQuery, [name, email, "logged in"], (err, results) => {
+          if (err) {
+            console.error(Error`logging ${action} activity for ${email}:`, err);
           } else {
-              console.error(`Organization not found for email: ${email}`);
+            console.log(`${action} activity logged for ${email}`);
           }
-      });
+        });
+      } else {
+        console.error(`Organization not found for email: ${email}`);
+      }
+    });
   } else if (action === "logout") {
       // Log admin logout
       const logQuery = `
@@ -844,39 +887,6 @@ app.get("/api/organizations", (req, res) => {
       return res.status(500).json({ error: "Internal server error" });
     }
     res.status(200).json(results);
-  });
-});
-
-// Fetch logs
-app.get('/api/logs', (req, res) => {
-  const query = "SELECT * FROM logs ORDER BY date DESC";
-  pool.query(query, (err, results) => {
-      if (err) {
-          console.error('Error fetching logs:', err);
-          return res.status(500).json({ error: 'Internal server error' });
-      }
-      res.status(200).json(results);
-  });
-});
-
-// Fetch today's login count
-app.get('/api/today-logins', (req, res) => {
-  // Assuming you have a 'logs' table where login activities are logged
-  const today = new Date().toISOString().slice(0, 10); // Get today's date in YYYY-MM-DD format
-
-  const query = 'SELECT COUNT(*) AS count FROM logs WHERE DATE(date) = ?';
-  pool.query(query, [today], (err, results) => {
-      if (err) {
-          console.error('Error fetching today\'s logins:', err);
-          return res.status(500).json({ error: 'Internal server error' });
-      }
-
-      if (results.length > 0) {
-          const { count } = results[0];
-          res.status(200).json({ count });
-      } else {
-          res.status(200).json({ count: 0 }); // Return 0 if no logins found today
-      }
   });
 });
 
