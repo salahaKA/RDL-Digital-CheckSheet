@@ -890,6 +890,31 @@ app.post("/upload", upload.single("file"), (req, res) => {
     .json({ message: "File uploaded successfully", filePath: req.file.path });
 });
 
+
+
+
+// Admin User creation
+app.post('/api/users', upload.single('image'), async (req, res) => {
+  try {
+    const { firstName, lastName, phone, organizationId, email, password } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const image = req.file.path;
+
+    const query = 'INSERT INTO users (firstName, lastName, phone, organization_id, email, password, image) VALUES (?, ?, ?, ?, ?, ?, ?)';
+    const values = [firstName, lastName, phone, organizationId, email, hashedPassword, image];
+
+    connection.query(query, values, (error, results) => {
+      if (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Error adding user' });
+      }
+      res.status(201).json({ message: 'User added successfully', userId: results.insertId });
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 //---------------------------------------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------------------------------------------
 

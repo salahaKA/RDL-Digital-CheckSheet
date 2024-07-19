@@ -5,6 +5,7 @@ import {
   FaClipboardList,
   FaTable,
   FaEye,
+  FaUser,
 } from "react-icons/fa";
 import Header from "./Header";
 import "./AppLayout.css";
@@ -39,6 +40,11 @@ const AppLayout = ({ children }) => {
                 <li>
                   <Link to="/view">
                     <FaEye /> View
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/users"> 
+                    <FaUser /> User
                   </Link>
                 </li>
               </ul>

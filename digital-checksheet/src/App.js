@@ -19,6 +19,8 @@ import SuperDashboard from "./SuperAdmin/pages/SuperDashboard";
 import Organization from "./SuperAdmin/pages/Organization";
 import Logs from "./SuperAdmin/pages/Logs";
 import MainLayout from "./Layout/Mainlayout";
+import Users from "./Admin/AddUser/Users";
+
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -47,6 +49,7 @@ function App() {
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/master" element={<Master />} />
                     <Route path="/checklist" element={<Checklist />} />
+                    <Route path="/users" element={<Users/>} />
                     <Route path="/view" element={<View />} />
                     <Route
                       path="/dailychecklistyn"
