@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Chart from "chart.js/auto";
 import axios from "axios";
-import "./Dashboard.css";
+import "./SuperDashboard.css";
 
 function Dashboard() {
   const [organizations, setOrganizations] = useState([]);
