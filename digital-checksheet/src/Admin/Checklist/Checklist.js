@@ -1008,6 +1008,7 @@ const Checklist = () => {
                   
                   <MenuItem value="yesno">Task form</MenuItem>
                   <MenuItem value="text">Feedback form</MenuItem>
+                  <MenuItem value="mcq">MCQ</MenuItem>
                 </Select>
                 <TextField
                   type="number"
