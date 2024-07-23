@@ -13,7 +13,14 @@
     top: 36%;
     left: 50%;
     transform: translate(-50%, -50%);
+
   }
+
+  @media (min-width: 1200px) {
+    .container, .container-lg, .container-md, .container-sm, .container-xl {
+        max-width: 100%;
+    }
+}
   
   .headerr {
     display: flex;

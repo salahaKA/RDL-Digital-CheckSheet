@@ -1,84 +1,191 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom"; // Import Link from react-router-dom
-import "./Register.css"; // Import the CSS file
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { RiEyeLine, RiEyeOffLine, RiMailFill, RiLockPasswordLine, RiUserFill, RiBuilding2Fill, RiPhoneFill } from 'react-icons/ri'; // Import React icons for inputs
+import validation from './SignupValidation'; // Import SignupValidation.js
 
-import user_icon from "../../Assests/person.png";
-import email_icon from "../../Assests/email.png";
-import password_icon from "../../Assests/password.png";
-import eye_icon from "../../Assests/eye.png"; // Import eye icon for showing password
-import eye_off_icon from "../../Assests/eye_off.png"; // Import eye-off icon for hiding password
+function Signup() {
+  const [organizations, setOrganizations] = useState([]);
+  const [values, setValues] = useState({
+    firstName: '',
+    lastName: '',
+    phone: '',
+    organization: '',
+    email: '',
+    password: '',
+    agreeTerms: false  // State for agreeing to terms and policies
+  });
+  const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false); // State to toggle password visibility
+  const navigate = useNavigate(); // Use for navigation
 
-const Register = () => {
-  const [passwordVisible, setPasswordVisible] = useState(false);
-  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
+  // Fetch organizations when component mounts
+  useEffect(() => {
+    fetchOrganizations();
+  }, []);
 
-  const togglePasswordVisibility = () => {
-    setPasswordVisible(!passwordVisible);
+  const fetchOrganizations = async () => {
+    try {
+      const response = await axios.get('http://localhost:3001/organizations');
+      setOrganizations(response.data);
+    } catch (error) {
+      console.error('Error fetching organizations:', error);
+    }
   };
 
-  const toggleConfirmPasswordVisibility = () => {
-    setConfirmPasswordVisible(!confirmPasswordVisible);
+  const handleInput = (event) => {
+    const { name, value, type, checked } = event.target;
+    const val = type === 'checkbox' ? checked : value;
+    setValues(prevValues => ({ ...prevValues, [name]: val }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const validationErrors = validation(values);
+    setErrors(validationErrors);
+
+    if (Object.keys(validationErrors).length === 0) {
+      try {
+        const response = await axios.post('http://localhost:3001/register', values);
+        if (response.status === 201) {
+          alert('User registered successfully');
+          navigate('/'); // Redirect to login page after successful registration
+        }
+      } catch (error) {
+        console.error('Error registering user:', error);
+        alert('An error occurred during registration.');
+      }
+    }
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(prev => !prev);
   };
 
   return (
-    <div className="main-container">
-      <form className="containerr">
-        <div className="headerr">
-          <div className="textt">Sign Up</div>
-          <div className="underlinee"></div>
-        </div>
-        <div className="inputs">
-          <div className="input">
-            <img src={user_icon} alt="User Icon" />
-            <input type="text" placeholder="Name" />
+    <div className='d-flex justify-content-center align-items-center bg-primary vh-100'>
+      <div className='bg-white p-3 rounded w-25'>
+        <h4 className="mb-3 text-center border-bottom pb-2">Sign Up</h4> {/* Heading with reduced underline */}
+        <form onSubmit={handleSubmit}>
+          <div className='mb-2'>
+            <div className='input-group'>
+              <span className='input-group-text'><RiUserFill /></span>
+              <input
+                type='text'
+                name='firstName'
+                placeholder='Enter First Name'
+                onChange={handleInput}
+                className='form-control rounded-0'
+                value={values.firstName}
+              />
+            </div>
+            {errors.firstName && <span className='text-danger'>{errors.firstName}</span>}
           </div>
-
-          <div className="input">
-            <img src={email_icon} alt="Email Icon" />
-            <input type="email" placeholder="Email" />
+          <div className='mb-2'>
+            <div className='input-group'>
+              <span className='input-group-text'><RiUserFill /></span>
+              <input
+                type='text'
+                name='lastName'
+                placeholder='Enter Last Name'
+                onChange={handleInput}
+                className='form-control rounded-0'
+                value={values.lastName}
+              />
+            </div>
+            {errors.lastName && <span className='text-danger'>{errors.lastName}</span>}
           </div>
-
-          <div className="input password-input">
-            <img src={password_icon} alt="Password Icon" />
+          <div className='mb-2'>
+            <div className='input-group'>
+              <span className='input-group-text'><RiPhoneFill /></span>
+              <input
+                type='tel'
+                name='phone'
+                placeholder='Enter Phone Number'
+                onChange={handleInput}
+                className='form-control rounded-0'
+                value={values.phone}
+              />
+            </div>
+            {errors.phone && <span className='text-danger'>{errors.phone}</span>}
+          </div>
+          <div className='mb-2'>
+            <div className='input-group'>
+              <span className='input-group-text'><RiBuilding2Fill /></span>
+              <select
+                name='organization'
+                onChange={handleInput}
+                className='form-control rounded-0'
+                value={values.organization}
+              >
+                <option value=''>Select Organization</option>
+                {organizations.map(org => (
+                  <option key={org.id} value={org.id}>{org.name}</option>
+                ))}
+              </select>
+            </div>
+            {errors.organization && <span className='text-danger'>{errors.organization}</span>}
+          </div>
+          <div className='mb-2'>
+            <div className='input-group'>
+              <span className='input-group-text'><RiMailFill /></span>
+              <input
+                type='email'
+                name='email'
+                placeholder='Enter Email'
+                onChange={handleInput}
+                className='form-control rounded-0'
+                value={values.email}
+              />
+            </div>
+            {errors.email && <span className='text-danger'>{errors.email}</span>}
+          </div>
+          <div className='mb-2'>
+            <div className="input-group">
+              <span className='input-group-text'><RiLockPasswordLine /></span>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                name='password'
+                placeholder='Enter Password'
+                onChange={handleInput}
+                className='form-control rounded-0'
+                value={values.password}
+              />
+              <button
+                type='button'
+                className='btn btn-outline-secondary rounded-0'
+                onClick={togglePasswordVisibility}
+              >
+                {showPassword ? <RiEyeLine /> : <RiEyeOffLine />} {/* Eye icon toggle */}
+              </button>
+            </div>
+            {errors.password && <span className='text-danger'>{errors.password}</span>}
+          </div>
+          <div className='mb-3 form-check'>
             <input
-              type={passwordVisible ? "text" : "password"}
-              placeholder="Password"
+              type='checkbox'
+              className='form-check-input'
+              id='agreeTerms'
+              name='agreeTerms'
+              checked={values.agreeTerms}
+              onChange={handleInput}
+              required // Add required validation for terms agreement
             />
-            <img
-              src={passwordVisible ? eye_icon : eye_off_icon}
-              alt="Toggle Password Visibility"
-              onClick={togglePasswordVisibility}
-              className="toggle-password-icon"
-            />
+            <label className='form-check-label' htmlFor='agreeTerms'>
+              I agree to the <Link to='/terms-and-policies' className='text-decoration-none'>Terms and Policies</Link>
+            </label>
           </div>
-
-          <div className="input password-input">
-            <img src={password_icon} alt="Password Icon" />
-            <input
-              type={confirmPasswordVisible ? "text" : "password"}
-              placeholder="Confirm Password"
-            />
-            <img
-              src={confirmPasswordVisible ? eye_icon : eye_off_icon}
-              alt="Toggle Password Visibility"
-              onClick={toggleConfirmPasswordVisibility}
-              className="toggle-password-icon"
-            />
-          </div>
-        </div>
-
-        <div className="input-group">
-          <label>
-            <input type="checkbox" required />I accept all terms & conditions
-          </label>
-        </div>
-        <button type="submit">Register Now</button>
-        <p className="login-link">
-          Already have an account? <Link to="/">Login now</Link>
-        </p>
-      </form>
+          <button type='submit' className='btn btn-success w-100 rounded-0'>Sign Up</button>
+          <p className="mt-2">
+            <Link to='/' className='btn btn-outline-primary w-100 rounded-0 text-decoration-none'>
+              Already have an account? Sign In
+            </Link>
+          </p>
+        </form>
+      </div>
     </div>
   );
-};
+}
 
-export default Register;
+export default Signup;

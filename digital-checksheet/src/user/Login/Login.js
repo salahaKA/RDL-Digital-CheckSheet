@@ -25,18 +25,21 @@ const Login = ({ setIsLoggedIn, setRole }) => {
         email,
         password,
       });
-
+  
       if (response.status === 200) {
         console.log("Login successful", response.data);
         setIsLoggedIn(true);
         const role = response.data.role;
         setRole(role);
+  
         if (role === "super_admin") {
           navigate("/superdashboard");
         } else if (role === "admin") {
           navigate("/dashboard");
+        } else if (role === "user") {
+          navigate("/dashboarduser");
         } else {
-          navigate("/superdashboard");
+          setError("Invalid role assigned. Please contact support.");
         }
       } else {
         setError(response.data.error);
