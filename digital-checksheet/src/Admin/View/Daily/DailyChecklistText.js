@@ -38,7 +38,9 @@ const DailyChecklistText = ({ templateId }) => {
       }
 
       try {
-        const response = await axios.get(`http://localhost:3001/api/template/${templateId}`);
+        const response = await axios.get(
+          `http://localhost:3001/api/template/${templateId}`,
+        );
         setTemplateData(response.data);
       } catch (error) {
         console.error("Error fetching template data:", error);
@@ -62,31 +64,6 @@ const DailyChecklistText = ({ templateId }) => {
     }));
   };
 
-  const handleSubmit = async () => {
-    const submissionData = {
-      date: date ? new Date(date).toISOString().split("T")[0] : "",
-      department: templateData.department,
-      section: templateData.section,
-      templateType: templateData.template,
-      labelTexts,
-      answers,
-    };
-
-    try {
-      await axios.post("http://localhost:3001/api/submit-checklist", submissionData);
-      alert("Checklist submitted successfully!");
-    } catch (error) {
-      console.error("Error submitting checklist:", error);
-      alert("There was an error submitting the checklist. Please try again.");
-    }
-  };
-
-  const handleClear = () => {
-    setAnswers({});
-    setLabelTexts({});
-    setDate(null);
-  };
-
   if (!templateData) {
     return <div>Loading...</div>;
   }
@@ -99,22 +76,39 @@ const DailyChecklistText = ({ templateId }) => {
       <Box>
         <Paper sx={{ padding: 2, border: "2px solid black", borderRadius: 2 }}>
           <Box sx={{ marginBottom: 2, textAlign: "center" }}>
-            <Typography variant="h4" sx={{ fontWeight: "bold" }}>{templateData.title}</Typography>
-            {templateData.heading && <Typography variant="h6" sx={{ fontWeight: "bold" }}>{templateData.heading}</Typography>}
+            <Typography variant="h4" sx={{ fontWeight: "bold" }}>
+              {templateData.title}
+            </Typography>
+            {templateData.heading && (
+              <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                {templateData.heading}
+              </Typography>
+            )}
           </Box>
           <Table size="small" sx={{ border: "1px solid black" }}>
             <TableBody>
               {labelChunks.map((chunk, chunkIndex) => (
                 <TableRow key={chunkIndex}>
                   {chunk.map((label, idx) => (
-                    <TableCell key={idx} colSpan={2} sx={{ border: "1px solid black" }}>
+                    <TableCell
+                      key={idx}
+                      colSpan={2}
+                      sx={{ border: "1px solid black" }}
+                    >
                       <Box sx={{ display: "flex", alignItems: "center" }}>
-                        <Typography variant="body2" sx={{ marginRight: 1 }}>{label}</Typography>
+                        <Typography variant="body2" sx={{ marginRight: 1 }}>
+                          {label}
+                        </Typography>
                         <TextField
                           variant="outlined"
                           size="small"
                           value={labelTexts[chunkIndex * 3 + idx] || ""}
-                          onChange={(e) => handleLabelTextChange(chunkIndex * 3 + idx, e.target.value)}
+                          onChange={(e) =>
+                            handleLabelTextChange(
+                              chunkIndex * 3 + idx,
+                              e.target.value,
+                            )
+                          }
                         />
                       </Box>
                     </TableCell>
@@ -124,22 +118,51 @@ const DailyChecklistText = ({ templateId }) => {
               <TableRow>
                 <TableCell colSpan={6} sx={{ border: "1px solid black" }}>
                   <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <Typography variant="body2" sx={{ marginRight: 1 }}>Date:</Typography>
+                    <Typography variant="body2" sx={{ marginRight: 1 }}>
+                      Date:
+                    </Typography>
                     <DatePicker
                       value={date}
                       onChange={(newDate) => setDate(newDate)}
-                      renderInput={(params) => <TextField {...params} variant="outlined" size="small" />}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          variant="outlined"
+                          size="small"
+                        />
+                      )}
                     />
                   </Box>
                 </TableCell>
               </TableRow>
               <TableRow>
-                <TableCell align="right" sx={{ fontWeight: "bold", border: "1px solid black" }}>Department:</TableCell>
-                <TableCell sx={{ border: "1px solid black" }}>{templateData.department}</TableCell>
-                <TableCell align="right" sx={{ fontWeight: "bold", border: "1px solid black" }}>Section:</TableCell>
-                <TableCell sx={{ border: "1px solid black" }}>{templateData.section}</TableCell>
-                <TableCell align="right" sx={{ fontWeight: "bold", border: "1px solid black" }}>Type:</TableCell>
-                <TableCell sx={{ border: "1px solid black" }}>{templateData.template}</TableCell>
+                <TableCell
+                  align="right"
+                  sx={{ fontWeight: "bold", border: "1px solid black" }}
+                >
+                  Department:
+                </TableCell>
+                <TableCell sx={{ border: "1px solid black" }}>
+                  {templateData.department}
+                </TableCell>
+                <TableCell
+                  align="right"
+                  sx={{ fontWeight: "bold", border: "1px solid black" }}
+                >
+                  Section:
+                </TableCell>
+                <TableCell sx={{ border: "1px solid black" }}>
+                  {templateData.section}
+                </TableCell>
+                <TableCell
+                  align="right"
+                  sx={{ fontWeight: "bold", border: "1px solid black" }}
+                >
+                  Type:
+                </TableCell>
+                <TableCell sx={{ border: "1px solid black" }}>
+                  {templateData.template}
+                </TableCell>
               </TableRow>
             </TableBody>
           </Table>
@@ -147,18 +170,47 @@ const DailyChecklistText = ({ templateId }) => {
           <Table size="small" sx={{ border: "1px solid black", marginTop: 2 }}>
             <TableHead>
               <TableRow sx={{ backgroundColor: "#f0f0f0" }}>
-                <TableCell sx={{ fontSize: "0.9rem", padding: "4px", border: "1px solid black" }}>Question</TableCell>
-                <TableCell sx={{ fontSize: "0.9rem", padding: "4px", border: "1px solid black" }}>Response</TableCell>
+                <TableCell
+                  sx={{
+                    fontSize: "0.9rem",
+                    padding: "4px",
+                    border: "1px solid black",
+                  }}
+                >
+                  Question
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontSize: "0.9rem",
+                    padding: "4px",
+                    border: "1px solid black",
+                  }}
+                >
+                  Response
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {Array.isArray(templateData.questions) && templateData.questions.length > 0 ? (
+              {Array.isArray(templateData.questions) &&
+              templateData.questions.length > 0 ? (
                 templateData.questions.map((question, index) => (
                   <TableRow key={index}>
-                    <TableCell sx={{ fontSize: "0.9rem", padding: "4px", border: "1px solid black" }}>
+                    <TableCell
+                      sx={{
+                        fontSize: "0.9rem",
+                        padding: "4px",
+                        border: "1px solid black",
+                      }}
+                    >
                       {question.question}
                     </TableCell>
-                    <TableCell sx={{ fontSize: "0.9rem", padding: "4px", border: "1px solid black" }}>
+                    <TableCell
+                      sx={{
+                        fontSize: "0.9rem",
+                        padding: "4px",
+                        border: "1px solid black",
+                      }}
+                    >
                       <textarea
                         style={{
                           width: "100%",
@@ -166,7 +218,9 @@ const DailyChecklistText = ({ templateId }) => {
                           resize: "vertical",
                         }}
                         value={answers[question.id] || ""}
-                        onChange={(e) => handleTextChange(question.id, e.target.value)}
+                        onChange={(e) =>
+                          handleTextChange(question.id, e.target.value)
+                        }
                       />
                     </TableCell>
                   </TableRow>
@@ -178,24 +232,6 @@ const DailyChecklistText = ({ templateId }) => {
               )}
             </TableBody>
           </Table>
-
-          <Box sx={{ display: "flex", justifyContent: "space-between", marginTop: 2 }}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleSubmit}
-            >
-              Submit
-            </Button>
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={handleClear}
-            >
-              Clear
-            </Button>
-          </Box>
-
           <Button
             variant="contained"
             color="primary"
@@ -208,15 +244,15 @@ const DailyChecklistText = ({ templateId }) => {
           {checklistView && (
             <Paper
               style={{
-                position: 'fixed',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                width: '595px',
-                height: '500px',
-                padding: '32px',
+                position: "fixed",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                width: "595px",
+                height: "500px",
+                padding: "32px",
                 zIndex: 1000,
-                overflowY: 'auto'
+                overflowY: "auto",
               }}
             >
               <Typography variant="h6" gutterBottom>
@@ -227,7 +263,9 @@ const DailyChecklistText = ({ templateId }) => {
               </Typography>
               <Box sx={{ display: "flex", gap: 1 }}>
                 <Typography variant="body2">Department:</Typography>
-                <Typography variant="body2">{templateData.department}</Typography>
+                <Typography variant="body2">
+                  {templateData.department}
+                </Typography>
               </Box>
               <Box sx={{ display: "flex", gap: 1 }}>
                 <Typography variant="body2">Section:</Typography>
@@ -237,40 +275,30 @@ const DailyChecklistText = ({ templateId }) => {
                 <Typography variant="body2">Type:</Typography>
                 <Typography variant="body2">{templateData.template}</Typography>
               </Box>
-
-              {labelChunks.map((chunk, index) => (
-                <Box sx={{ display: "flex", gap: 2, mt: 2 }} key={index}>
-                  {chunk.map((label, idx) => (
-                    <Box key={idx}>
-                      <Typography variant="body2">{label}</Typography>
-                      <Typography variant="body2">{labelTexts[index * 3 + idx] || ""}</Typography>
-                    </Box>
-                  ))}
-                </Box>
-              ))}
-
-              <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
+              <Box sx={{ display: "flex", gap: 1 }}>
                 <Typography variant="body2">Date:</Typography>
                 <Typography variant="body2">
                   {date ? new Date(date).toISOString().split("T")[0] : ""}
                 </Typography>
               </Box>
 
-              <Table size="small" sx={{ border: "1px solid black", marginTop: 2 }}>
+              <Typography variant="subtitle1" gutterBottom>
+                Questions
+              </Typography>
+              <Table>
                 <TableHead>
-                  <TableRow sx={{ backgroundColor: "#f0f0f0" }}>
-                    <TableCell sx={{ fontSize: "0.9rem", padding: "4px", border: "1px solid black" }}>Question</TableCell>
-                    <TableCell sx={{ fontSize: "0.9rem", padding: "4px", border: "1px solid black" }}>Response</TableCell>
+                  <TableRow>
+                    <TableCell>Question</TableCell>
+                    <TableCell>Response</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {Array.isArray(templateData.questions) && templateData.questions.length > 0 ? (
+                  {Array.isArray(templateData.questions) &&
+                  templateData.questions.length > 0 ? (
                     templateData.questions.map((question, index) => (
                       <TableRow key={index}>
-                        <TableCell sx={{ fontSize: "0.9rem", padding: "4px", border: "1px solid black" }}>
-                          {question.question}
-                        </TableCell>
-                        <TableCell sx={{ fontSize: "0.9rem", padding: "4px", border: "1px solid black" }}>
+                        <TableCell>{question.question}</TableCell>
+                        <TableCell>
                           <textarea
                             style={{
                               width: "100%",
@@ -278,7 +306,9 @@ const DailyChecklistText = ({ templateId }) => {
                               resize: "vertical",
                             }}
                             value={answers[question.id] || ""}
-                            onChange={(e) => handleTextChange(question.id, e.target.value)}
+                            onChange={(e) =>
+                              handleTextChange(question.id, e.target.value)
+                            }
                           />
                         </TableCell>
                       </TableRow>
@@ -290,6 +320,14 @@ const DailyChecklistText = ({ templateId }) => {
                   )}
                 </TableBody>
               </Table>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={() => setChecklistView(false)}
+                sx={{ mt: 2 }}
+              >
+                Close
+              </Button>
             </Paper>
           )}
         </Paper>
