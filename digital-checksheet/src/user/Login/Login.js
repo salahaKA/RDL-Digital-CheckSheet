@@ -25,24 +25,25 @@ const Login = ({ setIsLoggedIn, setRole }) => {
         email,
         password,
       });
-  
+
       if (response.status === 200) {
         console.log("Login successful", response.data);
         setIsLoggedIn(true);
         const role = response.data.role;
         setRole(role);
-  
+        
+        // Redirect based on role
         if (role === "super_admin") {
           navigate("/superdashboard");
         } else if (role === "admin") {
           navigate("/dashboard");
-        } else if (role === "user") {
-          navigate("/dashboarduser");
+        } else if (role === "user") { // Add handling for regular users
+          navigate("/userdashboard");
         } else {
-          setError("Invalid role assigned. Please contact support.");
+          navigate("/"); // Default redirection
         }
       } else {
-        setError(response.data.error);
+        setError(response.data.error || "An error occurred.");
       }
     } catch (error) {
       console.error("Error logging in:", error);
@@ -96,7 +97,7 @@ const Login = ({ setIsLoggedIn, setRole }) => {
       </div>
       <button type="submit">Login Now</button>
       <p className="login-link">
-        Don't have an account? <Link to="/Register">Signup now</Link>
+        Don't have an account? <Link to="/register">Signup now</Link>
       </p>
     </form>
   );

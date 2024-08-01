@@ -5,34 +5,9 @@ const cors = require("cors");
 const bcrypt = require("bcrypt");
 const multer = require("multer");
 const path = require("path");
-const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
-const cookieParser = require("cookie-parser");
-const session = require("express-session");
 
 const app = express();
 const port = 3001;
-
-
-// Middleware
-app.use(cors({
-  origin: 'http://localhost:3000',
-  methods: ['GET', 'POST'],
-  credentials: true // Enable credentials in CORS
-}));
-
-// Configure express-session
-app.use(session({
-  secret: 'session-secret-key', // Replace with a secret key for session encryption
-  resave: false,
-  saveUninitialized: true, // Set to true if you want to store even uninitialized sessions
-  cookie: {
-    secure: false, // Set to true in production with HTTPS
-    httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000 // 1 day (adjust as needed)
-  }
-}));
-
 
 // Database configuration
 const dbConfig = {
@@ -66,7 +41,6 @@ app.use(bodyParser.json());
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "uploads")));
-app.use(cookieParser());
 
 // Configure Multer for file uploads
 const storage = multer.diskStorage({
@@ -964,8 +938,6 @@ app.post('/api/users', upload.single('image'), async (req, res) => {
 //---------------------------------------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------------------------------------------
 
-// USER MODULE
-
 app.get('/organizations', (req, res) => {
   pool.query('SELECT id, name FROM organizations', (err, results) => {
     if (err) {
@@ -974,28 +946,28 @@ app.get('/organizations', (req, res) => {
     res.json(results);
   });
 });
+app.get('/departments', (req, res) => {
+  pool.query('SELECT id, name FROM department', (err, results) => {
+    if (err) {
+      return res.status(500).send(err);
+    }
+    res.json(results);
+  });
+});
 
 
-
-
-
-
-
-
-// Endpoint to register a new user
-app.post('/register', async (req, res) => {
-  const { firstName, lastName, phone, organization, email, password } = req.body;
+app.post('/api/register', async (req, res) => {
+  const { firstName, lastName, phone, organizationId, email, password } = req.body;
 
   try {
-    // Hash the password with bcrypt
-    const saltRounds = 10; // Adjust salt value as needed
+    const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // Insert the user into the database with the hashed password
     const query = 'INSERT INTO user_login (firstName, lastName, phone, organization_id, email, password) VALUES (?, ?, ?, ?, ?, ?)';
-    pool.query(query, [firstName, lastName, phone, organization, email, hashedPassword], (err, result) => {
+    pool.query(query, [firstName, lastName, phone, organizationId, email, hashedPassword], (err, result) => {
       if (err) {
-        return res.status(500).send(err);
+        console.error('Error inserting user into database:', err);
+        return res.status(500).json({ message: 'Internal server error' });
       }
       res.status(201).json({ message: 'User registered successfully', userId: result.insertId });
     });
@@ -1006,499 +978,129 @@ app.post('/register', async (req, res) => {
 });
 
 
-// USER MODULE
-const verifyUser = (req, res, next) => {
-  const token = req.cookies.token;
-  if (!token) {
-    return res.json({ Error: "You are not authenticated" });
-  } else {
-    jwt.verify(token, "jwt-secret-key", (err, decoded) => { // Use consistent key
-      if (err) {
-        return res.json({ Error: "Token is not valid" });
-      } else {
-        req.session.userId = decoded.id; // Store user ID in session
-        req.name = decoded.name;
-        next();
-      }
-    });
+app.get('/templates', async (req, res) => {
+  const departmentId = req.query.departmentId;
+
+  try {
+    // Fetch templates filtered by departmentId
+    const templates = await db.query(
+      'SELECT * FROM templates WHERE department_id = ?',
+      [departmentId]
+    );
+
+    res.json(templates);
+  } catch (error) {
+    console.error('Error fetching templates:', error);
+    res.status(500).send('Error fetching templates');
   }
-};
-
-app.get('/', verifyUser, (req, res) => {
-  return res.json({ Status: "Success", name: req.name });
 });
 
 
+app.get('/templates', (req, res) => {
+  const { department } = req.query;
+  const query = `
+    SELECT t.*
+    FROM templates t
+    JOIN headings h ON t.heading = h.heading
+    WHERE h.department = ?`;
+  connection.query(query, [department], (error, results) => {
+    if (error) {
+      console.error('Error fetching templates:', error);
+      res.status(500).send('Internal Server Error');
+      return;
+    }
+    res.json(results);
+  });
+});
 
-// Endpoint to user_login a user
-app.post('/user_login', (req, res) => {
-  const { email, password } = req.body;
-
-  const query = 'SELECT * FROM user_login WHERE email = ?';
-  pool.query(query, [email], async (err, results) => {
+//take department for template
+app.get("/departments", (req, res) => {
+  const query = "SELECT DISTINCT department FROM headings";
+  db.query(query, (err, results) => {
     if (err) {
-      return res.status(500).send(err);
+      console.error("Error fetching departments:", err);
+      res.status(500).send("Error fetching departments");
+      return;
     }
+    res.json(results);
+  });
+});
 
-    if (results.length === 0) {
-      return res.status(401).json({ message: 'Invalid email or password' });
-    }
 
-    const user = results[0];
+// Endpoint to check if a heading corresponding to a selected department exists in the templates table
+app.get('/check-heading', (req, res) => {
+  const { department } = req.query;
 
-    try {
-      // Compare the provided password with the stored hashed password
-      const isPasswordMatch = await bcrypt.compare(password, user.password);
+  if (!department) {
+    return res.status(400).json({ message: 'Department is required' });
+  }
 
-      if (!isPasswordMatch) {
-        return res.status(401).json({ message: 'Invalid email or password' });
+  // Query for the heading in the headings table based on the selected department
+  pool.query(
+    'SELECT heading FROM headings WHERE department = ? LIMIT 1',
+    [department],
+    (err, headingResults) => {
+      if (err) {
+        console.error("Error fetching heading:", err);
+        return res.status(500).json({ message: 'Internal server error' });
       }
 
-      // Generate JWT token
-      const token = jwt.sign({ id: user.id, name: user.firstName }, "jwt-secret-key", { expiresIn: '1d' });
+      if (headingResults.length === 0) {
+        return res.status(404).json({ message: 'No heading found for the selected department' });
+      }
 
-      // Set the token as a cookie
-      res.cookie('token', token, { httpOnly: true, secure: false }); // Secure should be true in production with HTTPS
+      const heading = headingResults[0].heading;
 
-      res.status(200).json({ message: 'Login successful', token });
-    } catch (error) {
-      console.error('Error during login:', error);
-      res.status(500).json({ message: 'Internal server error' });
-    }
-  });
-});
+      // Check if the heading exists in the templates table
+      pool.query(
+        'SELECT * FROM templates WHERE heading = ?',
+        [heading],
+        (err, templateResults) => {
+          if (err) {
+            console.error("Error checking templates:", err);
+            return res.status(500).json({ message: 'Internal server error' });
+          }
 
-// Endpoint to handle forgot password
-app.post('/forgot-password', (req, res) => {
-  const { email } = req.body;
+          if (templateResults.length === 0) {
+            return res.status(404).json({ message: 'Heading not found in templates table' });
+          }
 
-  const query = 'SELECT * FROM user_login WHERE email = ?';
-  pool.query(query, [email], async (err, results) => {
-    if (err) {
-      return res.status(500).send(err);
-    }
-
-    if (results.length === 0) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    const user = results[0];
-
-    try {
-      const token = jwt.sign({ id: user.id }, "jwt-secret-key", { expiresIn: "1d" });
-
-      const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: 'youremail@gmail.com', // Replace with your Gmail email
-          pass: 'yourpassword' // Replace with your Gmail password or App Password
+          res.status(200).json({ message: 'Heading found in templates table', templates: templateResults });
         }
-      });
-
-      const mailOptions = {
-        from: 'youremail@gmail.com',
-        to: user.email,
-        subject: 'Password Reset Link',
-        text: `Click the link to reset your password: http://localhost:3000/reset-password/${user.id}/${token}` // Ensure the URL matches frontend
-      };
-
-      transporter.sendMail(mailOptions, function (error, info) {
-        if (error) {
-          console.error('Error sending email:', error);
-          return res.status(500).json({ message: 'Failed to send reset email' });
-        } else {
-          console.log('Email sent:', info.response);
-          return res.status(200).json({ message: 'Password reset email sent successfully' });
-        }
-      });
-
-    } catch (error) {
-      console.error('Error generating token:', error);
-      res.status(500).json({ message: 'Internal server error' });
+      );
     }
-  });
+  );
 });
 
 
-// Endpoint for resetting password
-app.post('/reset-password/:id/:token', async (req, res) => {
-  const { id, token } = req.params;
-  const { password } = req.body;
+app.get('/checklists', (req, res) => {
+  const { department } = req.query;
 
-  // Verify the token
-  jwt.verify(token, "jwt-secret-key", async (err, decoded) => { // Ensure the key matches the one used during token creation
-    if (err) {
-      return res.status(400).json({ message: "Invalid or expired token" });
+  if (!department) {
+    return res.status(400).json({ message: 'Department is required' });
+  }
+
+  // Query for templates based on the department
+  pool.query(
+    'SELECT t.* FROM templates t JOIN headings h ON t.heading = h.heading WHERE h.department = ?',
+    [department],
+    (err, results) => {
+      if (err) {
+        console.error("Error fetching checklists:", err);
+        return res.status(500).json({ message: 'Internal server error' });
+      }
+
+      if (results.length === 0) {
+        return res.status(404).json({ message: 'No checklists available for the selected department' });
+      }
+
+      res.status(200).json(results);
     }
-
-    // Check if the token id matches the request id
-    if (decoded.id !== parseInt(id)) {
-      return res.status(400).json({ message: "Invalid token for this user" });
-    }
-
-    try {
-      // Hash the new password
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      // Update the user's password in the database
-      const query = 'UPDATE user_login SET password = ? WHERE id = ?';
-      pool.query(query, [hashedPassword, id], (err, result) => {
-        if (err) {
-          return res.status(500).send(err);
-        }
-
-        res.status(200).json({ message: "Password has been reset successfully" });
-      });
-    } catch (error) {
-      console.error('Error during password reset:', error);
-      res.status(500).json({ message: 'Internal server error' });
-    }
-  });
-});
-
-// Endpoint to logout a user
-app.get("/logout", (req, res) => {
-  req.session.destroy(err => {
-    if (err) {
-      console.error('Error destroying session:', err);
-      res.status(500).json({ error: 'Failed to logout' });
-    } else {
-      res.clearCookie('token');
-      res.json({ Status: "Success" });
-    }
-  });
+  );
 });
 
 
-
-  // app.get('/dashboard_user', verifyUser, (req, res) => {
-  //   const userId = req.session.userId;
-  //   const organizationId = req.session.organizationId;
-  
-  //   if (!userId || !organizationId) {
-  //     return res.status(400).json({ message: 'User or organization ID not found in session' });
-  //   }
-  
-  //   // Queries to fetch data
-  //   const totalApplicationsQuery = 'SELECT COUNT(*) as count FROM responses WHERE organization_id = ?';
-  //   const pendingApplicationsQuery = 'SELECT COUNT(*) as count FROM responses WHERE organization_id = ? AND status = "pending"';
-  //   const completedApplicationsQuery = 'SELECT COUNT(*) as count FROM responses WHERE organization_id = ? AND status = "completed"';
-  //   const applicationFrequencyQuery = 'SELECT DATE(created_at) as date, COUNT(*) as count FROM responses WHERE organization_id = ? GROUP BY DATE(created_at)';
-  
-  //   // Execute queries in parallel
-  //   const totalApplicationsPromise = pool.promise().query(totalApplicationsQuery, [organizationId]);
-  //   const pendingApplicationsPromise = pool.promise().query(pendingApplicationsQuery, [organizationId]);
-  //   const completedApplicationsPromise = pool.promise().query(completedApplicationsQuery, [organizationId]);
-  //   const applicationFrequencyPromise = pool.promise().query(applicationFrequencyQuery, [organizationId]);
-  
-  //   Promise.all([totalApplicationsPromise, pendingApplicationsPromise, completedApplicationsPromise, applicationFrequencyPromise])
-  //     .then((results) => {
-  //       const totalApplications = results[0][0][0].count;
-  //       const pendingApplications = results[1][0][0].count;
-  //       const completedApplications = results[2][0][0].count;
-  //       const applicationFrequency = results[3][0];
-  
-  //       res.json({
-  //         totalApplications,
-  //         pendingApplications,
-  //         completedApplications,
-  //         applicationFrequency
-  //       });
-  //     })
-  //     .catch((error) => {
-  //       console.error('Error fetching dashboard data:', error);
-  //       res.status(500).json({ message: 'Failed to fetch dashboard data', error: error.message });
-  //     });
-  // });
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
-
-
-// // Endpoint to fetch organization names
-// app.get('/organizations', (req, res) => {
-//   pool.query('SELECT id, name FROM organizations', (err, results) => {
-//     if (err) {
-//       return res.status(500).send(err);
-//     }
-//     res.json(results);
-//   });
-// });
-
-
-
-
-
-
-
-
-// // Endpoint to register a new user
-// app.post('/register', async (req, res) => {
-//   const { firstName, lastName, phone, organization, email, password } = req.body;
-
-//   try {
-//     // Hash the password with bcrypt
-//     const saltRounds = 10; // Adjust salt value as needed
-//     const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-//     // Insert the user into the database with the hashed password
-//     const query = 'INSERT INTO user_login (firstName, lastName, phone, organization_id, email, password) VALUES (?, ?, ?, ?, ?, ?)';
-//     pool.query(query, [firstName, lastName, phone, organization, email, hashedPassword], (err, result) => {
-//       if (err) {
-//         return res.status(500).send(err);
-//       }
-//       res.status(201).json({ message: 'User registered successfully', userId: result.insertId });
-//     });
-//   } catch (error) {
-//     console.error('Error during registration:', error);
-//     res.status(500).json({ message: 'Internal server error' });
-//   }
-// });
-
-// app.get('/dashboard_user', verifyUser, (req, res) => {
-//   const userId = req.session.userId;
-//   const organizationId = req.session.organizationId;
-
-//   if (!userId || !organizationId) {
-//     return res.status(400).json({ message: 'User or organization ID not found in session' });
-//   }
-
-//   // Queries to fetch data
-//   const totalApplicationsQuery = 'SELECT COUNT(*) as count FROM responses WHERE organization_id = ?';
-//   const pendingApplicationsQuery = 'SELECT COUNT(*) as count FROM responses WHERE organization_id = ? AND status = "pending"';
-//   const completedApplicationsQuery = 'SELECT COUNT(*) as count FROM responses WHERE organization_id = ? AND status = "completed"';
-//   const applicationFrequencyQuery = 'SELECT DATE(created_at) as date, COUNT(*) as count FROM responses WHERE organization_id = ? GROUP BY DATE(created_at)';
-
-//   // Execute queries in parallel
-//   const totalApplicationsPromise = pool.promise().query(totalApplicationsQuery, [organizationId]);
-//   const pendingApplicationsPromise = pool.promise().query(pendingApplicationsQuery, [organizationId]);
-//   const completedApplicationsPromise = pool.promise().query(completedApplicationsQuery, [organizationId]);
-//   const applicationFrequencyPromise = pool.promise().query(applicationFrequencyQuery, [organizationId]);
-
-//   Promise.all([totalApplicationsPromise, pendingApplicationsPromise, completedApplicationsPromise, applicationFrequencyPromise])
-//     .then((results) => {
-//       const totalApplications = results[0][0][0].count;
-//       const pendingApplications = results[1][0][0].count;
-//       const completedApplications = results[2][0][0].count;
-//       const applicationFrequency = results[3][0];
-
-//       res.json({
-//         totalApplications,
-//         pendingApplications,
-//         completedApplications,
-//         applicationFrequency
-//       });
-//     })
-//     .catch((error) => {
-//       console.error('Error fetching dashboard data:', error);
-//       res.status(500).json({ message: 'Failed to fetch dashboard data', error: error.message });
-//     });
-// });
-// const verifyUser = (req, res, next) => {
-//   const token = req.cookies.token;
-//   if (!token) {
-//     return res.json({ Error: "You are not authenticated" });
-//   } else {
-//     jwt.verify(token, "jwt-secret-key", (err, decoded) => { // Use consistent key
-//       if (err) {
-//         return res.json({ Error: "Token is not valid" });
-//       } else {
-//         req.session.userId = decoded.id; // Store user ID in session
-//         req.name = decoded.name;
-//         next();
-//       }
-//     });
-//   }
-// };
-
-// app.get('/', verifyUser, (req, res) => {
-//   return res.json({ Status: "Success", name: req.name });
-// });
-
-
-
-// // Endpoint to user_login a user
-// app.post('/user_login', (req, res) => {
-//   const { email, password } = req.body;
-
-//   const query = 'SELECT * FROM user_login WHERE email = ?';
-//   pool.query(query, [email], async (err, results) => {
-//     if (err) {
-//       return res.status(500).send(err);
-//     }
-
-//     if (results.length === 0) {
-//       return res.status(401).json({ message: 'Invalid email or password' });
-//     }
-
-//     const user = results[0];
-
-//     try {
-//       // Compare the provided password with the stored hashed password
-//       const isPasswordMatch = await bcrypt.compare(password, user.password);
-
-//       if (!isPasswordMatch) {
-//         return res.status(401).json({ message: 'Invalid email or password' });
-//       }
-
-//       // Generate JWT token
-//       const token = jwt.sign({ id: user.id, name: user.firstName }, "jwt-secret-key", { expiresIn: '1d' });
-
-//       // Set the token as a cookie
-//       res.cookie('token', token, { httpOnly: true, secure: false }); // Secure should be true in production with HTTPS
-
-//       res.status(200).json({ message: 'Login successful', token });
-//     } catch (error) {
-//       console.error('Error during login:', error);
-//       res.status(500).json({ message: 'Internal server error' });
-//     }
-//   });
-// });
-
-// // Endpoint to handle forgot password
-// app.post('/forgot-password', (req, res) => {
-//   const { email } = req.body;
-
-//   const query = 'SELECT * FROM user_login WHERE email = ?';
-//   pool.query(query, [email], async (err, results) => {
-//     if (err) {
-//       return res.status(500).send(err);
-//     }
-
-//     if (results.length === 0) {
-//       return res.status(404).json({ message: 'User not found' });
-//     }
-
-//     const user = results[0];
-
-//     try {
-//       const token = jwt.sign({ id: user.id }, "jwt-secret-key", { expiresIn: "1d" });
-
-//       const transporter = nodemailer.createTransport({
-//         service: 'gmail',
-//         auth: {
-//           user: 'youremail@gmail.com', // Replace with your Gmail email
-//           pass: 'yourpassword' // Replace with your Gmail password or App Password
-//         }
-//       });
-
-//       const mailOptions = {
-//         from: 'youremail@gmail.com',
-//         to: user.email,
-//         subject: 'Password Reset Link',
-//         text: `Click the link to reset your password: http://localhost:3000/reset-password/${user.id}/${token}` // Ensure the URL matches frontend
-//       };
-
-//       transporter.sendMail(mailOptions, function (error, info) {
-//         if (error) {
-//           console.error('Error sending email:', error);
-//           return res.status(500).json({ message: 'Failed to send reset email' });
-//         } else {
-//           console.log('Email sent:', info.response);
-//           return res.status(200).json({ message: 'Password reset email sent successfully' });
-//         }
-//       });
-
-//     } catch (error) {
-//       console.error('Error generating token:', error);
-//       res.status(500).json({ message: 'Internal server error' });
-//     }
-//   });
-// });
-
-
-// // Endpoint for resetting password
-// app.post('/reset-password/:id/:token', async (req, res) => {
-//   const { id, token } = req.params;
-//   const { password } = req.body;
-
-//   // Verify the token
-//   jwt.verify(token, "jwt-secret-key", async (err, decoded) => { // Ensure the key matches the one used during token creation
-//     if (err) {
-//       return res.status(400).json({ message: "Invalid or expired token" });
-//     }
-
-//     // Check if the token id matches the request id
-//     if (decoded.id !== parseInt(id)) {
-//       return res.status(400).json({ message: "Invalid token for this user" });
-//     }
-
-//     try {
-//       // Hash the new password
-//       const hashedPassword = await bcrypt.hash(password, 10);
-
-//       // Update the user's password in the database
-//       const query = 'UPDATE user_login SET password = ? WHERE id = ?';
-//       pool.query(query, [hashedPassword, id], (err, result) => {
-//         if (err) {
-//           return res.status(500).send(err);
-//         }
-
-//         res.status(200).json({ message: "Password has been reset successfully" });
-//       });
-//     } catch (error) {
-//       console.error('Error during password reset:', error);
-//       res.status(500).json({ message: 'Internal server error' });
-//     }
-//   });
-// });
-
-// // Endpoint to logout a user
-// app.get("/logout", (req, res) => {
-//   req.session.destroy(err => {
-//     if (err) {
-//       console.error('Error destroying session:', err);
-//       res.status(500).json({ error: 'Failed to logout' });
-//     } else {
-//       res.clearCookie('token');
-//       res.json({ Status: "Success" });
-//     }
-//   });
-// });
-
-
-
-//   // app.get('/dashboard_user', verifyUser, (req, res) => {
-//   //   const userId = req.session.userId;
-//   //   const organizationId = req.session.organizationId;
-  
-//   //   if (!userId || !organizationId) {
-//   //     return res.status(400).json({ message: 'User or organization ID not found in session' });
-//   //   }
-  
-//   //   // Queries to fetch data
-//   //   const totalApplicationsQuery = 'SELECT COUNT(*) as count FROM responses WHERE organization_id = ?';
-//   //   const pendingApplicationsQuery = 'SELECT COUNT(*) as count FROM responses WHERE organization_id = ? AND status = "pending"';
-//   //   const completedApplicationsQuery = 'SELECT COUNT(*) as count FROM responses WHERE organization_id = ? AND status = "completed"';
-//   //   const applicationFrequencyQuery = 'SELECT DATE(created_at) as date, COUNT(*) as count FROM responses WHERE organization_id = ? GROUP BY DATE(created_at)';
-  
-//   //   // Execute queries in parallel
-//   //   const totalApplicationsPromise = pool.promise().query(totalApplicationsQuery, [organizationId]);
-//   //   const pendingApplicationsPromise = pool.promise().query(pendingApplicationsQuery, [organizationId]);
-//   //   const completedApplicationsPromise = pool.promise().query(completedApplicationsQuery, [organizationId]);
-//   //   const applicationFrequencyPromise = pool.promise().query(applicationFrequencyQuery, [organizationId]);
-  
-//   //   Promise.all([totalApplicationsPromise, pendingApplicationsPromise, completedApplicationsPromise, applicationFrequencyPromise])
-//   //     .then((results) => {
-//   //       const totalApplications = results[0][0][0].count;
-//   //       const pendingApplications = results[1][0][0].count;
-//   //       const completedApplications = results[2][0][0].count;
-//   //       const applicationFrequency = results[3][0];
-  
-//   //       res.json({
-//   //         totalApplications,
-//   //         pendingApplications,
-//   //         completedApplications,
-//   //         applicationFrequency
-//   //       });
-//   //     })
-//   //     .catch((error) => {
-//   //       console.error('Error fetching dashboard data:', error);
-//   //       res.status(500).json({ message: 'Failed to fetch dashboard data', error: error.message });
-//   //     });
-//   // });
-
-// app.listen(port, () => {
-//   console.log(`Server running on port ${port}`);
-// });

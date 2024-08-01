@@ -1,9 +1,9 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
-import AppLayout from "../Layout/AppLayout";
+import AppLayout from "./AppLayout";
 import Sidebar from "../SuperAdmin/components/Sidebar";
 import Header from "./Header";
-import UserSidebar from "../user/UserSidebar";
+import UserLayout from "./UserLayout"; // Import the UserLayout component
 
 const MainLayout = ({ children, role }) => {
   const location = useLocation();
@@ -12,17 +12,14 @@ const MainLayout = ({ children, role }) => {
 
   return (
     <div className="container">
-      <Header /> {/* Include Header for all roles */}
+      {role !== "user" && <Header />} {/* Include Header for admin and super_admin only */}
       {role === "super_admin" && showSidebar ? (
         <div className="main-layout">
           <Sidebar />
           <main className="content">{children}</main>
         </div>
-      ) : role === "user" && showSidebar ? (
-        <div className="main-layout">
-          <UserSidebar />
-          <main className="content">{children}</main>
-        </div>
+      ) : role === "user" ? (
+        <UserLayout>{children}</UserLayout>
       ) : (
         <AppLayout>{children}</AppLayout>
       )}
