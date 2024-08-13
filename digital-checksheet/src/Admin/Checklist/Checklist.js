@@ -488,9 +488,9 @@ const Checklist = () => {
 
   return (
     <Box>
-      <Typography variant="h4" gutterBottom>
+      {/* <Typography variant="h4" gutterBottom>
         Checklist
-      </Typography>
+      </Typography> */}
 
       <Box
         display="flex"

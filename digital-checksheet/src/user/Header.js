@@ -1,108 +1,50 @@
-// // Header.js
-// import React, { useEffect, useState } from 'react';
-// import { useNavigate } from 'react-router-dom';
-// import axios from 'axios';
-// import { FiUser, FiLogOut } from 'react-icons/fi';
-// import 'bootstrap/dist/css/bootstrap.min.css';
-
-// const Header = () => {
-//   const navigate = useNavigate();
-//   const [userName, setUserName] = useState('');
-
-//   useEffect(() => {
-//     axios.get('http://localhost:3001/', { withCredentials: true })
-//       .then(response => {
-//         if (response.data.Status === 'Success') {
-//           setUserName(response.data.name);
-//         } else {
-//           navigate('/login');
-//         }
-//       })
-//       .catch(error => {
-//         console.error('Session Check Error:', error);
-//         navigate('/login');
-//       });
-//   }, [navigate]);
-
-//   const handleLogout = () => {
-//     axios.get('http://localhost:3001/logout', { withCredentials: true })
-//       .then(response => {
-//         if (response.data.Status === 'Success') {
-//           localStorage.removeItem('userName');
-//           localStorage.removeItem('userToken');
-//           navigate('/');
-//         }
-//       })
-//       .catch(error => {
-//         console.error('Logout Error:', error);
-//       });
-//   };
-
-//   return (
-//     <header className="d-flex justify-content-between align-items-center p-3 bg-primary text-white w-100" style={{ height: '56px' }}>
-//       <div className="d-flex align-items-center">
-//         <FiUser className="me-2" />
-//         <span>Welcome, {userName}</span>
-//       </div>
-//       <button className="btn btn-outline-light d-flex align-items-center" onClick={handleLogout}>
-//         <FiLogOut className="me-1" /> Logout
-//       </button>
-//     </header>
-//   );
-// };
-
-// export default Header;
-
-
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { FiUser, FiLogOut } from 'react-icons/fi';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import React from "react";
+import { AppBar, Toolbar, Typography, Button } from "@mui/material";
+import { useLocation, useNavigate } from "react-router-dom";
+import "./Header.css"; // Import your styles for Header
+import logo from "../Assests/logo3.png"
 
 const Header = () => {
+  const location = useLocation();
   const navigate = useNavigate();
-  const [userName, setUserName] = useState('');
-
-  useEffect(() => {
-    axios.get('http://localhost:3001/', { withCredentials: true })
-      .then(response => {
-        if (response.data.Status === 'Success') {
-          setUserName(response.data.name);
-        } else {
-          navigate('/login');
-        }
-      })
-      .catch(error => {
-        console.error('Session Check Error:', error);
-        navigate('/login');
-      });
-  }, [navigate]);
 
   const handleLogout = () => {
-    axios.get('http://localhost:3001/logout', { withCredentials: true })
-      .then(response => {
-        if (response.data.Status === 'Success') {
-          localStorage.removeItem('userName');
-          localStorage.removeItem('userToken');
-          navigate('/');
-        }
-      })
-      .catch(error => {
-        console.error('Logout Error:', error);
-      });
+    // Implement your logout logic here
+    console.log("User logged out");
+    // Redirect to the login page
+    navigate("/");
   };
 
+  const showLogoutButton = location.pathname !== "/";
+
   return (
-    <header className="d-flex justify-content-between align-items-center p-3 bg-primary text-white fixed-top" style={{ height: '56px', zIndex: '1030' }}>
-      <div className="d-flex align-items-center">
-        <FiUser className="me-2" />
-        <span>Welcome, {userName}</span>
-      </div>
-      <button className="btn btn-outline-light d-flex align-items-center" onClick={handleLogout}>
-        <FiLogOut className="me-1" /> Logout
-      </button>
-    </header>
+    <AppBar position="sticky" className="header">
+      <Toolbar>
+      <img src={logo} alt="Logo" className="logo" />
+        <Typography
+          variant="h6"
+          className="title"
+          style={{ fontFamily: "fangsong" }}
+        >
+          Digital Checksheet
+        </Typography>
+        {showLogoutButton && (
+          <Button
+            sx={{
+              backgroundColor: "#fff", // Set your desired background color here
+              color: "Blue", // Set the text color to white for better contrast
+              "&:hover": {
+                backgroundColor: "#e64a19", // Set a different background color on hover
+                color: "#fff",
+              },
+            }}
+            onClick={handleLogout}
+          >
+            LOGOUT
+          </Button>
+        )}
+      </Toolbar>
+    </AppBar>
   );
 };
 

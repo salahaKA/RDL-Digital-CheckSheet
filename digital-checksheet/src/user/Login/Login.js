@@ -31,13 +31,13 @@ const Login = ({ setIsLoggedIn, setRole }) => {
         setIsLoggedIn(true);
         const role = response.data.role;
         setRole(role);
-        
+
         // Redirect based on role
         if (role === "super_admin") {
           navigate("/superdashboard");
         } else if (role === "admin") {
           navigate("/dashboard");
-        } else if (role === "user") { // Add handling for regular users
+        } else if (role === "user") {
           navigate("/userdashboard");
         } else {
           navigate("/"); // Default redirection
@@ -47,7 +47,11 @@ const Login = ({ setIsLoggedIn, setRole }) => {
       }
     } catch (error) {
       console.error("Error logging in:", error);
-      setError("An error occurred. Please try again later.");
+      if (error.response && error.response.status === 403) {
+        setError("Your account is not verified yet.");
+      } else {
+        setError("An error occurred. Please try again later.");
+      }
     }
   };
 

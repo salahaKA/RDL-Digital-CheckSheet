@@ -273,9 +273,9 @@ const Master = () => {
 
   return (
     <Box>
-      <Typography variant="h4" gutterBottom>
+      {/* <Typography variant="h4" gutterBottom>
         Master Content
-      </Typography>
+      </Typography> */}
 
       <Box
         display="flex"

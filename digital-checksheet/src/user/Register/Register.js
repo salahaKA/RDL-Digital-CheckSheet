@@ -39,19 +39,14 @@ const Register = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
-    // Log data for debugging purposes
-    console.log({ firstName, lastName, phone, organizationId, email, password });
-
+  
     try {
-      // Check if all required fields are filled
       if (!firstName || !lastName || !phone || !organizationId || !email || !password) {
         setError("All fields are required.");
         return;
       }
-
-      // Make API request to register user
-      const response = await axios.post("http://localhost:3001/api/register", {
+  
+      const response = await axios.post("http://localhost:3001/api/user_login/register", {
         firstName,
         lastName,
         phone,
@@ -59,9 +54,8 @@ const Register = () => {
         email,
         password,
       });
-
+  
       if (response.status === 201) {
-        console.log("Registration successful", response.data);
         setSuccess("Registration successful! Please log in.");
         navigate("/login");
       } else {

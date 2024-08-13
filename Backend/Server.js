@@ -5,6 +5,11 @@ const cors = require("cors");
 const bcrypt = require("bcrypt");
 const multer = require("multer");
 const path = require("path");
+const nodemailer = require('nodemailer');
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
+const session = require("express-session");
+
 
 const app = express();
 const port = 3001;
@@ -255,6 +260,12 @@ app.post("/api/login", async (req, res) => {
             if (results.length > 0) {
               const user = results[0];
               const match = await bcrypt.compare(password, user.password);
+              
+              // Check if user is verified
+              if (!user.verified) {
+                return res.status(403).json({ error: "User not verified" });
+              }
+              
               if (match) {
                 return res
                   .status(200)
@@ -271,6 +282,7 @@ app.post("/api/login", async (req, res) => {
     }
   });
 });
+
 
 // Admin logout endpoint
 app.post("/api/logout", async (req, res) => {
@@ -938,6 +950,7 @@ app.post('/api/users', upload.single('image'), async (req, res) => {
 //---------------------------------------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------------------------------------------
 
+
 app.get('/organizations', (req, res) => {
   pool.query('SELECT id, name FROM organizations', (err, results) => {
     if (err) {
@@ -956,25 +969,41 @@ app.get('/departments', (req, res) => {
 });
 
 
-app.post('/api/register', async (req, res) => {
+// app.post('/api/register', async (req, res) => {
+//   const { firstName, lastName, phone, organizationId, email, password } = req.body;
+
+//   try {
+//     const saltRounds = 10;
+//     const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+//     const query = 'INSERT INTO user_login (firstName, lastName, phone, organization_id, email, password) VALUES (?, ?, ?, ?, ?, ?)';
+//     pool.query(query, [firstName, lastName, phone, organizationId, email, hashedPassword], (err, result) => {
+//       if (err) {
+//         console.error('Error inserting user into database:', err);
+//         return res.status(500).json({ message: 'Internal server error' });
+//       }
+//       res.status(201).json({ message: 'User registered successfully', userId: result.insertId });
+//     });
+//   } catch (error) {
+//     console.error('Error during registration:', error);
+//     res.status(500).json({ message: 'Internal server error' });
+//   }
+// });
+
+
+app.post('/api/user_login/register', (req, res) => {
   const { firstName, lastName, phone, organizationId, email, password } = req.body;
-
-  try {
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    const query = 'INSERT INTO user_login (firstName, lastName, phone, organization_id, email, password) VALUES (?, ?, ?, ?, ?, ?)';
-    pool.query(query, [firstName, lastName, phone, organizationId, email, hashedPassword], (err, result) => {
-      if (err) {
-        console.error('Error inserting user into database:', err);
-        return res.status(500).json({ message: 'Internal server error' });
-      }
-      res.status(201).json({ message: 'User registered successfully', userId: result.insertId });
-    });
-  } catch (error) {
-    console.error('Error during registration:', error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
+  const hashedPassword = bcrypt.hashSync(password, 10);
+  const query = 'INSERT INTO user_login (firstName, lastName, phone, organization_id, email, password, verified) VALUES (?, ?, ?, ?, ?, ?, FALSE)';
+  
+  pool.query(query, [firstName, lastName, phone, organizationId, email, hashedPassword], (err, results) => {
+    if (err) {
+      console.error('Error registering user:', err);
+      res.status(500).json({ error: 'Database error' });
+      return;
+    }
+    res.status(201).json({ message: 'User registered, awaiting verification' });
+  });
 });
 
 
@@ -1097,6 +1126,65 @@ app.get('/checklists', (req, res) => {
       res.status(200).json(results);
     }
   );
+});
+
+app.get('/api/user_login', (req, res) => {
+  const query = 'SELECT * FROM user_login';
+  pool.query(query, (err, results) => {
+    if (err) {
+      console.error('Error fetching users:', err);
+      res.status(500).json({ error: 'Database error' });
+      return;
+    }
+    res.json(results);
+  });
+});
+
+
+
+//-------------------------------------------------------------------------------------------
+//admin_user
+
+
+app.get('/api/user_login/unverified', (req, res) => {
+  const query = 'SELECT * FROM user_login WHERE verified = FALSE';
+  
+  pool.query(query, (err, results) => {
+    if (err) {
+      console.error('Error fetching unverified users:', err);
+      res.status(500).json({ error: 'Database error' });
+      return;
+    }
+    res.json(results);
+  });
+});
+
+
+app.get('/api/user_login', (req, res) => {
+  const query = 'SELECT * FROM user_login WHERE verified = TRUE';
+  
+  pool.query(query, (err, results) => {
+    if (err) {
+      console.error('Error fetching users:', err);
+      res.status(500).json({ error: 'Database error' });
+      return;
+    }
+    res.json(results);
+  });
+});
+
+app.put('/api/user_login/verify/:id', (req, res) => {
+  const userId = req.params.id;
+  const query = 'UPDATE user_login SET verified = TRUE WHERE id = ?';
+
+  pool.query(query, [userId], (err, results) => {
+    if (err) {
+      console.error('Error verifying user:', err);
+      return res.status(500).json({ error: 'Database error during verification' });
+    }
+
+    res.json({ message: 'User verified successfully' });
+  });
 });
 
 
