@@ -3,7 +3,6 @@ MCA Final Year Internship Project Under RDL Technologies Pvt Ltd, Sahyadri Campu
 
 Modules:
 Super-admin, Admin, User
-Contributerd on Main Layout design, Full-Stack Admin module and Module combining part.
 
 Technology Used:
 Frontend: React.js, CSS, MUI
