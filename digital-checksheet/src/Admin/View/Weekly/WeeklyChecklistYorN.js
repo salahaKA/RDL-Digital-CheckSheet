@@ -10,6 +10,7 @@ import {
   Typography,
   TextField,
   Paper,
+  Button
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
@@ -85,6 +86,34 @@ const WeeklyChecklist = ({ templateId }) => {
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
+  };
+
+  const handleSubmit = async () => {
+    try {
+      const checklistData = {
+        templateId,
+        title,
+        heading,
+        department,
+        section,
+        templateType,
+        labels: labelTexts,
+        answers,
+        date: selectedDate ? selectedDate.toISOString().split("T")[0] : null,
+      };
+
+      await axios.post("http://localhost:3001/api/submit-weekly-checklist", checklistData);
+      alert("Checklist submitted successfully!");
+    } catch (error) {
+      console.error("Error submitting checklist:", error);
+      alert("Failed to submit checklist.");
+    }
+  };
+
+  const handleClear = () => {
+    setAnswers({});
+    setLabelTexts({});
+    setSelectedDate(null);
   };
 
   return (
@@ -166,6 +195,14 @@ const WeeklyChecklist = ({ templateId }) => {
               ))}
             </TableBody>
           </Table>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, marginTop: 2 }}>
+            <Button variant="contained" color="primary" onClick={handleSubmit}>
+              Submit
+            </Button>
+            <Button variant="outlined" color="secondary" onClick={handleClear}>
+              Clear
+            </Button>
+          </Box>
         </Paper>
       </Box>
     </LocalizationProvider>

@@ -10,6 +10,7 @@ import {
   Typography,
   TextField,
   Paper,
+  Button
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
@@ -23,7 +24,7 @@ const chunkArray = (array, size) => {
   return result;
 };
 
-const MonthlyChecklist = ({ templateId }) => {
+const MonthlyChecklist = ({ templateId, userId, deptId }) => {
   const [title, setTitle] = useState("");
   const [heading, setHeading] = useState("");
   const [department, setDepartment] = useState("");
@@ -98,17 +99,39 @@ const MonthlyChecklist = ({ templateId }) => {
   const labelArray = labels.split(",");
   const labelChunks = chunkArray(labelArray, 3);
 
+  const handleSubmit = async () => {
+    try {
+      const checklistData = {
+        user_id: userId,
+        template_id: templateId,
+        response_data: answers,
+        date: selectedDate ? selectedDate.toISOString().split("T")[0] : null,
+        dept_id: deptId,
+      };
+
+      await axios.post("http://localhost:3001/api/submit-monthly-checklist", checklistData);
+      alert("Checklist submitted successfully!");
+    } catch (error) {
+      console.error("Error submitting checklist:", error);
+      alert("Failed to submit checklist.");
+    }
+  };
+
+  const handleClear = () => {
+    setAnswers({});
+    setLabelTexts({});
+    setSelectedDate(null);
+  };
+
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Box sx={{ maxWidth: '100%', overflowX: 'auto' }}>
+      <Box>
         <Paper sx={{ padding: 2, border: "2px solid black", borderRadius: 2 }}>
           <Box sx={{ marginBottom: 2, textAlign: 'center' }}>
             <Typography variant="h4" sx={{ fontWeight: 'bold' }}>{title}</Typography>
             {heading && <Typography variant="h6" sx={{ fontWeight: 'bold' }}>{heading}</Typography>}
           </Box>
-          
-          {/* Display labels in a table */}
-          <Table size="small" sx={{ border: "1px solid black", marginBottom: 2 }}>
+          <Table size="small" sx={{ border: "1px solid black" }}>
             <TableBody>
               {labelChunks.map((chunk, chunkIndex) => (
                 <TableRow key={chunkIndex}>
@@ -150,38 +173,44 @@ const MonthlyChecklist = ({ templateId }) => {
             </TableBody>
           </Table>
 
-          {/* Display questions and dates in a table */}
-          <Box sx={{ overflowX: 'auto' }}>
-            <Table size="small" sx={{ border: "1px solid black" }}>
-              <TableHead>
-                <TableRow sx={{ backgroundColor: "#f0f0f0" }}>
-                  <TableCell sx={{ fontSize: "0.9rem", padding: "4px", border: "1px solid black" }}>Question</TableCell>
+          <Table size="small" sx={{ border: "1px solid black", marginTop: 2 }}>
+            <TableHead>
+              <TableRow sx={{ backgroundColor: "#f0f0f0" }}>
+                <TableCell sx={{ fontSize: "0.9rem", padding: "4px", border: "1px solid black" }}>Question</TableCell>
+                {renderDaysInMonth().map((day) => (
+                  <TableCell key={day} sx={{ fontSize: "0.9rem", padding: "4px", border: "1px solid black" }}>{day}</TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {questions.map((question, index) => (
+                <TableRow key={index}>
+                  <TableCell sx={{ fontSize: "0.9rem", padding: "4px", border: "1px solid black" }}>
+                    {question.question}
+                  </TableCell>
                   {renderDaysInMonth().map((day) => (
-                    <TableCell key={day} sx={{ fontSize: "0.9rem", padding: "4px", border: "1px solid black" }}>{day}</TableCell>
+                    <TableCell key={`${question.id}_${day}`} sx={{ fontSize: "0.9rem", padding: "4px", border: "1px solid black" }}>
+                      <TextField
+                        variant="outlined"
+                        size="small"
+                        value={answers[question.id]?.[day] || ""}
+                        onChange={(e) => handleInputChange(question.id, day, e.target.value)}
+                        sx={{ width: '60px' }}
+                      />
+                    </TableCell>
                   ))}
                 </TableRow>
-              </TableHead>
-              <TableBody>
-                {questions.map((question, index) => (
-                  <TableRow key={index}>
-                    <TableCell sx={{ fontSize: "0.9rem", padding: "4px", border: "1px solid black" }}>
-                      {question.question}
-                    </TableCell>
-                    {renderDaysInMonth().map((day) => (
-                      <TableCell key={`${question.id}_${day}`} sx={{ fontSize: "0.9rem", padding: "4px", border: "1px solid black" }}>
-                        <TextField
-                          variant="outlined"
-                          size="small"
-                          value={answers[question.id]?.[day] || ""}
-                          onChange={(e) => handleInputChange(question.id, day, e.target.value)}
-                          sx={{ width: '60px' }}
-                        />
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+              ))}
+            </TableBody>
+          </Table>
+
+          <Box sx={{ marginTop: 2, textAlign: 'center' }}>
+            <Button variant="contained" color="primary" onClick={handleSubmit} sx={{ marginRight: 2 }}>
+              Submit
+            </Button>
+            <Button variant="outlined" color="secondary" onClick={handleClear}>
+              Clear
+            </Button>
           </Box>
         </Paper>
       </Box>
@@ -189,4 +218,4 @@ const MonthlyChecklist = ({ templateId }) => {
   );
 };
 
-export default MonthlyChecklist
+export default MonthlyChecklist;

@@ -11,26 +11,26 @@ const Register = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
-  const [organizationId, setOrganizationId] = useState("");
+  const [departmentId, setDepartmentId] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [organizations, setOrganizations] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchOrganizations = async () => {
+    const fetchDepartments = async () => {
       try {
-        const response = await axios.get("http://localhost:3001/api/organizations");
-        setOrganizations(response.data);
+        const response = await axios.get("http://localhost:3001/api/departments");
+        setDepartments(response.data);
       } catch (error) {
-        console.error("Error fetching organizations:", error);
-        setError("Failed to load organizations.");
+        console.error("Error fetching departments:", error);
+        setError("Failed to load departments.");
       }
     };
 
-    fetchOrganizations();
+    fetchDepartments();
   }, []);
 
   const togglePasswordVisibility = () => {
@@ -41,7 +41,7 @@ const Register = () => {
     event.preventDefault();
   
     try {
-      if (!firstName || !lastName || !phone || !organizationId || !email || !password) {
+      if (!firstName || !lastName || !phone || !departmentId || !email || !password) {
         setError("All fields are required.");
         return;
       }
@@ -50,7 +50,7 @@ const Register = () => {
         firstName,
         lastName,
         phone,
-        organizationId,
+        departmentId,
         email,
         password,
       });
@@ -107,14 +107,14 @@ const Register = () => {
         <div className="input">
           <span className='input-group-text'><RiBuilding2Fill /></span>
           <select
-            value={organizationId}
-            onChange={(e) => setOrganizationId(e.target.value)}
+            value={departmentId}
+            onChange={(e) => setDepartmentId(e.target.value)}
             required
           >
-            <option value="">Select Organization</option>
-            {organizations.map((org) => (
-              <option key={org.id} value={org.id}>
-                {org.name}
+            <option value="">Select Department</option>
+            {departments.map((dept) => (
+              <option key={dept.id} value={dept.id}>
+                {dept.name}
               </option>
             ))}
           </select>

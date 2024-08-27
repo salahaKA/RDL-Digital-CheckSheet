@@ -1,19 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Box,
-  Typography,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
-  TextField,
-  Paper,
-} from "@mui/material";
+import { Button, Box, Typography, RadioGroup, FormControlLabel, Radio, TextField, Paper, Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { LocalizationProvider } from "@mui/x-date-pickers";
@@ -26,7 +13,7 @@ const chunkArray = (array, size) => {
   return result;
 };
 
-const DailyChecklistYorN = ({ templateId }) => {
+const DailyChecklistYorN = ({ templateId, onResponseChange }) => {
   const [title, setTitle] = useState("");
   const [heading, setHeading] = useState("");
   const [department, setDepartment] = useState("");
@@ -38,6 +25,9 @@ const DailyChecklistYorN = ({ templateId }) => {
   const [labelnumber, setLabelnumber] = useState("");
   const [labelTexts, setLabelTexts] = useState({});
   const [selectedDate, setSelectedDate] = useState(null);
+  const [responses, setResponses] = useState({
+    question1: "",
+  });
 
   useEffect(() => {
     const fetchTemplateData = async () => {
@@ -65,6 +55,18 @@ const DailyChecklistYorN = ({ templateId }) => {
 
     fetchTemplateData();
   }, [templateId]);
+
+  const handleClear = () => {
+    setResponses({
+      question1: "",
+      // Reset state for each question
+    });
+    onResponseChange(templateId, null); // Clear the response
+  };
+
+  const handleSubmit = () => {
+    onResponseChange(templateId, responses); // Pass the responses data back to the parent component
+  };
 
   const handleOptionChange = (questionId, index, value) => {
     setAnswers((prevAnswers) => ({
@@ -165,6 +167,13 @@ const DailyChecklistYorN = ({ templateId }) => {
             </TableBody>
           </Table>
         </Paper>
+        {/* Add Submit and Clear buttons */}
+        <Button variant="contained" color="primary" onClick={handleSubmit}>
+          Submit
+        </Button>
+        <Button variant="outlined" color="secondary" onClick={handleClear}>
+          Clear
+        </Button>
       </Box>
     </LocalizationProvider>
   );

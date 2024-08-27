@@ -93,6 +93,33 @@ const DailyChecklistMCQ = ({ templateId }) => {
     setSelectedDate(date);
   };
 
+  const handleSubmit = async () => {
+    const checklistData = {
+      title,
+      heading,
+      department,
+      section,
+      templateType,
+      selectedDate,
+      labels: labelTexts,
+      answers,
+    };
+
+    try {
+      await axios.post("http://localhost:3001/api/submit-checklist", checklistData);
+      alert("Checklist submitted successfully!");
+    } catch (error) {
+      console.error("Error submitting checklist:", error);
+      alert("Failed to submit the checklist.");
+    }
+  };
+
+  const handleClear = () => {
+    setLabelTexts({});
+    setAnswers({});
+    setSelectedDate(null);
+  };
+
   const labelArray = labels.split(",");
   const labelChunks = chunkArray(labelArray, 3);
 
@@ -183,14 +210,15 @@ const DailyChecklistMCQ = ({ templateId }) => {
               )}
             </TableBody>
           </Table>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => setChecklistView(true)}
-            sx={{ mt: 2 }}
-          >
-            View Checklist
-          </Button>
+
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2, gap: 2 }}>
+            <Button variant="contained" color="secondary" onClick={handleClear}>
+              Clear
+            </Button>
+            <Button variant="contained" color="primary" onClick={handleSubmit}>
+              Submit
+            </Button>
+          </Box>
 
           {checklistView && (
             <Paper
@@ -212,69 +240,27 @@ const DailyChecklistMCQ = ({ templateId }) => {
               <Typography variant="h6" gutterBottom>
                 {heading}
               </Typography>
-              <Box sx={{ display: "flex", gap: 1 }}>
-                <Typography variant="body2">Department:</Typography>
-                <Typography variant="body2">{department}</Typography>
+              <Box sx={{ display: "flex", gap: "10px" }}>
+                <Typography variant="h7" sx={{ textAlign: "center", fontWeight: "bold" }}>
+                  Department : {department}
+                </Typography>
+                <Typography variant="h7" sx={{ textAlign: "center", fontWeight: "bold" }}>
+                  Section : {section}
+                </Typography>
               </Box>
-              <Box sx={{ display: "flex", gap: 1 }}>
-                <Typography variant="body2">Section:</Typography>
-                <Typography variant="body2">{section}</Typography>
+              <Box>
+                {Array.isArray(questions) &&
+                  questions.map((question, index) => (
+                    <Box key={index} mt={2}>
+                      <Typography variant="h6">{question.question}</Typography>
+                      {question.options.map((option) => (
+                        <Typography variant="body2" key={option}>
+                          {option}
+                        </Typography>
+                      ))}
+                    </Box>
+                  ))}
               </Box>
-              <Box sx={{ display: "flex", gap: 1 }}>
-                <Typography variant="body2">Type:</Typography>
-                <Typography variant="body2">{templateType}</Typography>
-              </Box>
-              <Box sx={{ display: "flex", gap: 1 }}>
-                <Typography variant="body2">Date:</Typography>
-                <Typography variant="body2">{selectedDate ? selectedDate.toISOString().split("T")[0] : ''}</Typography>
-              </Box>
-
-              <Typography variant="subtitle1" gutterBottom>
-                Questions
-              </Typography>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Question</TableCell>
-                    <TableCell>Options</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {Array.isArray(questions) && questions.length > 0 ? (
-                    questions.map((question, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{question.question}</TableCell>
-                        <TableCell>
-                          {question.options.map((option) => (
-                            <FormControlLabel
-                              key={option}
-                              control={
-                                <Checkbox
-                                  checked={answers[question.id]?.includes(option) || false}
-                                  onChange={() => handleCheckboxChange(question.id, option)}
-                                />
-                              }
-                              label={option}
-                            />
-                          ))}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={2}>No questions available</TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={() => setChecklistView(false)}
-                sx={{ mt: 2 }}
-              >
-                Close
-              </Button>
             </Paper>
           )}
         </Paper>

@@ -62,6 +62,31 @@ const DailyChecklistText = ({ templateId }) => {
     }));
   };
 
+  const handleSubmit = async () => {
+    const submissionData = {
+      date: date ? new Date(date).toISOString().split("T")[0] : "",
+      department: templateData.department,
+      section: templateData.section,
+      templateType: templateData.template,
+      labelTexts,
+      answers,
+    };
+
+    try {
+      await axios.post("http://localhost:3001/api/submit-checklist", submissionData);
+      alert("Checklist submitted successfully!");
+    } catch (error) {
+      console.error("Error submitting checklist:", error);
+      alert("There was an error submitting the checklist. Please try again.");
+    }
+  };
+
+  const handleClear = () => {
+    setAnswers({});
+    setLabelTexts({});
+    setDate(null);
+  };
+
   if (!templateData) {
     return <div>Loading...</div>;
   }
@@ -73,9 +98,9 @@ const DailyChecklistText = ({ templateId }) => {
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Box>
         <Paper sx={{ padding: 2, border: "2px solid black", borderRadius: 2 }}>
-          <Box sx={{ marginBottom: 2, textAlign: 'center' }}>
-            <Typography variant="h4" sx={{ fontWeight: 'bold' }}>{templateData.title}</Typography>
-            {templateData.heading && <Typography variant="h6" sx={{ fontWeight: 'bold' }}>{templateData.heading}</Typography>}
+          <Box sx={{ marginBottom: 2, textAlign: "center" }}>
+            <Typography variant="h4" sx={{ fontWeight: "bold" }}>{templateData.title}</Typography>
+            {templateData.heading && <Typography variant="h6" sx={{ fontWeight: "bold" }}>{templateData.heading}</Typography>}
           </Box>
           <Table size="small" sx={{ border: "1px solid black" }}>
             <TableBody>
@@ -153,6 +178,24 @@ const DailyChecklistText = ({ templateId }) => {
               )}
             </TableBody>
           </Table>
+
+          <Box sx={{ display: "flex", justifyContent: "space-between", marginTop: 2 }}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleSubmit}
+            >
+              Submit
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={handleClear}
+            >
+              Clear
+            </Button>
+          </Box>
+
           <Button
             variant="contained"
             color="primary"
@@ -194,27 +237,40 @@ const DailyChecklistText = ({ templateId }) => {
                 <Typography variant="body2">Type:</Typography>
                 <Typography variant="body2">{templateData.template}</Typography>
               </Box>
-              <Box sx={{ display: "flex", gap: 1 }}>
+
+              {labelChunks.map((chunk, index) => (
+                <Box sx={{ display: "flex", gap: 2, mt: 2 }} key={index}>
+                  {chunk.map((label, idx) => (
+                    <Box key={idx}>
+                      <Typography variant="body2">{label}</Typography>
+                      <Typography variant="body2">{labelTexts[index * 3 + idx] || ""}</Typography>
+                    </Box>
+                  ))}
+                </Box>
+              ))}
+
+              <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
                 <Typography variant="body2">Date:</Typography>
-                <Typography variant="body2">{date ? new Date(date).toISOString().split("T")[0] : ''}</Typography>
+                <Typography variant="body2">
+                  {date ? new Date(date).toISOString().split("T")[0] : ""}
+                </Typography>
               </Box>
 
-              <Typography variant="subtitle1" gutterBottom>
-                Questions
-              </Typography>
-              <Table>
+              <Table size="small" sx={{ border: "1px solid black", marginTop: 2 }}>
                 <TableHead>
-                  <TableRow>
-                    <TableCell>Question</TableCell>
-                    <TableCell>Response</TableCell>
+                  <TableRow sx={{ backgroundColor: "#f0f0f0" }}>
+                    <TableCell sx={{ fontSize: "0.9rem", padding: "4px", border: "1px solid black" }}>Question</TableCell>
+                    <TableCell sx={{ fontSize: "0.9rem", padding: "4px", border: "1px solid black" }}>Response</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {Array.isArray(templateData.questions) && templateData.questions.length > 0 ? (
                     templateData.questions.map((question, index) => (
                       <TableRow key={index}>
-                        <TableCell>{question.question}</TableCell>
-                        <TableCell>
+                        <TableCell sx={{ fontSize: "0.9rem", padding: "4px", border: "1px solid black" }}>
+                          {question.question}
+                        </TableCell>
+                        <TableCell sx={{ fontSize: "0.9rem", padding: "4px", border: "1px solid black" }}>
                           <textarea
                             style={{
                               width: "100%",
@@ -234,14 +290,6 @@ const DailyChecklistText = ({ templateId }) => {
                   )}
                 </TableBody>
               </Table>
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={() => setChecklistView(false)}
-                sx={{ mt: 2 }}
-              >
-                Close
-              </Button>
             </Paper>
           )}
         </Paper>

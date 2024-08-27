@@ -523,23 +523,7 @@ app.get("/titles/:id", (req, res) => {
   });
 });
 
-// //heading
-// app.post("/headings", (req, res) => {
-//   console.log("Request received:", req.body); // Add this line
-//   const { department, section, title, heading } = req.body;
-//   const query =
-//     "INSERT INTO headings (department, section, title ,heading) VALUES (?, ?, ? ,?)";
-//   pool.execute(query, [department, section, title, heading], (err, results) => {
-//     if (err) {
-//       console.error("Database query error:", err);
-//       res.status(500).json({ error: "Database error" });
-//       return;
-//     }
-//     res
-//       .status(201)
-//       .json({ message: "heading added", titleId: results.insertId });
-//   });
-// });
+
 
 app.post("/headings", (req, res) => {
   console.log("Request received:", req.body);
@@ -951,15 +935,7 @@ app.post('/api/users', upload.single('image'), async (req, res) => {
 //------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-app.get('/organizations', (req, res) => {
-  pool.query('SELECT id, name FROM organizations', (err, results) => {
-    if (err) {
-      return res.status(500).send(err);
-    }
-    res.json(results);
-  });
-});
-app.get('/departments', (req, res) => {
+app.get('/api/departments', (req, res) => {
   pool.query('SELECT id, name FROM department', (err, results) => {
     if (err) {
       return res.status(500).send(err);
@@ -969,43 +945,22 @@ app.get('/departments', (req, res) => {
 });
 
 
-// app.post('/api/register', async (req, res) => {
-//   const { firstName, lastName, phone, organizationId, email, password } = req.body;
-
-//   try {
-//     const saltRounds = 10;
-//     const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-//     const query = 'INSERT INTO user_login (firstName, lastName, phone, organization_id, email, password) VALUES (?, ?, ?, ?, ?, ?)';
-//     pool.query(query, [firstName, lastName, phone, organizationId, email, hashedPassword], (err, result) => {
-//       if (err) {
-//         console.error('Error inserting user into database:', err);
-//         return res.status(500).json({ message: 'Internal server error' });
-//       }
-//       res.status(201).json({ message: 'User registered successfully', userId: result.insertId });
-//     });
-//   } catch (error) {
-//     console.error('Error during registration:', error);
-//     res.status(500).json({ message: 'Internal server error' });
-//   }
-// });
 
 
 app.post('/api/user_login/register', (req, res) => {
-  const { firstName, lastName, phone, organizationId, email, password } = req.body;
+  const { firstName, lastName, phone, departmentId, email, password } = req.body;
   const hashedPassword = bcrypt.hashSync(password, 10);
-  const query = 'INSERT INTO user_login (firstName, lastName, phone, organization_id, email, password, verified) VALUES (?, ?, ?, ?, ?, ?, FALSE)';
+  const query = 'INSERT INTO user_login (firstName, lastName, phone, department_id, email, password) VALUES (?, ?, ?, ?, ?, ?)';
   
-  pool.query(query, [firstName, lastName, phone, organizationId, email, hashedPassword], (err, results) => {
+  pool.query(query, [firstName, lastName, phone, departmentId, email, hashedPassword], (err, results) => {
     if (err) {
-      console.error('Error registering user:', err);
+      console.error('Database Error:', err);  // Log the error details
       res.status(500).json({ error: 'Database error' });
       return;
     }
-    res.status(201).json({ message: 'User registered, awaiting verification' });
+    res.status(201).json({ message: 'User registered successfully' });
   });
 });
-
 
 app.get('/templates', async (req, res) => {
   const departmentId = req.query.departmentId;
@@ -1185,6 +1140,34 @@ app.put('/api/user_login/verify/:id', (req, res) => {
 
     res.json({ message: 'User verified successfully' });
   });
+});
+
+
+//Checklist backend
+app.get('/templates', (req, res) => {
+  pool.query('SELECT * FROM templates', (err, results) => {
+    if (err) {
+      console.error('Error fetching templates:', err);
+      return res.status(500).json({ error: 'Failed to fetch templates' });
+    }
+    res.json(results);
+  });
+});
+
+app.post('/api/submit-checklist', async (req, res) => {
+  const { userId, templateId, responseData, date, deptId } = req.body;
+
+  try {
+    const result = await db.query(
+      `INSERT INTO response (user_id, template_id, response_data, created_at, dept_id) 
+       VALUES (?, ?, ?, ?, ?)`,
+      [userId, templateId, responseData, date, deptId]
+    );
+    res.status(201).json({ message: 'Checklist submitted successfully' });
+  } catch (error) {
+    console.error("Error submitting checklist:", error);
+    res.status(500).json({ error: 'Failed to submit checklist' });
+  }
 });
 
 
