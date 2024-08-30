@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   BrowserRouter as Router,
   Route,
@@ -25,8 +25,18 @@ import UserDashboard from './user/UserDashboard';
 import UserChecklist from "./user/UserChecklist";
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [role, setRole] = useState("");
+  // const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // const [role, setRole] = useState("");
+
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    () => localStorage.getItem("isLoggedIn") === "true"
+  );
+  const [role, setRole] = useState(() => localStorage.getItem("role") || "");
+
+  useEffect(() => {
+    localStorage.setItem("isLoggedIn", isLoggedIn);
+    localStorage.setItem("role", role);
+  }, [isLoggedIn, role]);
 
   return (
     <AppProvider>

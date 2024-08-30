@@ -1170,6 +1170,41 @@ app.post('/api/submit-checklist', async (req, res) => {
   }
 });
 
+// User response
+// Assuming you have express set up
+app.post('/submit-checklist', (req, res) => {
+  const { user_id, department, responses } = req.body;
+
+  // Convert responses object to JSON string
+  const response_data = JSON.stringify(responses);
+
+  const sql = 'INSERT INTO response (user_id, template_id, response_data) VALUES (?, ?, ?)';
+  
+  Object.keys(responses).forEach(templateId => {
+    db.query(sql, [user_id, templateId, response_data], (err, result) => {
+      if (err) {
+        console.error('Error inserting response:', err);
+        return res.status(500).json({ error: 'Failed to save response' });
+      }
+    });
+  });
+
+  res.json({ message: 'Response saved successfully' });
+});
+
+app.get('/get-responses', (req, res) => {
+  const sql = 'SELECT * FROM response';
+  
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error('Error fetching responses:', err);
+      return res.status(500).json({ error: 'Failed to fetch responses' });
+    }
+    
+    res.json(results);
+  });
+});
+
 
 
 app.listen(port, () => {
