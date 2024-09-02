@@ -16,21 +16,22 @@ import DailyChecklistText from "../Admin/View/Daily/DailyChecklistText";
 import DailyChecklistMCQ from "../Admin/View/Daily/DailyChecklistMCQ";
 import WeeklyChecklistYorN from "../Admin/View/Weekly/WeeklyChecklistYorN";
 import MonthlyChecklistYorN from "../Admin/View/Monthly/MonthlyChecklistYorN";
-import './UserChecklist.css'; // Import the CSS file
+import "./UserChecklist.css"; // Import the CSS file
 
 function UserChecklist() {
   const [departments, setDepartments] = useState([]);
-  const [selectedDepartment, setSelectedDepartment] = useState('');
+  const [selectedDepartment, setSelectedDepartment] = useState("");
   const [checklists, setChecklists] = useState([]);
   const [headingCheckResult, setHeadingCheckResult] = useState(null);
 
   useEffect(() => {
-    axios.get('http://localhost:3001/departments')
-      .then(response => {
+    axios
+      .get("http://localhost:3001/departments")
+      .then((response) => {
         setDepartments(response.data);
       })
-      .catch(error => {
-        console.error('Error fetching departments:', error);
+      .catch((error) => {
+        console.error("Error fetching departments:", error);
       });
   }, []);
 
@@ -47,25 +48,28 @@ function UserChecklist() {
   };
 
   const fetchChecklists = (department) => {
-    axios.get(`http://localhost:3001/checklists?department=${department}`)
-      .then(response => {
+    axios
+      .get(`http://localhost:3001/checklists?department=${department}`)
+      .then((response) => {
         setChecklists(response.data);
         setHeadingCheckResult(null);
       })
-      .catch(error => {
+      .catch((error) => {
         if (error.response && error.response.status === 404) {
           setChecklists([]);
-          setHeadingCheckResult({ message: 'No checklists available for the selected department' });
+          setHeadingCheckResult({
+            message: "No checklists available for the selected department",
+          });
         } else {
-          console.error('Error fetching checklists:', error);
-          setHeadingCheckResult({ message: 'Error fetching checklists' });
+          console.error("Error fetching checklists:", error);
+          setHeadingCheckResult({ message: "Error fetching checklists" });
         }
       });
   };
 
   const renderChecklist = (checklist) => {
     const { template, question_type, id } = checklist;
-    
+
     if (template === "daily") {
       if (question_type === "yesno") {
         return <DailyChecklistYorN key={id} templateId={id} />;
@@ -79,26 +83,24 @@ function UserChecklist() {
     } else if (template === "monthly" && question_type === "yesno") {
       return <MonthlyChecklistYorN key={id} templateId={id} />;
     }
-    
+
     return null;
   };
 
   return (
     <Box
-      sx={{ flexGrow: 1, backgroundImage: 'none' }} // Remove background image here
+      sx={{ flexGrow: 1, backgroundImage: "none" }} // Remove background image here
       className="view-container"
     >
       <AppBar
         position="static"
         sx={{
           backgroundColor: "#f5f5f5",
-          backgroundImage: 'none',
+          backgroundImage: "none",
         }}
       >
         <Toolbar>
-          <Button
-            sx={{ color: "#1976d2", textTransform: "none" }}
-          >
+          <Button sx={{ color: "#1976d2", textTransform: "none" }}>
             Checklist
           </Button>
           <Select
@@ -106,12 +108,12 @@ function UserChecklist() {
             onChange={handleDepartmentChange}
             displayEmpty
             sx={{ marginLeft: 2, minWidth: 200, color: "#1976d2" }}
-            inputProps={{ 'aria-label': 'Select Department' }}
+            inputProps={{ "aria-label": "Select Department" }}
           >
             <MenuItem value="">
               <em>Select Department</em>
             </MenuItem>
-            {departments.map(department => (
+            {departments.map((department) => (
               <MenuItem key={department.id} value={department.name}>
                 {department.name}
               </MenuItem>
@@ -126,7 +128,7 @@ function UserChecklist() {
           </Typography>
         )}
         <Grid container spacing={2}>
-          {checklists.map(checklist => (
+          {checklists.map((checklist) => (
             <Grid item xs={12} key={checklist.id}>
               <Paper elevation={3} sx={{ padding: 2 }}>
                 {renderChecklist(checklist)}
