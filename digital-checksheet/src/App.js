@@ -23,6 +23,7 @@ import Users from "./Admin/AddUser/Users";
 import Register from "./user/Register/Register";
 import UserDashboard from './user/UserDashboard';
 import UserChecklist from "./user/UserChecklist";
+import ReportPage from "./Admin/View/ReportPage";
 
 function App() {
   // const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -65,6 +66,7 @@ function App() {
                     <Route path="/checklist" element={<Checklist />} />
                     <Route path="/users" element={<Users/>} />
                     <Route path="/view" element={<View />} />
+                    <Route path="/report" element={<ReportPage />} />
                     <Route
                       path="/dailychecklistyn"
                       element={<DailyChecklist />}

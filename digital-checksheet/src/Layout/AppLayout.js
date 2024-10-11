@@ -6,6 +6,7 @@ import {
   FaTable,
   FaEye,
   FaUser,
+  FaFileAlt,
 } from "react-icons/fa";
 import Header from "./Header";
 import "./AppLayout.css";
@@ -43,10 +44,16 @@ const AppLayout = ({ children }) => {
                   </Link>
                 </li>
                 <li>
+                  <Link to="/report"> 
+                    <FaFileAlt /> Report
+                  </Link>
+                </li>
+                <li>
                   <Link to="/users"> 
                     <FaUser /> User
                   </Link>
                 </li>
+
               </ul>
             </nav>
           </aside>

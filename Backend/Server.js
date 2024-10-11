@@ -5,11 +5,10 @@ const cors = require("cors");
 const bcrypt = require("bcrypt");
 const multer = require("multer");
 const path = require("path");
-const nodemailer = require('nodemailer');
+const nodemailer = require("nodemailer");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
-
 
 const app = express();
 const port = 3001;
@@ -62,7 +61,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Initialize MySQL tables and insert super admin credentials
 function initDatabase() {
@@ -143,57 +142,58 @@ app.get("/", (req, res) => {
   res.send("Backend server is running");
 });
 
-
-
 // Middleware to log admin activities
 function logAdminActivity(email, action) {
   if (action === "login") {
-      // Exclude logging for super admin login
-      if (email === "rdltech@gmail.com") {
-          return; // Skip logging for super admin login
+    // Exclude logging for super admin login
+    if (email === "rdltech@gmail.com") {
+      return; // Skip logging for super admin login
+    }
+
+    // Fetch organization name based on email
+    const getOrgQuery = "SELECT name FROM organizations WHERE email = ?";
+    pool.query(getOrgQuery, [email], (err, results) => {
+      if (err) {
+        console.error(Error`fetching organization name for ${email}:`, err);
+        return;
       }
 
-      // Fetch organization name based on email
-      const getOrgQuery = "SELECT name FROM organizations WHERE email = ?";
-      pool.query(getOrgQuery, [email], (err, results) => {
-          if (err) {
-              console.error(Error `fetching organization name for ${email}:`, err);
-              return;
-          }
+      if (results.length > 0) {
+        const { name } = results[0];
 
-          if (results.length > 0) {
-              const { name } = results[0];
-
-              // Log admin login with organization name
-              const logQuery = `
+        // Log admin login with organization name
+        const logQuery = `
                   INSERT INTO logs (name, email, login_time, status)
                   VALUES (?, ?, CURRENT_TIMESTAMP, ?)
               `;
-              pool.query(logQuery, [name, email, "logged in"], (err, results) => {
-                  if (err) {
-                      console.error(`Error logging ${action} activity for ${email}:`, err);
-                  } else {
-                      console.log(`${action} activity logged for ${email}`);
-                  }
-              });
+        pool.query(logQuery, [name, email, "logged in"], (err, results) => {
+          if (err) {
+            console.error(
+              `Error logging ${action} activity for ${email}:`,
+              err
+            );
           } else {
-              console.error(`Organization not found for email: ${email}`);
+            console.log(`${action} activity logged for ${email}`);
           }
-      });
+        });
+      } else {
+        console.error(`Organization not found for email: ${email}`);
+      }
+    });
   } else if (action === "logout") {
-      // Log admin logout
-      const logQuery = `
+    // Log admin logout
+    const logQuery = `
           UPDATE logs
           SET logout_time = CURRENT_TIMESTAMP, status = 'logged out'
           WHERE email = ? AND logout_time IS NULL
       `;
-      pool.query(logQuery, [email], (err, results) => {
-          if (err) {
-              console.error(Error `logging ${action} activity for ${email}:`, err);
-          } else {
-              console.log(`${action} activity logged for ${email}`);
-          }
-      });
+    pool.query(logQuery, [email], (err, results) => {
+      if (err) {
+        console.error(Error`logging ${action} activity for ${email}:`, err);
+      } else {
+        console.log(`${action} activity logged for ${email}`);
+      }
+    });
   }
 }
 
@@ -260,12 +260,12 @@ app.post("/api/login", async (req, res) => {
             if (results.length > 0) {
               const user = results[0];
               const match = await bcrypt.compare(password, user.password);
-              
+
               // Check if user is verified
               if (!user.verified) {
                 return res.status(403).json({ error: "User not verified" });
               }
-              
+
               if (match) {
                 return res
                   .status(200)
@@ -282,7 +282,6 @@ app.post("/api/login", async (req, res) => {
     }
   });
 });
-
 
 // Admin logout endpoint
 app.post("/api/logout", async (req, res) => {
@@ -335,18 +334,6 @@ app.put("/departments/:id", (req, res) => {
       return;
     }
     res.status(200).json({ message: "Department updated" });
-  });
-});
-
-app.get("/departments", (req, res) => {
-  const query = "SELECT * FROM departments";
-  pool.query(query, (err, results) => {
-    if (err) {
-      console.error("Database query error:", err);
-      res.status(500).json({ error: "Database error" });
-      return;
-    }
-    res.status(200).json(results);
   });
 });
 
@@ -424,20 +411,6 @@ app.delete("/sections/:id", (req, res) => {
   });
 });
 
-// Get all sections
-app.get("/sections", (req, res) => {
-  const query = "SELECT * FROM sections";
-  pool.query(query, (err, results) => {
-    if (err) {
-      console.error("Database query error:", err);
-      res.status(500).json({ error: "Database error" });
-      return;
-    }
-    res.status(200).json(results);
-  });
-});
-
-// Add a new title
 // Add a new title
 app.post("/titles", (req, res) => {
   console.log("Request received:", req.body); // Add this line
@@ -523,23 +496,28 @@ app.get("/titles/:id", (req, res) => {
   });
 });
 
-
-
 app.post("/headings", (req, res) => {
   console.log("Request received:", req.body);
-  const { department, section, title, heading, label_number, labels } = req.body;
+  const { department, section, title, heading, label_number, labels } =
+    req.body;
   const query = `
     INSERT INTO headings (department, section, title, heading, label_number, labels) 
     VALUES (?, ?, ?, ?, ?, ?)
   `;
-  pool.execute(query, [department, section, title, heading, label_number, labels], (err, results) => {
-    if (err) {
-      console.error("Database query error:", err);
-      res.status(500).json({ error: "Database error" });
-      return;
+  pool.execute(
+    query,
+    [department, section, title, heading, label_number, labels],
+    (err, results) => {
+      if (err) {
+        console.error("Database query error:", err);
+        res.status(500).json({ error: "Database error" });
+        return;
+      }
+      res
+        .status(201)
+        .json({ message: "Heading added", headingId: results.insertId });
     }
-    res.status(201).json({ message: "Heading added", headingId: results.insertId });
-  });
+  );
 });
 
 app.get("/headings", (req, res) => {
@@ -651,15 +629,17 @@ app.post("/templates", (req, res) => {
     return res.status(400).json({ error: "Questions should be an array" });
   }
 
-  if (question_type === "mcq") {
-    for (const question of questions) {
-      if (!question.options || !Array.isArray(question.options)) {
-        return res
-          .status(400)
-          .json({ error: "MCQ questions should have an options array" });
-      }
-    }
-  }
+  
+
+  // if (question_type === "mcq") {
+  //   for (const question of questions) {
+  //     if (!question.options || !Array.isArray(question.options)) {
+  //       return res
+  //         .status(400)
+  //         .json({ error: "MCQ questions should have an options array" });
+  //     }
+  //   }
+  // }
 
   const query =
     "INSERT INTO templates (title, heading, template, question_type, question_number, questions) VALUES (?, ?, ?, ?, ?, ?)";
@@ -864,35 +844,35 @@ app.get("/api/organizations", (req, res) => {
 });
 
 // Fetch logs
-app.get('/api/logs', (req, res) => {
+app.get("/api/logs", (req, res) => {
   const query = "SELECT * FROM logs ORDER BY date DESC";
   pool.query(query, (err, results) => {
-      if (err) {
-          console.error('Error fetching logs:', err);
-          return res.status(500).json({ error: 'Internal server error' });
-      }
-      res.status(200).json(results);
+    if (err) {
+      console.error("Error fetching logs:", err);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+    res.status(200).json(results);
   });
 });
 
 // Fetch today's login count
-app.get('/api/today-logins', (req, res) => {
+app.get("/api/today-logins", (req, res) => {
   // Assuming you have a 'logs' table where login activities are logged
   const today = new Date().toISOString().slice(0, 10); // Get today's date in YYYY-MM-DD format
 
-  const query = 'SELECT COUNT(*) AS count FROM logs WHERE DATE(date) = ?';
+  const query = "SELECT COUNT(*) AS count FROM logs WHERE DATE(date) = ?";
   pool.query(query, [today], (err, results) => {
-      if (err) {
-          console.error('Error fetching today\'s logins:', err);
-          return res.status(500).json({ error: 'Internal server error' });
-      }
+    if (err) {
+      console.error("Error fetching today's logins:", err);
+      return res.status(500).json({ error: "Internal server error" });
+    }
 
-      if (results.length > 0) {
-          const { count } = results[0];
-          res.status(200).json({ count });
-      } else {
-          res.status(200).json({ count: 0 }); // Return 0 if no logins found today
-      }
+    if (results.length > 0) {
+      const { count } = results[0];
+      res.status(200).json({ count });
+    } else {
+      res.status(200).json({ count: 0 }); // Return 0 if no logins found today
+    }
   });
 });
 
@@ -906,37 +886,45 @@ app.post("/upload", upload.single("file"), (req, res) => {
     .json({ message: "File uploaded successfully", filePath: req.file.path });
 });
 
-
-
-
 // Admin User creation
-app.post('/api/users', upload.single('image'), async (req, res) => {
+app.post("/api/users", upload.single("image"), async (req, res) => {
   try {
-    const { firstName, lastName, phone, organizationId, email, password } = req.body;
+    const { firstName, lastName, phone, organizationId, email, password } =
+      req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
     const image = req.file.path;
 
-    const query = 'INSERT INTO users (firstName, lastName, phone, organization_id, email, password, image) VALUES (?, ?, ?, ?, ?, ?, ?)';
-    const values = [firstName, lastName, phone, organizationId, email, hashedPassword, image];
+    const query =
+      "INSERT INTO users (firstName, lastName, phone, organization_id, email, password, image) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    const values = [
+      firstName,
+      lastName,
+      phone,
+      organizationId,
+      email,
+      hashedPassword,
+      image,
+    ];
 
     connection.query(query, values, (error, results) => {
       if (error) {
         console.error(error);
-        return res.status(500).json({ error: 'Error adding user' });
+        return res.status(500).json({ error: "Error adding user" });
       }
-      res.status(201).json({ message: 'User added successfully', userId: results.insertId });
+      res
+        .status(201)
+        .json({ message: "User added successfully", userId: results.insertId });
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: "Server error" });
   }
 });
 //---------------------------------------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------------------------------------------
 
-
-app.get('/api/departments', (req, res) => {
-  pool.query('SELECT id, name FROM department', (err, results) => {
+app.get("/api/departments", (req, res) => {
+  pool.query("SELECT id, name FROM department", (err, results) => {
     if (err) {
       return res.status(500).send(err);
     }
@@ -944,43 +932,45 @@ app.get('/api/departments', (req, res) => {
   });
 });
 
-
-
-
-app.post('/api/user_login/register', (req, res) => {
-  const { firstName, lastName, phone, departmentId, email, password } = req.body;
+app.post("/api/user_login/register", (req, res) => {
+  const { firstName, lastName, phone, departmentId, email, password } =
+    req.body;
   const hashedPassword = bcrypt.hashSync(password, 10);
-  const query = 'INSERT INTO user_login (firstName, lastName, phone, department_id, email, password) VALUES (?, ?, ?, ?, ?, ?)';
-  
-  pool.query(query, [firstName, lastName, phone, departmentId, email, hashedPassword], (err, results) => {
-    if (err) {
-      console.error('Database Error:', err);  // Log the error details
-      res.status(500).json({ error: 'Database error' });
-      return;
+  const query =
+    "INSERT INTO user_login (firstName, lastName, phone, department_id, email, password) VALUES (?, ?, ?, ?, ?, ?)";
+
+  pool.query(
+    query,
+    [firstName, lastName, phone, departmentId, email, hashedPassword],
+    (err, results) => {
+      if (err) {
+        console.error("Database Error:", err); // Log the error details
+        res.status(500).json({ error: "Database error" });
+        return;
+      }
+      res.status(201).json({ message: "User registered successfully" });
     }
-    res.status(201).json({ message: 'User registered successfully' });
-  });
+  );
 });
 
-app.get('/templates', async (req, res) => {
+app.get("/templates", async (req, res) => {
   const departmentId = req.query.departmentId;
 
   try {
     // Fetch templates filtered by departmentId
     const templates = await db.query(
-      'SELECT * FROM templates WHERE department_id = ?',
+      "SELECT * FROM templates WHERE department_id = ?",
       [departmentId]
     );
 
     res.json(templates);
   } catch (error) {
-    console.error('Error fetching templates:', error);
-    res.status(500).send('Error fetching templates');
+    console.error("Error fetching templates:", error);
+    res.status(500).send("Error fetching templates");
   }
 });
 
-
-app.get('/templates', (req, res) => {
+app.get("/templates", (req, res) => {
   const { department } = req.query;
   const query = `
     SELECT t.*
@@ -989,8 +979,8 @@ app.get('/templates', (req, res) => {
     WHERE h.department = ?`;
   connection.query(query, [department], (error, results) => {
     if (error) {
-      console.error('Error fetching templates:', error);
-      res.status(500).send('Internal Server Error');
+      console.error("Error fetching templates:", error);
+      res.status(500).send("Internal Server Error");
       return;
     }
     res.json(results);
@@ -1010,72 +1000,83 @@ app.get("/departments", (req, res) => {
   });
 });
 
-
 // Endpoint to check if a heading corresponding to a selected department exists in the templates table
-app.get('/check-heading', (req, res) => {
+app.get("/check-heading", (req, res) => {
   const { department } = req.query;
 
   if (!department) {
-    return res.status(400).json({ message: 'Department is required' });
+    return res.status(400).json({ message: "Department is required" });
   }
 
   // Query for the heading in the headings table based on the selected department
   pool.query(
-    'SELECT heading FROM headings WHERE department = ? LIMIT 1',
+    "SELECT heading FROM headings WHERE department = ? LIMIT 1",
     [department],
     (err, headingResults) => {
       if (err) {
         console.error("Error fetching heading:", err);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ message: "Internal server error" });
       }
 
       if (headingResults.length === 0) {
-        return res.status(404).json({ message: 'No heading found for the selected department' });
+        return res
+          .status(404)
+          .json({ message: "No heading found for the selected department" });
       }
 
       const heading = headingResults[0].heading;
 
       // Check if the heading exists in the templates table
       pool.query(
-        'SELECT * FROM templates WHERE heading = ?',
+        "SELECT * FROM templates WHERE heading = ?",
         [heading],
         (err, templateResults) => {
           if (err) {
             console.error("Error checking templates:", err);
-            return res.status(500).json({ message: 'Internal server error' });
+            return res.status(500).json({ message: "Internal server error" });
           }
 
           if (templateResults.length === 0) {
-            return res.status(404).json({ message: 'Heading not found in templates table' });
+            return res
+              .status(404)
+              .json({ message: "Heading not found in templates table" });
           }
 
-          res.status(200).json({ message: 'Heading found in templates table', templates: templateResults });
+          res
+            .status(200)
+            .json({
+              message: "Heading found in templates table",
+              templates: templateResults,
+            });
         }
       );
     }
   );
 });
 
-
-app.get('/checklists', (req, res) => {
+app.get("/checklists", (req, res) => {
   const { department } = req.query;
 
   if (!department) {
-    return res.status(400).json({ message: 'Department is required' });
+    return res.status(400).json({ message: "Department is required" });
   }
 
   // Query for templates based on the department
   pool.query(
-    'SELECT t.* FROM templates t JOIN headings h ON t.heading = h.heading WHERE h.department = ?',
+    "SELECT t.* FROM templates t JOIN headings h ON t.heading = h.heading WHERE h.department = ?",
     [department],
     (err, results) => {
       if (err) {
         console.error("Error fetching checklists:", err);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ message: "Internal server error" });
       }
 
       if (results.length === 0) {
-        return res.status(404).json({ message: 'No checklists available for the selected department' });
+        return res
+          .status(404)
+          .json({
+            message: "No checklists available for the selected department",
+          });
       }
 
       res.status(200).json(results);
@@ -1083,129 +1084,256 @@ app.get('/checklists', (req, res) => {
   );
 });
 
-app.get('/api/user_login', (req, res) => {
-  const query = 'SELECT * FROM user_login';
+app.get("/api/user_login", (req, res) => {
+  const query = "SELECT * FROM user_login";
   pool.query(query, (err, results) => {
     if (err) {
-      console.error('Error fetching users:', err);
-      res.status(500).json({ error: 'Database error' });
+      console.error("Error fetching users:", err);
+      res.status(500).json({ error: "Database error" });
       return;
     }
     res.json(results);
   });
 });
-
-
 
 //-------------------------------------------------------------------------------------------
 //admin_user
 
 
-app.get('/api/user_login/unverified', (req, res) => {
-  const query = 'SELECT * FROM user_login WHERE verified = FALSE';
-  
+app.get("/api/user_login/unverified", (req, res) => {
+  const query = "SELECT * FROM user_login WHERE verified = FALSE";
+
   pool.query(query, (err, results) => {
     if (err) {
-      console.error('Error fetching unverified users:', err);
-      res.status(500).json({ error: 'Database error' });
+      console.error("Error fetching unverified users:", err);
+      res.status(500).json({ error: "Database error" });
       return;
     }
     res.json(results);
   });
 });
 
+app.get("/api/user_login", (req, res) => {
+  const query = "SELECT * FROM user_login WHERE verified = TRUE";
 
-app.get('/api/user_login', (req, res) => {
-  const query = 'SELECT * FROM user_login WHERE verified = TRUE';
-  
   pool.query(query, (err, results) => {
     if (err) {
-      console.error('Error fetching users:', err);
-      res.status(500).json({ error: 'Database error' });
+      console.error("Error fetching users:", err);
+      res.status(500).json({ error: "Database error" });
       return;
     }
     res.json(results);
   });
 });
 
-app.put('/api/user_login/verify/:id', (req, res) => {
+app.put("/api/user_login/verify/:id", (req, res) => {
   const userId = req.params.id;
-  const query = 'UPDATE user_login SET verified = TRUE WHERE id = ?';
+  const query = "UPDATE user_login SET verified = TRUE WHERE id = ?";
 
   pool.query(query, [userId], (err, results) => {
     if (err) {
-      console.error('Error verifying user:', err);
-      return res.status(500).json({ error: 'Database error during verification' });
+      console.error("Error verifying user:", err);
+      return res
+        .status(500)
+        .json({ error: "Database error during verification" });
     }
 
-    res.json({ message: 'User verified successfully' });
+    res.json({ message: "User verified successfully" });
   });
 });
 
-
 //Checklist backend
-app.get('/templates', (req, res) => {
-  pool.query('SELECT * FROM templates', (err, results) => {
+app.get("/templates", (req, res) => {
+  pool.query("SELECT * FROM templates", (err, results) => {
     if (err) {
-      console.error('Error fetching templates:', err);
-      return res.status(500).json({ error: 'Failed to fetch templates' });
+      console.error("Error fetching templates:", err);
+      return res.status(500).json({ error: "Failed to fetch templates" });
     }
     res.json(results);
   });
 });
+// User response
+
+// app.post('/api/submit-checklist', async (req, res) => {
+//   try {
+//       const { title, heading, department, section, templateType, labels, answers, selectedDate } = req.body;
+      
+//       // Validate payload
+//       if (!title || !heading || !department || !section || !templateType || !labels || !answers) {
+//           return res.status(400).json({ error: "All fields are required" });
+//       }
+      
+//       // Your database insertion logic here
+      
+//       res.status(200).json({ message: "Checklist submitted successfully" });
+//   } catch (error) {
+//       console.error("Error submitting checklist:", error);
+//       res.status(500).json({ error: "Failed to submit checklist" });
+//   }
+// });
+
+// app.post('/api/submit-checklist', async (req, res) => {
+//   try {
+//     const { title, heading, department, section, templateType, labels, answers, selectedDate } = req.body;
+
+//     // Validate payload
+//     if (!title || !heading || !department || !section || !templateType || !labels || !answers) {
+//         return res.status(400).json({ error: "All fields are required" });
+//     }
+
+//     // Validate that all keys in answers and labels are defined
+//     const hasUndefinedKey = Object.keys(answers).includes(undefined) || Object.keys(labels).includes(undefined);
+//     if (hasUndefinedKey) {
+//         return res.status(400).json({ error: "Invalid data structure: undefined keys found" });
+//     }
+
+//     // // Insert into the database
+//     // const newChecklist = await checklist.create({
+//     //   title,
+//     //   heading,
+//     //   department,
+//     //   section,
+//     //   templateType,
+//     //   labels: JSON.stringify(labels), // Serialize JSON
+//     //   answers: JSON.stringify(answers), // Serialize JSON
+//     //   selectedDate: new Date(selectedDate), // Convert to Date object
+//     // });
+
+//     // res.status(200).json({ message: "Checklist submitted successfully", checklistId: newChecklist.id });
+
+    
+// // Add a new section
+//   const query =
+//     "INSERT INTO response (selectedDate, answers, labels) VALUES (?, ?, ?)";
+//   pool.query(query, [selectedDate, answers, labels], (err, result) => {
+//     if (err) {
+//       console.error("Database insert error:", err);
+//       res.status(500).json({ error: "Database error" });
+//       return;
+//     }
+//     res
+//       .status(200)
+//       .json({ message: "response added successfully" });
+//   });
+
+//   } catch (error) {
+//     console.error("Error submitting checklist:", error); // Log the detailed error
+//     res.status(500).json({ error: "Failed to submit checklist" });
+//   }
+// });
+
+// app.post('/api/submit-checklist', async (req, res) => {
+//   try {
+//     const { title, heading, department, section, templateType, labels, answers, selectedDate } = req.body;
+
+//     // Validate payload
+//     if (!title || !heading || !department || !section || !templateType || !labels || !answers) {
+//         return res.status(400).json({ error: "All fields are required" });
+//     }
+
+//     // Validate that all keys in answers and labels are defined
+//     const hasUndefinedKey = Object.keys(answers).includes(undefined) || Object.keys(labels).includes(undefined);
+//     if (hasUndefinedKey) {
+//         return res.status(400).json({ error: "Invalid data structure: undefined keys found" });
+//     }
+
+//     // Prepare the SQL query for inserting into the 'response' table
+//     const query = `
+//       INSERT INTO response (selectedDate, answers, labels) 
+//       VALUES (?, ?, ?)
+//     `;
+
+//     // Serialize JSON fields
+//     const serializedAnswers = JSON.stringify(answers);
+//     const serializedLabels = JSON.stringify(labels);
+
+//     // Use async/await for database query
+//     const [result] = await pool.promise().query(query, [
+//       new Date(selectedDate), 
+//       serializedAnswers, 
+//       serializedLabels
+//     ]);
+
+//     // Return a successful response with the inserted ID (if needed)
+//     res.status(200).json({ message: "Checklist submitted successfully", responseId: result.insertId });
+
+//   } catch (error) {
+//     console.error("Error submitting checklist:", error); // Log the detailed error
+//     res.status(500).json({ error: "Failed to submit checklist" });
+//   }
+// });
+
+
 
 app.post('/api/submit-checklist', async (req, res) => {
-  const { userId, templateId, responseData, date, deptId } = req.body;
-
   try {
-    const result = await db.query(
-      `INSERT INTO response (user_id, template_id, response_data, created_at, dept_id) 
-       VALUES (?, ?, ?, ?, ?)`,
-      [userId, templateId, responseData, date, deptId]
-    );
-    res.status(201).json({ message: 'Checklist submitted successfully' });
+    const { title, heading, department, section, templateType, selectedDate, labels, answers } = req.body;
+
+    // Validate the incoming data
+    if (!title || !heading || !department || !section || !templateType || !answers) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Log the received data for debugging
+    console.log("Received data:", req.body);
+
+    // Example: Insert the data into the 'response' table in MySQL
+    const responseQuery = "INSERT INTO response (user_id, template_id, response_data) VALUES (?, ?, ?)";
+    const responseData = {
+      title,
+      heading,
+      department,
+      section,
+      templateType,
+      selectedDate,
+      labels,
+      answers,
+    };
+
+    // Assuming you're using MySQL
+    await db.query(responseQuery, [userId, templateId, JSON.stringify(responseData)]); // Adapt userId and templateId accordingly
+
+    return res.status(200).json({ message: "Checklist submitted successfully" });
   } catch (error) {
-    console.error("Error submitting checklist:", error);
-    res.status(500).json({ error: 'Failed to submit checklist' });
+    console.error("Error submitting checklist:", error); // Log the error
+    return res.status(500).json({ message: "Server error. Please try again later." });
   }
 });
 
-// User response
-// Assuming you have express set up
-app.post('/submit-checklist', (req, res) => {
-  const { user_id, department, responses } = req.body;
 
-  // Convert responses object to JSON string
-  const response_data = JSON.stringify(responses);
 
-  const sql = 'INSERT INTO response (user_id, template_id, response_data) VALUES (?, ?, ?)';
-  
-  Object.keys(responses).forEach(templateId => {
-    db.query(sql, [user_id, templateId, response_data], (err, result) => {
-      if (err) {
-        console.error('Error inserting response:', err);
-        return res.status(500).json({ error: 'Failed to save response' });
-      }
-    });
-  });
+app.get("/api/get-responses", (req, res) => {
+  const sql = "SELECT * FROM response";
 
-  res.json({ message: 'Response saved successfully' });
-});
-
-app.get('/get-responses', (req, res) => {
-  const sql = 'SELECT * FROM response';
-  
   db.query(sql, (err, results) => {
     if (err) {
-      console.error('Error fetching responses:', err);
-      return res.status(500).json({ error: 'Failed to fetch responses' });
+      console.error("Error fetching responses:", err);
+      return res.status(500).json({ error: "Failed to fetch responses" });
     }
-    
+
     res.json(results);
   });
 });
 
+app.get('/api/responses', async (req, res) => {
+  const { user_id, template_id } = req.query;
 
+  try {
+    const responses = await db.query(
+      'SELECT * FROM responses WHERE user_id = ? AND template_id = ?',
+      [user_id, template_id]
+    );
+
+    if (responses.length === 0) {
+      return res.status(404).json({ message: 'No responses found' });
+    }
+
+    res.json(responses);
+  } catch (error) {
+    console.error('Error fetching responses:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);

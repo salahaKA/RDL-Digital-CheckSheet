@@ -39,6 +39,15 @@ const DailyChecklistMCQ = ({ templateId }) => {
   const [labelTexts, setLabelTexts] = useState({});
   const [checklistView, setChecklistView] = useState(false);
 
+
+const handleAnswerChange = (label, value) => {
+  setAnswers((prevAnswers) => ({
+    ...prevAnswers,
+    [label]: value,  // Update the specific answer for the label
+  }));
+};
+
+
   useEffect(() => {
     const fetchTemplateData = async () => {
       if (!templateId) {
@@ -93,6 +102,27 @@ const DailyChecklistMCQ = ({ templateId }) => {
     setSelectedDate(date);
   };
 
+  // const handleSubmit = async () => {
+  //   const checklistData = {
+  //     title,
+  //     heading,
+  //     department,
+  //     section,
+  //     templateType,
+  //     selectedDate,
+  //     labels: labelTexts,
+  //     answers,
+  //   };
+
+  //   try {
+  //     await axios.post("http://localhost:3001/api/submit-checklist", checklistData);
+  //     alert("Checklist submitted successfully!");
+  //   } catch (error) {
+  //     console.error("Error submitting checklist:", error);
+  //     alert("Failed to submit the checklist.");
+  //   }
+  // };
+
   const handleSubmit = async () => {
     const checklistData = {
       title,
@@ -102,9 +132,11 @@ const DailyChecklistMCQ = ({ templateId }) => {
       templateType,
       selectedDate,
       labels: labelTexts,
-      answers,
+      answers,  // This should now contain the answers as an object
     };
-
+  
+    console.log("Submitting checklist:", checklistData);
+  
     try {
       await axios.post("http://localhost:3001/api/submit-checklist", checklistData);
       alert("Checklist submitted successfully!");
@@ -113,6 +145,7 @@ const DailyChecklistMCQ = ({ templateId }) => {
       alert("Failed to submit the checklist.");
     }
   };
+  
 
   const handleClear = () => {
     setLabelTexts({});

@@ -11,16 +11,13 @@ import {
   Grid,
   Paper,
   Button,
-  AppBar,
-  Toolbar,
 } from "@mui/material";
-import ReportPage from "./ReportPage";
 import './View.css'
 
 const View = () => {
   const [templates, setTemplates] = useState([]);
   const [displayedTemplateId, setDisplayedTemplateId] = useState(null);
-  const [viewMode, setViewMode] = useState("view"); // 'view', 'checklist', 'report'
+  const [viewMode, setViewMode] = useState("view"); // 'view', 'checklist'
 
   useEffect(() => {
     const fetchTemplates = async () => {
@@ -45,33 +42,10 @@ const View = () => {
     setViewMode("view");
   };
 
-  const handleViewModeChange = (mode) => {
-    setViewMode(mode);
-    setDisplayedTemplateId(null); // Reset displayed template when switching views
-  };
-
   return (
     <Box sx={{ flexGrow: 1 }} className="view-container">
-      <AppBar position="static" sx={{ backgroundColor: "#f5f5f5" }}>
-        <Toolbar>
-          <Button
-            sx={{ color: "#1976d2", textTransform: "none" }}
-            onClick={() => handleViewModeChange("view")}
-          >
-            View
-          </Button>
-          <Button
-            sx={{ color: "#1976d2", textTransform: "none" }}
-            onClick={() => handleViewModeChange("report")}
-          >
-            Report
-          </Button>
-        </Toolbar>
-      </AppBar>
       <Box sx={{ padding: 2 }}>
-        {viewMode === "report" ? (
-          <ReportPage onBack={handleBackToGrid} />
-        ) : viewMode === "checklist" ? (
+        {viewMode === "checklist" ? (
           <Paper sx={{ padding: 2 }}>
             <Button
               onClick={handleBackToGrid}
