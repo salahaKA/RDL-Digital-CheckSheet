@@ -1,7 +1,9 @@
 RDL DCS
 MCA Final Year Internship Project Under RDL Technologies Pvt Ltd, Sahyadri Campus, 5th floor, Mangalore, Karnataka
+#####################################################################################################################
 
-Digital Checksheet Management System
+#Digital Checksheet Management System
+
 This project is a Digital Checksheet Management System designed to streamline checklist creation, management, and tracking. It caters to multiple roles such as Super Admin, Admin, and Users, providing specific functionalities for each role.
 
 --------------------------------------------
