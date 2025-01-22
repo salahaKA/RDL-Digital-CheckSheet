@@ -855,6 +855,22 @@ app.get("/api/logs", (req, res) => {
   });
 });
 
+
+// Record logout time
+app.post("/api/logout", (req, res) => {
+  const { userId } = req.body; // Assume userId is passed in the request body
+  const query = "UPDATE logs SET logout_time = NOW(), status = 'logged out' WHERE user_id = ? AND logout_time IS NULL";
+
+  pool.query(query, [userId], (err, result) => {
+    if (err) {
+      console.error("Error updating logout time:", err);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+
+    res.status(200).json({ message: "Logout time recorded successfully." });
+  });
+});
+
 // Fetch today's login count
 app.get("/api/today-logins", (req, res) => {
   // Assuming you have a 'logs' table where login activities are logged

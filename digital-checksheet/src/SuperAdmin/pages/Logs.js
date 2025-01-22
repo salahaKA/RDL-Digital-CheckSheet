@@ -34,8 +34,8 @@ function Logs() {
                         <th>Email</th>
                         <th>Date</th>
                         <th>Login Time</th>
-                        <th>Logout Time</th>
-                        <th>Status</th>
+                        {/* <th>Logout Time</th> */}
+                        {/* <th>Status</th> */}
                     </tr>
                 </thead>
                 <tbody>
@@ -46,8 +46,8 @@ function Logs() {
                             <td>{log.email}</td>
                             <td>{new Date(log.date).toLocaleDateString()}</td>
                             <td>{log.login_time ? new Date(log.login_time).toLocaleTimeString() : '-'}</td>
-                            <td>{log.logout_time ? new Date(log.logout_time).toLocaleTimeString() : '-'}</td>
-                            <td>{log.status}</td>
+                            {/* <td>{log.logout_time ? new Date(log.logout_time).toLocaleTimeString() : '-'}</td> */}
+                            {/* <td>{log.status}</td> */}
                         </tr>
                     ))}
                 </tbody>
