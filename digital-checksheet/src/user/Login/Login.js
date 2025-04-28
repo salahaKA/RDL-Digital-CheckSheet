@@ -58,6 +58,8 @@ const Login = ({ setIsLoggedIn, setRole }) => {
   return (
     <form className="containerr" onSubmit={handleSubmit}>
       <div className="headerr">
+        <img src="/logo3.png" alt="DCS Logo" className="dcs-logo" />
+
         <div className="textt">Sign In</div>
         <div className="underline"></div>
       </div>

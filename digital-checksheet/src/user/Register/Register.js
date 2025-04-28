@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { RiEyeLine, RiEyeOffLine, RiMailFill, RiLockPasswordLine, RiUserFill, RiBuilding2Fill, RiPhoneFill } from 'react-icons/ri';
+import {
+  // RiEyeLine,
+  // RiEyeOffLine,
+  RiMailFill,
+  RiLockPasswordLine,
+  RiUserFill,
+  RiBuilding2Fill,
+  RiPhoneFill,
+} from "react-icons/ri";
 import "./Register.css";
 import eyeIcon from "../../Assests/eye.png";
 import eyeOffIcon from "../../Assests/eye_off.png";
@@ -22,7 +30,9 @@ const Register = () => {
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
-        const response = await axios.get("http://localhost:3001/api/departments");
+        const response = await axios.get(
+          "http://localhost:3001/api/departments"
+        );
         setDepartments(response.data);
       } catch (error) {
         console.error("Error fetching departments:", error);
@@ -39,22 +49,32 @@ const Register = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-  
+
     try {
-      if (!firstName || !lastName || !phone || !departmentId || !email || !password) {
+      if (
+        !firstName ||
+        !lastName ||
+        !phone ||
+        !departmentId ||
+        !email ||
+        !password
+      ) {
         setError("All fields are required.");
         return;
       }
-  
-      const response = await axios.post("http://localhost:3001/api/user_login/register", {
-        firstName,
-        lastName,
-        phone,
-        departmentId,
-        email,
-        password,
-      });
-  
+
+      const response = await axios.post(
+        "http://localhost:3001/api/user_login/register",
+        {
+          firstName,
+          lastName,
+          phone,
+          departmentId,
+          email,
+          password,
+        }
+      );
+
       if (response.status === 201) {
         setSuccess("Registration successful! Please log in.");
         navigate("/login");
@@ -70,12 +90,15 @@ const Register = () => {
   return (
     <form className="containerr" onSubmit={handleSubmit}>
       <div className="headerr">
+        <img src="/logo3.png" alt="DCS Logo" className="dcs-logo" />
         <div className="textt">Register</div>
         <div className="underlinee"></div>
       </div>
       <div className="inputs">
         <div className="input">
-          <span className='input-group-text'><RiUserFill /></span>
+          <span className="input-group-text">
+            <RiUserFill />
+          </span>
           <input
             type="text"
             placeholder="First Name"
@@ -85,7 +108,9 @@ const Register = () => {
           />
         </div>
         <div className="input">
-          <span className='input-group-text'><RiUserFill /></span>
+          <span className="input-group-text">
+            <RiUserFill />
+          </span>
           <input
             type="text"
             placeholder="Last Name"
@@ -95,7 +120,9 @@ const Register = () => {
           />
         </div>
         <div className="input">
-          <span className='input-group-text'><RiPhoneFill /></span>
+          <span className="input-group-text">
+            <RiPhoneFill />
+          </span>
           <input
             type="text"
             placeholder="Phone"
@@ -105,7 +132,9 @@ const Register = () => {
           />
         </div>
         <div className="input">
-          <span className='input-group-text'><RiBuilding2Fill /></span>
+          <span className="input-group-text">
+            <RiBuilding2Fill />
+          </span>
           <select
             value={departmentId}
             onChange={(e) => setDepartmentId(e.target.value)}
@@ -120,7 +149,9 @@ const Register = () => {
           </select>
         </div>
         <div className="input">
-          <span className='input-group-text'><RiMailFill /></span>
+          <span className="input-group-text">
+            <RiMailFill />
+          </span>
           <input
             type="email"
             placeholder="Email"
@@ -130,7 +161,9 @@ const Register = () => {
           />
         </div>
         <div className="input password-input">
-          <span className='input-group-text'><RiLockPasswordLine /></span>
+          <span className="input-group-text">
+            <RiLockPasswordLine />
+          </span>
           <input
             type={passwordVisible ? "text" : "password"}
             placeholder="Password"
