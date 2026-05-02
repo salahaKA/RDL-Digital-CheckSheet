@@ -1,0 +1,142 @@
+/* checklist.css */
+
+/* General Table Styling */
+.checklist-container{
+    padding: 20px;
+  background-color: #f0f2f5;
+}
+
+.table-header {
+    background-color: #989090;
+    color: white;
+    font-size: 1.2rem;
+    font-weight: bold;
+    height: 50px;
+    text-align: left;
+    padding: 12px 15px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .table-header th:first-child {
+    border-top-left-radius: 8px;
+  }
+  
+  .table-header th:last-child {
+    border-top-right-radius: 8px;
+  }
+  
+  /* General Styling */
+  body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f9f9f9;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Container for the Checklist */
+  .checklist-container {
+    margin: 20px;
+  }
+  
+  /* Header Title */
+  .checklist-title {
+    font-size: 2rem;
+    margin-bottom: 20px;
+  }
+  
+  /* Button Section */
+  .button-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  
+  .button-section button {
+    text-transform: none;
+    margin: 0 10px;
+  }
+  
+  /* Table Styling */
+  .table-container {
+    margin-bottom: 20px;
+  }
+  
+  .table-container table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .table-container th,
+  .table-container td {
+    padding: 10px;
+    text-align: left;
+  }
+  
+  
+  
+  .table-container tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  
+  .table-container tr:hover {
+    background-color: #f1f1f1;
+  }
+  
+  /* Dialog Styling */
+  .dialog-title {
+    font-size: 1.5rem;
+  }
+  
+  .dialog-content {
+    padding: 20px;
+  }
+  
+  .dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  .dialog-actions button {
+    margin-left: 10px;
+  }
+  
+  /* Form Elements */
+  .dialog-content select,
+  .dialog-content input {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 10px;
+    font-size: 1rem;
+  }
+  
+  .dialog-content select:disabled,
+  .dialog-content input:disabled {
+    background-color: #e0e0e0;
+  }
+  
+  /* Question Section */
+  .question-box {
+    margin-bottom: 20px;
+  }
+  
+  .question-box input {
+    width: calc(100% - 30px);
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .question-box button {
+    margin-left: 10px;
+  }
+  
+  /* View All Questions Dialog */
+  .view-questions-dialog .dialog-content {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  
+  .view-questions-dialog .dialog-actions {
+    justify-content: space-between;
+  }
+  

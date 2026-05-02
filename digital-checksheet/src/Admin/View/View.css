@@ -1,0 +1,11 @@
+/* View.css */
+
+.view-container {
+    background-image: url('https://i0.wp.com/study-z.net/img/is/iStock-1396622511.jpg?w=730');
+    background-size: cover;
+    background-position: center;
+    min-height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  
