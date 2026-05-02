@@ -21,7 +21,7 @@ import Logs from "./SuperAdmin/pages/Logs";
 import MainLayout from "./Layout/MainLayout";
 import Users from "./Admin/AddUser/Users";
 import Register from "./user/Register/Register";
-import UserDashboard from './user/UserDashboard';
+import UserDashboard from "./user/UserDashboard";
 import UserChecklist from "./user/UserChecklist";
 import ReportPage from "./Admin/View/ReportPage";
 
@@ -30,7 +30,7 @@ function App() {
   // const [role, setRole] = useState("");
 
   const [isLoggedIn, setIsLoggedIn] = useState(
-    () => localStorage.getItem("isLoggedIn") === "true"
+    () => localStorage.getItem("isLoggedIn") === "true",
   );
   const [role, setRole] = useState(() => localStorage.getItem("role") || "");
 
@@ -52,7 +52,7 @@ function App() {
             element={<Login setIsLoggedIn={setIsLoggedIn} setRole={setRole} />}
           />
 
-              <Route path="/register" element={<Register />} />   
+          <Route path="/register" element={<Register />} />
 
           {isLoggedIn ? (
             <Route
@@ -64,7 +64,7 @@ function App() {
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/master" element={<Master />} />
                     <Route path="/checklist" element={<Checklist />} />
-                    <Route path="/users" element={<Users/>} />
+                    <Route path="/users" element={<Users />} />
                     <Route path="/view" element={<View />} />
                     <Route path="/report" element={<ReportPage />} />
                     <Route
@@ -93,10 +93,9 @@ function App() {
                     <Route path="/logs" element={<Logs />} />
                     {/*user */}
 
-                  <Route path="userdashboard" element={<UserDashboard />} />
-                  <Route path="userchecklist" element={<UserChecklist />} />
+                    <Route path="userdashboard" element={<UserDashboard />} />
+                    <Route path="userchecklist" element={<UserChecklist />} />
                   </Routes>
-                  
                 </MainLayout>
               }
             />
